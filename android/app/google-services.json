@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "87299853253",
+    "project_id": "calet-39a61",
+    "storage_bucket": "calet-39a61.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:87299853253:android:33d6c406016f16a0fc19ac",
+        "android_client_info": {
+          "package_name": "com.example.calet"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "87299853253-e008vjrefhheunl95sbi6vhlfkh5c741.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.calet",
+            "certificate_hash": "edb8e0f33a93a77e91aa4674030ef7318010e58a"
+          }
+        },
+        {
+          "client_id": "87299853253-mbed3p293bv9q95vnmn4a0rhtr3eef1u.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDWMEN5gwo9vtLQLyTTadcwsrkwHAAAf4E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "87299853253-mbed3p293bv9q95vnmn4a0rhtr3eef1u.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "87299853253-6eb1f7ed3ft79p3vq4f251ar9ij4ju0m.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.calet"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
