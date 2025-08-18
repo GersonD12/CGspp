@@ -39,9 +39,7 @@ class FirebaseServices {
 
   // method to sign out from both firebase and google
   Future<void> signOut() async {
-    // sign out from firebase
+    await googleSignIn.signOut();   // usa la MISMA instancia
     await auth.signOut();
-    // from google
-    await googleSignIn.signOut();
   }
 }

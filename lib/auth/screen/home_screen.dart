@@ -1,35 +1,40 @@
 import 'package:flutter/material.dart';
-//import 'package:calet/auth/service/google_auth.dart'; // Importa la clase FirebaseServices
+import 'google_login_screen.dart';
+import 'package:calet/auth/service/google_auth.dart';
 
 class HomeScreen extends StatelessWidget {
+  const HomeScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
+    final firebaseServices = FirebaseServices(); // <— crea la instancia UNA vez aquí
+
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 255, 255, 255),
-      body: Center(
-        child: GestureDetector(
-          onTap: () {
-            // Aquí se ejecutaría la lógica del botón, como
-            // llamar a la función de inicio de sesión de Google.
-            // Por ejemplo: await FirebaseServices().signInWithGoogle();
-          },
-          child: Row(
-            mainAxisAlignment:
-                MainAxisAlignment.center, // Centra el contenido horizontalmente
-            children: [
-              Image.network(
-                "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3c/Google_Favicon_2025.svg/250px-Google_Favicon_2025.svg.png",
-                height: 40,
-                width: 40,
-              ),
-              const SizedBox(
-                width: 10,
-              ), // Añade un espacio entre la imagen y el texto
-              const Text("Bienvenido inicio de sesión con google"),
-            ],
+      appBar: AppBar(
+        title: const Text('Pantalla Principal'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            tooltip: 'Cerrar sesión',
+            onPressed: () async {
+              try {
+                await firebaseServices.signOut(); // <— usa la instancia
+              } catch (e) {
+                debugPrint('Error al cerrar sesión: $e');
+              }
+
+              // Limpia el stack y lleva a login
+              if (context.mounted) {
+                Navigator.of(context).pushAndRemoveUntil(
+                  MaterialPageRoute(builder: (_) => const GoogleLoginScreen()),
+                  (route) => false,
+                );
+              }
+            },
           ),
-        ),
+        ],
       ),
+      body: const Center(child: Text('¡Bienvenido!')),
     );
   }
 }
