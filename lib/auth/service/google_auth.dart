@@ -1,47 +1,38 @@
-// class to handle google sign-in and sign-out
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
-class FirebaseServices {
-  FirebaseServices._privateConstructor();
-  static final FirebaseServices instance = FirebaseServices._privateConstructor();
+class GoogleAuthService {
+  GoogleAuthService._();
+  static final instance = GoogleAuthService._();
 
-  final auth = FirebaseAuth.instance;
-  final googleSignIn = GoogleSignIn();
+  Future<UserCredential?> signInWithGoogle() async {
+    // Flujo móvil (Android/iOS)
+    final googleUser = await GoogleSignIn().signIn();
+    if (googleUser == null) return null; // cancelado por el usuario
 
-  // method to sign in using google
-  Future<bool> signInWithGoogle() async {
-    try {
-      final GoogleSignInAccount? googleSignInAccount = await googleSignIn
-          .signIn();
-
-      // Check if user cancelled the sign in
-      if (googleSignInAccount == null) {
-        return false; // User cancelled
-      }
-
-      // get authentication tokens
-      final GoogleSignInAuthentication googleSignInAuthentication =
-          await googleSignInAccount.authentication;
-
-      // create a firebase credential using the tokens from google
-      final AuthCredential authCredential = GoogleAuthProvider.credential(
-        accessToken: googleSignInAuthentication.accessToken,
-        idToken: googleSignInAuthentication.idToken,
-      );
-
-      // sign in to firebase using the googlel credential
-      await auth.signInWithCredential(authCredential);
-      return true; // Sign-in successful
-    } on FirebaseAuthException catch (e) {
-      print(e.toString());
-      return false; // Error occurred
-    }
+    final googleAuth = await googleUser.authentication;
+    final credential = GoogleAuthProvider.credential(
+      accessToken: googleAuth.accessToken,
+      idToken: googleAuth.idToken,
+    );
+    return FirebaseAuth.instance.signInWithCredential(credential);
   }
 
-  // method to sign out from both firebase and google
-  Future<void> signOut() async {
-    await googleSignIn.signOut();   // usa la MISMA instancia
-    await auth.signOut();
+  Future<void> signOut({bool revoke = false}) async {
+    // 1) Firebase
+    await FirebaseAuth.instance.signOut();
+
+    // 2) Cerrar / revocar GoogleSignIn para evitar reuso automático
+    final g = GoogleSignIn();
+    try {
+      if (revoke) {
+        // Fuerza a volver a consentir/seleccionar cuenta la próxima vez
+        await g.disconnect();
+      } else {
+        await g.signOut();
+      }
+    } catch (_) {
+      // Ignorar si ya estaba desconectado
+    }
   }
 }
