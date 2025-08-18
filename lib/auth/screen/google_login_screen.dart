@@ -1,4 +1,5 @@
 import 'package:calet/auth/screen/home_screen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:calet/auth/service/google_auth.dart'; // Asegúrate de que este archivo exista y contenga la clase FirebaseServices
@@ -35,27 +36,40 @@ class _GoogleLoginScreenState extends State<GoogleLoginScreen> {
     );
   }
 
-  Future<void> _handleGoogleSignIn() async {
-    try {
-      bool result = await FirebaseServices()
-          .signInWithGoogle(); //await espera una funcion
-      if (result) {
-        _navigateToAdminScreen();
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              "El inicio de sesión con Google fue cancelado o falló.",
-            ),
-          ),
-        );
-      }
-    } catch (e) {
+Future<void> _handleGoogleSignIn() async {
+  try {
+    // opcional: mostrar loading
+    // setState(() => _loading = true);
+
+    final user = await FirebaseServices.instance.signInWithGoogle();
+
+    if (!mounted) return; // evita usar context si el widget ya no está
+
+    if (user != null) {
+      _navigateToAdminScreen(); // login OK
+    } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Ocurrió un error inesperado: $e")),
+        const SnackBar(
+          content: Text("El inicio de sesión con Google fue cancelado o falló."),
+        ),
       );
     }
+  } on FirebaseAuthException catch (e) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("Error de autenticación: ${e.message ?? e.code}")),
+    );
+  } catch (e) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("Ocurrió un error inesperado: $e")),
+    );
+  } finally {
+    // opcional: ocultar loading
+    // if (mounted) setState(() => _loading = false);
   }
+}
+
 
   @override
   Widget build(BuildContext context) {

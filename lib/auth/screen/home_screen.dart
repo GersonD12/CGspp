@@ -7,7 +7,6 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final firebaseServices = FirebaseServices(); // <— crea la instancia UNA vez aquí
 
     return Scaffold(
       appBar: AppBar(
@@ -18,7 +17,7 @@ class HomeScreen extends StatelessWidget {
             tooltip: 'Cerrar sesión',
             onPressed: () async {
               try {
-                await firebaseServices.signOut(); // <— usa la instancia
+                await FirebaseServices.instance.signInWithGoogle();
               } catch (e) {
                 debugPrint('Error al cerrar sesión: $e');
               }
