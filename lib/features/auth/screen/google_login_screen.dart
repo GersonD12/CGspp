@@ -1,4 +1,4 @@
-import 'package:calet/auth/service/google_auth.dart';
+import 'package:calet/features/auth/service/google_auth.dart';
 import 'package:flutter/material.dart';
 
 class GoogleLoginScreen extends StatefulWidget {
