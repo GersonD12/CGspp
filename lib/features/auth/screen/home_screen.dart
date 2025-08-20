@@ -1,38 +1,122 @@
 import 'package:calet/features/auth/service/google_auth.dart';
+import 'package:calet/core/providers/session_provider.dart';
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final user = FirebaseAuth.instance.currentUser;
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(user?.displayName ?? 'Inicio'),
-        actions: [
-          IconButton(
-            onPressed: () async {
-              await GoogleAuthService.instance.signOut();
-              // Si quieres forzar re-consentir en el siguiente login:
-              // await GoogleAuthService.instance.signOut(revoke: true);
-            },
-            icon: const Icon(Icons.logout),
-            tooltip: 'Cerrar sesión',
+  Widget build(BuildContext context, WidgetRef ref) {
+    final session = ref.watch(sessionProvider);
+    
+    return session.when(
+      data: (user) {
+        if (user == null) {
+          return const Scaffold(
+            body: Center(
+              child: Text('Usuario no autenticado'),
+            ),
+          );
+        }
+        
+        return Scaffold(
+          appBar: AppBar(
+            title: Text(user.displayName ?? 'Inicio'),
+            automaticallyImplyLeading: false,
+            actions: [
+              IconButton(
+                onPressed: () async {
+                  await GoogleAuthService.instance.signOut();
+                  // El sessionProvider automáticamente redirigirá a LoginScreen
+                },
+                icon: const Icon(Icons.logout),
+                tooltip: 'Cerrar sesión',
+              ),
+            ],
           ),
-        ],
+          body: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              children: [
+                Center(
+                  child: Column(
+                    children: [
+                      if (user.photoURL != null)
+                        CircleAvatar(
+                          radius: 50,
+                          backgroundImage: NetworkImage(user.photoURL!),
+                        )
+                      else
+                        CircleAvatar(
+                          radius: 50,
+                          backgroundColor: Colors.blue.shade100,
+                          child: Icon(
+                            Icons.person,
+                            size: 50,
+                            color: Colors.blue.shade600,
+                          ),
+                        ),
+                      const SizedBox(height: 16),
+                      Text(
+                        user.displayName ?? 'Usuario',
+                        style: const TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        user.email ?? '',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.grey.shade600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 32),
+                const Card(
+                  child: Padding(
+                    padding: EdgeInsets.all(16.0),
+                    child: Column(
+                      children: [
+                        Icon(
+                          Icons.check_circle,
+                          color: Colors.green,
+                          size: 48,
+                        ),
+                        SizedBox(height: 16),
+                        Text(
+                          '¡Sesión iniciada exitosamente!',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        SizedBox(height: 8),
+                        Text(
+                          'Ya puedes acceder a todas las funcionalidades de la app.',
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+      loading: () => const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
       ),
-      body: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (user?.photoURL != null)
-              CircleAvatar(radius: 40, backgroundImage: NetworkImage(user!.photoURL!)),
-            const SizedBox(height: 12),
-            Text(user?.email ?? ''),
-          ],
+      error: (error, stack) => Scaffold(
+        body: Center(
+          child: Text('Error: $error'),
         ),
       ),
     );

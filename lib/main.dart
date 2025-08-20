@@ -1,38 +1,24 @@
-import 'package:calet/features/auth/screen/google_login_screen.dart';
-import 'package:calet/features/auth/screen/home_screen.dart';
+import 'package:calet/app/view/app.dart';
+import 'package:calet/core/di/injection.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'firebase_options.dart';
-
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Inicializar Firebase
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  runApp(const MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: StreamBuilder<User?>(
-        stream: FirebaseAuth.instance.authStateChanges(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Scaffold(body: Center(child: CircularProgressIndicator()));
-          }
-          if (snapshot.hasData) {
-            return const HomeScreen();
-          }
-          return const GoogleLoginScreen();
-        },
-      ),
-    );
-  }
+  
+  // Configurar inyección de dependencias
+  await setupInjection();
+  
+  runApp(
+    const ProviderScope(
+      child: App(),
+    ),
+  );
 }
