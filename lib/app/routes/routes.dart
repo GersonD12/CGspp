@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:calet/features/auth/screen/screens.dart';
 
 // Sistema de rutas híbrido:
 // - Navegación automática para autenticación (login/home)
 // - Navegación manual para otras pantallas
 final routes = <String, WidgetBuilder>{
-  // Rutas para navegación manual (descomenta cuando crees las pantallas)
-  // '/profile': (context) => const ProfileScreen(),
+  // Rutas para navegación manual
+  '/profile': (context) => const ProfileScreen(),
   // '/settings': (context) => const SettingsScreen(),
   // '/dashboard': (context) => const DashboardScreen(),
   // '/details': (context) => const DetailsScreen(),
@@ -16,8 +17,8 @@ final routes = <String, WidgetBuilder>{
 
 // Constantes para rutas (evita errores de tipeo)
 class AppRoutes {
-  // Rutas para navegación manual (descomenta cuando crees las pantallas)
-  // static const String profile = '/profile';
+  // Rutas para navegación manual
+  static const String profile = '/profile';
   // static const String settings = '/settings';
   // static const String dashboard = '/dashboard';
   // static const String details = '/details';

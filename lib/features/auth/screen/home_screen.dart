@@ -1,5 +1,6 @@
 import 'package:calet/features/auth/service/google_auth.dart';
 import 'package:calet/core/providers/session_provider.dart';
+import 'package:calet/app/routes/routes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -25,6 +26,13 @@ class HomeScreen extends ConsumerWidget {
             title: Text(user.displayName ?? 'Inicio'),
             automaticallyImplyLeading: false,
             actions: [
+              IconButton(
+                onPressed: () {
+                  Navigator.pushNamed(context, AppRoutes.profile);
+                },
+                icon: const Icon(Icons.person),
+                tooltip: 'Mi Perfil',
+              ),
               IconButton(
                 onPressed: () async {
                   await GoogleAuthService.instance.signOut();
@@ -120,17 +128,14 @@ class HomeScreen extends ConsumerWidget {
                   children: [
                     ElevatedButton.icon(
                       onPressed: () {
-                        // Ejemplo de navegación manual
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Navegación manual a /profile'),
-                          ),
-                        );
-                        // Cuando crees ProfileScreen, descomenta esto:
-                        // Navigator.pushNamed(context, AppRoutes.profile);
+                        Navigator.pushNamed(context, AppRoutes.profile);
                       },
                       icon: const Icon(Icons.person),
-                      label: const Text('Perfil'),
+                      label: const Text('Mi Perfil'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.indigo,
+                        foregroundColor: Colors.white,
+                      ),
                     ),
                     ElevatedButton.icon(
                       onPressed: () {
