@@ -104,6 +104,60 @@ class HomeScreen extends ConsumerWidget {
                     ),
                   ),
                 ),
+                const SizedBox(height: 24),
+                // Ejemplos de navegación manual
+                const Text(
+                  'Ejemplos de Navegación Manual:',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Wrap(
+                  spacing: 12,
+                  runSpacing: 12,
+                  children: [
+                    ElevatedButton.icon(
+                      onPressed: () {
+                        // Ejemplo de navegación manual
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Navegación manual a /profile'),
+                          ),
+                        );
+                        // Cuando crees ProfileScreen, descomenta esto:
+                        // Navigator.pushNamed(context, AppRoutes.profile);
+                      },
+                      icon: const Icon(Icons.person),
+                      label: const Text('Perfil'),
+                    ),
+                    ElevatedButton.icon(
+                      onPressed: () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Navegación manual a /settings'),
+                          ),
+                        );
+                        // Navigator.pushNamed(context, AppRoutes.settings);
+                      },
+                      icon: const Icon(Icons.settings),
+                      label: const Text('Configuración'),
+                    ),
+                    ElevatedButton.icon(
+                      onPressed: () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Navegación manual a /dashboard'),
+                          ),
+                        );
+                        // Navigator.pushNamed(context, AppRoutes.dashboard);
+                      },
+                      icon: const Icon(Icons.dashboard),
+                      label: const Text('Dashboard'),
+                    ),
+                  ],
+                ),
               ],
             ),
           ),
