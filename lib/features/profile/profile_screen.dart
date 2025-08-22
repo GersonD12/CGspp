@@ -2,6 +2,7 @@ import 'package:calet/shared/widgets/protected_screen_state.dart';
 import 'package:calet/shared/widgets/vertical_view_standard.dart';
 import 'package:calet/features/auth/service/google_auth.dart';
 import 'package:calet/core/domain/entities/entities.dart';
+import 'package:calet/features/profile/profile_header.dart';
 import 'package:flutter/material.dart';
 
 class ProfileScreen extends ProtectedScreenStatefulWidget {
@@ -67,95 +68,24 @@ class _ProfileScreenState extends ProtectedScreenState<ProfileScreen> {
           },
         ),
       ],
-      child: Column(
-        children: [
-          // Avatar y información principal
-          _buildProfileHeader(userEntity),
-          const SizedBox(height: 32),
-          
-          // Información del usuario
-          _buildUserInfo(userEntity),
-          const SizedBox(height: 32),
-          
-          // Acciones del perfil
-          _buildProfileActions(context),
-        ],
-      ),
+              child: Column(
+          children: [
+            // Avatar y información principal
+            ProfileHeader(user: userEntity),
+            const SizedBox(height: 32),
+            
+            // Información del usuario
+            _buildUserInfo(userEntity),
+            const SizedBox(height: 32),
+            
+            // Acciones del perfil
+            _buildProfileActions(context),
+          ],
+        ),
     );
   }
 
-  Widget _buildProfileHeader(UserEntity user) {
-    return Column(
-      children: [
-        // Avatar
-        CircleAvatar(
-          radius: 60,
-          backgroundColor: Colors.indigo.shade100,
-          backgroundImage: user.photoURL != null 
-            ? NetworkImage(user.photoURL!) 
-            : null,
-          child: user.photoURL == null
-            ? Text(
-                user.initials,
-                style: TextStyle(
-                  fontSize: 30,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.indigo.shade600,
-                ),
-              )
-            : null,
-        ),
-        const SizedBox(height: 16),
-        
-        // Nombre
-        Text(
-          user.displayNameOrEmail,
-          style: const TextStyle(
-            fontSize: 28,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const SizedBox(height: 8),
-        
-        // Email
-        Text(
-          user.email ?? '',
-          style: TextStyle(
-            fontSize: 16,
-            color: Colors.grey.shade600,
-          ),
-        ),
-        
-        // Badge de verificación
-        if (user.isEmailVerified) ...[
-          const SizedBox(height: 16),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: Colors.green.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: Colors.green.withOpacity(0.3)),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.verified, size: 16, color: Colors.green),
-                const SizedBox(width: 4),
-                Text(
-                  'Verificado',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.green,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ],
-    );
-  }
+
 
   Widget _buildUserInfo(UserEntity user) {
     return Card(
