@@ -10,7 +10,7 @@ final routes = <String, WidgetBuilder>{
   // '/settings': (context) => const SettingsScreen(),
   // '/dashboard': (context) => const DashboardScreen(),
   // '/details': (context) => const DetailsScreen(),
-  
+
   // Nota: / y /home se manejan automáticamente con Riverpod
   // en el App widget basándose en el estado de autenticación
 };
@@ -22,15 +22,8 @@ class AppRoutes {
   // static const String settings = '/settings';
   // static const String dashboard = '/dashboard';
   // static const String details = '/details';
-  
+
   // Rutas de autenticación (manejadas automáticamente)
   static const String login = '/'; // Solo para referencia
   static const String home = '/home'; // Solo para referencia
 }
-
-
-
-
-
-
-
