@@ -68,7 +68,7 @@ class _ProfileScreenState extends ProtectedScreenState<ProfileScreen> {
           },
         ),
       ],
-              child: Column(
+        child: Column(
           children: [
             // Avatar y información principal
             ProfileHeader(user: userEntity),

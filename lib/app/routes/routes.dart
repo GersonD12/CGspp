@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:calet/features/auth/screen/screens.dart';
+import 'package:calet/features/formulario/pantalla_formulario.dart';
 
 // Sistema de rutas híbrido:
 // - Navegación automática para autenticación (login/home)
@@ -7,6 +8,7 @@ import 'package:calet/features/auth/screen/screens.dart';
 final routes = <String, WidgetBuilder>{
   // Rutas para navegación manual
   '/profile': (context) => const ProfileScreen(),
+  '/formulario': (context) => const PantallaFormulario(),
   // '/settings': (context) => const SettingsScreen(),
   // '/dashboard': (context) => const DashboardScreen(),
   // '/details': (context) => const DetailsScreen(),
@@ -19,6 +21,7 @@ final routes = <String, WidgetBuilder>{
 class AppRoutes {
   // Rutas para navegación manual
   static const String profile = '/profile';
+  static const String formulario = '/formulario';
   // static const String settings = '/settings';
   // static const String dashboard = '/dashboard';
   // static const String details = '/details';

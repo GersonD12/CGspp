@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'Objeto_preguntas.dart';
+import 'objeto_preguntas.dart';
 import 'Boton.dart';
 import 'Cuadrado.dart'; // Asegúrate de que este import exista
 

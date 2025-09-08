@@ -1,13 +1,20 @@
 import 'package:calet/features/formulario/preguntas.dart';
 import 'package:flutter/material.dart';
 
-void main() {
-  runApp(pantallaFormulario());
-}
+class PantallaFormulario extends StatelessWidget {
+  const PantallaFormulario({super.key});
 
-class pantallaFormulario extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(home: Preguntas());
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Formulario'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
+      body: const Preguntas(),
+    );
   }
 }

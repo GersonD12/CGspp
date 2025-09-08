@@ -139,6 +139,13 @@ class HomeScreen extends ConsumerWidget {
                     ),
                     ElevatedButton.icon(
                       onPressed: () {
+                        Navigator.pushNamed(context, AppRoutes.formulario);
+                      },
+                      icon: const Icon(Icons.settings),
+                      label: const Text('Formulario'),
+                    ),
+                    ElevatedButton.icon(
+                      onPressed: () {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
                             content: Text('Navegación manual a /settings'),
