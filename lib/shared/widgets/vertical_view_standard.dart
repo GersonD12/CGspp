@@ -34,29 +34,24 @@ class VerticalViewStandard extends StatelessWidget {
     final theme = Theme.of(context);
     final headerBgColor = headerColor ?? theme.primaryColor;
     final textColor = foregroundColor ?? theme.primaryColor;
-    
+
     return Scaffold(
       appBar: AppBar(
         title: Text(
           title,
-          style: TextStyle(
-            color: textColor,
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(color: textColor, fontWeight: FontWeight.bold),
         ),
         centerTitle: centerTitle,
         backgroundColor: headerBgColor,
         foregroundColor: textColor,
-        elevation: 2,
+        elevation: 0,
         leading: showBackButton
             ? (leading ??
-                IconButton(
-                  icon: Icon(
-                    Icons.arrow_back,
-                    color: textColor,
-                  ),
-                  onPressed: onBackPressed ?? () => Navigator.of(context).pop(),
-                ))
+                  IconButton(
+                    icon: Icon(Icons.arrow_back, color: textColor),
+                    onPressed:
+                        onBackPressed ?? () => Navigator.of(context).pop(),
+                  ))
             : null,
         actions: actions,
       ),
@@ -81,6 +76,7 @@ class VerticalViewStandardScrollable extends StatelessWidget {
   final double separationHeight;
   final Color? headerColor;
   final Color? foregroundColor;
+  final Color? backgroundColor; //agregado
   final bool showBackButton;
   final VoidCallback? onBackPressed;
   final Widget? leading;
@@ -96,6 +92,7 @@ class VerticalViewStandardScrollable extends StatelessWidget {
     this.separationHeight = 16.0,
     this.headerColor,
     this.foregroundColor,
+    this.backgroundColor, //agregado para tener un color de fondo personalizado
     this.showBackButton = true,
     this.onBackPressed,
     this.leading,
@@ -109,29 +106,26 @@ class VerticalViewStandardScrollable extends StatelessWidget {
     final theme = Theme.of(context);
     final headerBgColor = headerColor ?? theme.primaryColor;
     final textColor = foregroundColor ?? theme.primaryColor;
-    
+    final bodyBgColor = backgroundColor ?? theme.scaffoldBackgroundColor;
+
     return Scaffold(
+      backgroundColor: bodyBgColor,
       appBar: AppBar(
         title: Text(
           title,
-          style: TextStyle(
-            color: textColor,
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(color: textColor, fontWeight: FontWeight.bold),
         ),
         centerTitle: centerTitle,
         backgroundColor: headerBgColor,
         foregroundColor: textColor,
-        elevation: 2,
+        elevation: 0,
         leading: showBackButton
             ? (leading ??
-                IconButton(
-                  icon: Icon(
-                    Icons.arrow_back,
-                    color: textColor,
-                  ),
-                  onPressed: onBackPressed ?? () => Navigator.of(context).pop(),
-                ))
+                  IconButton(
+                    icon: Icon(Icons.arrow_back, color: textColor),
+                    onPressed:
+                        onBackPressed ?? () => Navigator.of(context).pop(),
+                  ))
             : null,
         actions: actions,
       ),

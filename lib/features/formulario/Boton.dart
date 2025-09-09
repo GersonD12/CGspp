@@ -28,7 +28,7 @@ class BotonSiguiente extends StatelessWidget {
           color: textColor,
         ),
       ),
-      icon: const Icon(Icons.arrow_forward),
+      icon: const Icon(Icons.arrow_forward, color: Colors.black),
       backgroundColor: color,
     );
   }
