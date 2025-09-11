@@ -3,6 +3,7 @@ import 'Objeto_preguntas.dart';
 import 'boton.dart';
 import 'Cuadrado.dart';
 import 'Progreso.dart';
+import 'obj_foto_texto.dart';
 import '../../shared/widgets/vertical_view_standard.dart';
 
 class Preguntas extends StatefulWidget {
@@ -17,7 +18,7 @@ class _PreguntasState extends State<Preguntas> {
 
   void siguientePregunta() {
     setState(() {
-      if (contador < 7) {
+      if (contador < 9) {
         contador++;
       }
     });
@@ -104,8 +105,20 @@ class _PreguntasState extends State<Preguntas> {
           allowCustomOption: true,
           customOptionLabel: 'Otro',
         );
+      case 7:
+        return ObjFotoTexto(
+          titulo: 'Muestranos tu foto favorita',
+          textoPlaceholder: 'Tu nombre',
+          textoArriba: false,
+          lineasTexto: 1,
+          anchoImagen: 300,
+          alturaImagen: 400,
+          onFotoChanged: (foto) {
+            print(foto);
+          },
+        );
       default:
-        return const Center(child: Text('¡Formulario completado!'));
+        return const Center(child: Text(''));
     }
   }
 
@@ -113,10 +126,12 @@ class _PreguntasState extends State<Preguntas> {
   Widget build(BuildContext context) {
     // Calcular el progreso basado en la pregunta actual
     // Hay 7 preguntas (0-6), así que el progreso va de 0 a 1
-    double progreso = contador / 7.0;
+    double progreso = contador / 9.0;
 
     return VerticalViewStandardScrollable(
-      title: 'Pregunta ${contador + 1}',
+      title: contador >= 8
+          ? '¡Formulario completado!'
+          : 'Pregunta ${contador + 1}',
       headerColor: const Color.fromARGB(255, 248, 226, 185),
       foregroundColor: Colors.black,
       backgroundColor: const Color.fromARGB(
@@ -152,7 +167,7 @@ class _PreguntasState extends State<Preguntas> {
                 226,
                 219,
                 204,
-              )!, //color de fondo de la barra de progreso
+              ), //color de fondo de la barra de progreso
               borderRadius: BorderRadius.circular(
                 15.0,
               ), //redondeo de la barra de progreso
