@@ -1,0 +1,34 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
+class PreguntaDTO {
+  final DateTime createdAt;
+  final String descripcion;
+  final String tipo;
+  final List<String> opciones;
+  final bool allowCustomOption;
+  final String customOptionLabel;
+
+  PreguntaDTO({
+    required this.createdAt,
+    required this.descripcion,
+    required this.tipo,
+    required this.opciones,
+    required this.allowCustomOption,
+    required this.customOptionLabel,
+  });
+
+  factory PreguntaDTO.fromMap(Map<String, dynamic> map) {
+    return PreguntaDTO(
+      createdAt: map['createdAt'] != null
+          ? (map['createdAt'] as Timestamp).toDate()
+          : DateTime.now(),
+      descripcion: map['descripcion'] as String? ?? '',
+      tipo: map['tipo'] as String? ?? 'texto',
+      opciones: map['opciones'] != null
+          ? List<String>.from(map['opciones'] as List<dynamic>)
+          : <String>[],
+      allowCustomOption: map['allowCustomOption'] as bool? ?? false,
+      customOptionLabel: map['customOptionLabel'] as String? ?? 'Otro',
+    );
+  }
+}

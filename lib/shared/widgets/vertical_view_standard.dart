@@ -45,6 +45,7 @@ class VerticalViewStandard extends StatelessWidget {
         backgroundColor: headerBgColor,
         foregroundColor: textColor,
         elevation: 0,
+        automaticallyImplyLeading: showBackButton,
         leading: showBackButton
             ? (leading ??
                   IconButton(
@@ -119,6 +120,7 @@ class VerticalViewStandardScrollable extends StatelessWidget {
         backgroundColor: headerBgColor,
         foregroundColor: textColor,
         elevation: 0,
+        automaticallyImplyLeading: showBackButton,
         leading: showBackButton
             ? (leading ??
                   IconButton(

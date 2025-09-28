@@ -9,6 +9,7 @@ final routes = <String, WidgetBuilder>{
   // Rutas para navegación manual
   '/profile': (context) => const ProfileScreen(),
   '/formulario': (context) => const PantallaFormulario(),
+  '/home': (context) => const HomeScreen(),
   // '/settings': (context) => const SettingsScreen(),
   // '/dashboard': (context) => const DashboardScreen(),
   // '/details': (context) => const DetailsScreen(),
@@ -22,6 +23,7 @@ class AppRoutes {
   // Rutas para navegación manual
   static const String profile = '/profile';
   static const String formulario = '/formulario';
+  static const String pantallaFormulario = '/pantallaFormulario';
   // static const String settings = '/settings';
   // static const String dashboard = '/dashboard';
   // static const String details = '/details';
