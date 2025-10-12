@@ -1,10 +1,11 @@
+import 'dart:developer' show log;
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'Objeto_preguntas.dart';
+import 'objeto_preguntas.dart';
 import 'boton.dart';
-import 'Cuadrado.dart';
-import 'Progreso.dart';
+import 'cuadrado.dart';
+import 'progreso.dart';
 import 'obj_foto_texto.dart';
 import '../../shared/widgets/vertical_view_standard.dart';
 import 'questiond_dto.dart';
@@ -33,7 +34,7 @@ class _PreguntasState extends ConsumerState<Preguntas> {
 
   Future<void> _fetchPreguntasFromFirestore() async {
     try {
-      print('Iniciando carga de preguntas desde Firestore...');
+      log('Iniciando carga de preguntas desde Firestore...');
 
       // Obtener todos los documentos de la colección 'questions'
       final QuerySnapshot querySnapshot = await FirebaseFirestore.instance
@@ -41,23 +42,23 @@ class _PreguntasState extends ConsumerState<Preguntas> {
           .orderBy('orden', descending: false)
           .get();
 
-      print('Documentos encontrados: ${querySnapshot.docs.length}');
+      log('Documentos encontrados: ${querySnapshot.docs.length}');
 
       // Mapear los documentos a una lista de DTOs
       _preguntas = querySnapshot.docs.map((doc) {
-        print('Procesando documento: ${doc.id}');
-        print('Datos del documento: ${doc.data()}');
+        log('Procesando documento: ${doc.id}');
+        log('Datos del documento: ${doc.data()}');
         return PreguntaDTO.fromMap(doc.data() as Map<String, dynamic>);
       }).toList();
 
-      print('Preguntas cargadas exitosamente: ${_preguntas.length}');
+      log('Preguntas cargadas exitosamente: ${_preguntas.length}');
 
       setState(() {
         _isLoading = false;
         _error = ''; // Limpiar error si la carga fue exitosa
       });
     } catch (e) {
-      print('Error al cargar preguntas: $e');
+      log('Error al cargar preguntas: $e');
       setState(() {
         _isLoading = false;
         _error = 'Error al cargar las preguntas: $e';
@@ -106,15 +107,22 @@ class _PreguntasState extends ConsumerState<Preguntas> {
           ),
         );
 
-    final String? respuestaActual =
-        respuestaGuardadaObjeto.respuestaOpciones?.first;
-    print(
-      'DEBUG: Pregunta ID: $preguntaId, Respuesta cargada: $respuestaActual',
-    );
+    // For radio buttons
+    final String? respuestaOpcionActual =
+        (respuestaGuardadaObjeto.respuestaOpciones?.isNotEmpty ?? false)
+            ? respuestaGuardadaObjeto.respuestaOpciones!.first
+            : null;
+
+    // For text input
+    final String? respuestaTextoActual = respuestaGuardadaObjeto.respuestaTexto;
+
+    log('DEBUG: Pregunta ID: $preguntaId, Respuesta de opción cargada: $respuestaOpcionActual');
+    log('DEBUG: Pregunta ID: $preguntaId, Respuesta de texto cargada: $respuestaTextoActual');
+
 
     // Usar un switch para manejar diferentes tipos de preguntas
-    print('Tipo de pregunta: "${preguntaActual.tipo}"');
-    print('Opciones: ${preguntaActual.opciones}');
+    log('Tipo de pregunta: "${preguntaActual.tipo}"');
+    log('Opciones: ${preguntaActual.opciones}');
 
     switch (preguntaActual.tipo.toLowerCase().trim()) {
       case 'radio':
@@ -125,7 +133,7 @@ class _PreguntasState extends ConsumerState<Preguntas> {
           opciones: preguntaActual.opciones,
           allowCustomOption: preguntaActual.allowCustomOption,
           customOptionLabel: preguntaActual.customOptionLabel,
-          respuestaActual: respuestaActual,
+          respuestaActual: respuestaOpcionActual,
           onRespuestaChanged: (respuesta) {
             RespuestasService.guardarRespuestaRadio(
               ref,
@@ -145,10 +153,11 @@ class _PreguntasState extends ConsumerState<Preguntas> {
         return ObjFotoTexto(
           titulo: preguntaActual.descripcion,
           textoPlaceholder: 'Escribe tu nombre...',
+          textoInicial: respuestaTextoActual, // Pass the initial text here
           lineasTexto: 1,
           onFotoChanged: (imagen) {
             if (imagen != null) {
-              print('Imagen seleccionada: ${imagen.path}');
+              log('Imagen seleccionada: ${imagen.path}');
               RespuestasService.guardarRespuestaImagen(
                 ref,
                 preguntaId,
@@ -293,6 +302,7 @@ class _PreguntasState extends ConsumerState<Preguntas> {
                                   RespuestasService.finalizarFormulario(
                                     context,
                                     respuestasState,
+                                    ref,
                                   );
                                 },
                           color:

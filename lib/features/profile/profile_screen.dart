@@ -14,11 +14,10 @@ class ProfileScreen extends ProtectedScreenStatefulWidget {
 
 class _ProfileScreenState extends ProtectedScreenState<ProfileScreen> {
   @override
-  Widget buildProtectedContent(BuildContext context, dynamic user) {
-    final userEntity = user as UserEntity;
-    
+  Widget buildProtectedContent(BuildContext context, UserEntity user) {
     return VerticalViewStandardScrollable(
       title: 'Mi Perfil',
+      appBarFloats: true,
       headerColor: Colors.indigo,
       foregroundColor: Colors.white,
       actions: [
@@ -38,7 +37,9 @@ class _ProfileScreenState extends ProtectedScreenState<ProfileScreen> {
               context: context,
               builder: (context) => AlertDialog(
                 title: const Text('Cerrar Sesión'),
-                content: const Text('¿Estás seguro de que quieres cerrar sesión?'),
+                content: const Text(
+                  '¿Estás seguro de que quieres cerrar sesión?',
+                ),
                 actions: [
                   TextButton(
                     onPressed: () => Navigator.of(context).pop(false),
@@ -54,38 +55,29 @@ class _ProfileScreenState extends ProtectedScreenState<ProfileScreen> {
 
             if (shouldLogout == true) {
               // Cerrar sesión
-              await GoogleAuthService.instance.signOut();
-              
-              // El sessionProvider automáticamente redirigirá al login
-              // Pero podemos forzar la navegación inmediata
-              if (context.mounted) {
-                Navigator.of(context).pushNamedAndRemoveUntil(
-                  '/',
-                  (route) => false, // Elimina todas las rutas del stack
-                );
-              }
+
+              await GoogleAuthService.instance.signOut(revoke: true);
+              // El sessionProvider en `App.dart` se encargará de la redirección.
             }
           },
         ),
       ],
-        child: Column(
-          children: [
-            // Avatar y información principal
-            ProfileHeader(user: userEntity),
-            const SizedBox(height: 32),
-            
-            // Información del usuario
-            _buildUserInfo(userEntity),
-            const SizedBox(height: 32),
-            
-            // Acciones del perfil
-            _buildProfileActions(context),
-          ],
-        ),
+      child: Column(
+        children: [
+          // Avatar y información principal
+          ProfileHeader(user: user),
+          const SizedBox(height: 32),
+
+          // Información del usuario
+          _buildUserInfo(user),
+          const SizedBox(height: 32),
+
+          // Acciones del perfil
+          _buildProfileActions(context),
+        ],
+      ),
     );
   }
-
-
 
   Widget _buildUserInfo(UserEntity user) {
     return Card(
@@ -136,11 +128,7 @@ class _ProfileScreenState extends ProtectedScreenState<ProfileScreen> {
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
         children: [
-          Icon(
-            icon,
-            color: Colors.indigo.shade600,
-            size: 20,
-          ),
+          Icon(icon, color: Colors.indigo.shade600, size: 20),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -175,10 +163,7 @@ class _ProfileScreenState extends ProtectedScreenState<ProfileScreen> {
       children: [
         const Text(
           'Acciones del Perfil',
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 16),
         Wrap(
@@ -208,7 +193,9 @@ class _ProfileScreenState extends ProtectedScreenState<ProfileScreen> {
               label: 'Notificaciones',
               onPressed: () {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Notificaciones - Próximamente')),
+                  const SnackBar(
+                    content: Text('Notificaciones - Próximamente'),
+                  ),
                 );
               },
             ),
@@ -237,18 +224,13 @@ class _ProfileScreenState extends ProtectedScreenState<ProfileScreen> {
       child: ElevatedButton.icon(
         onPressed: onPressed,
         icon: Icon(icon, size: 20),
-        label: Text(
-          label,
-          style: const TextStyle(fontSize: 12),
-        ),
+        label: Text(label, style: const TextStyle(fontSize: 12)),
         style: ElevatedButton.styleFrom(
           padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
           backgroundColor: Colors.indigo.shade50,
           foregroundColor: Colors.indigo.shade700,
           elevation: 1,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         ),
       ),
     );
