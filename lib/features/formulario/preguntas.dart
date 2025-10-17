@@ -1,10 +1,11 @@
+import 'dart:developer' show log;
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'Objeto_preguntas.dart';
+import 'objeto_preguntas.dart';
 import 'boton.dart';
-import 'Cuadrado.dart';
-import 'Progreso.dart';
+import 'cuadrado.dart';
+import 'progreso.dart';
 import 'obj_foto_texto.dart';
 import '../../shared/widgets/vertical_view_standard.dart';
 import 'questiond_dto.dart';
@@ -106,11 +107,18 @@ class _PreguntasState extends ConsumerState<Preguntas> {
           ),
         );
 
-    final String? respuestaActual =
-        respuestaGuardadaObjeto.respuestaOpciones?.first;
-    log(
-      'DEBUG: Pregunta ID: $preguntaId, Respuesta cargada: $respuestaActual',
-    );
+    // For radio buttons
+    final String? respuestaOpcionActual =
+        (respuestaGuardadaObjeto.respuestaOpciones?.isNotEmpty ?? false)
+            ? respuestaGuardadaObjeto.respuestaOpciones!.first
+            : null;
+
+    // For text input
+    final String? respuestaTextoActual = respuestaGuardadaObjeto.respuestaTexto;
+
+    log('DEBUG: Pregunta ID: $preguntaId, Respuesta de opción cargada: $respuestaOpcionActual');
+    log('DEBUG: Pregunta ID: $preguntaId, Respuesta de texto cargada: $respuestaTextoActual');
+
 
     // Usar un switch para manejar diferentes tipos de preguntas
     log('Tipo de pregunta: "${preguntaActual.tipo}"');
@@ -125,7 +133,7 @@ class _PreguntasState extends ConsumerState<Preguntas> {
           opciones: preguntaActual.opciones,
           allowCustomOption: preguntaActual.allowCustomOption,
           customOptionLabel: preguntaActual.customOptionLabel,
-          respuestaActual: respuestaActual,
+          respuestaActual: respuestaOpcionActual,
           onRespuestaChanged: (respuesta) {
             RespuestasService.guardarRespuestaRadio(
               ref,
@@ -145,6 +153,7 @@ class _PreguntasState extends ConsumerState<Preguntas> {
         return ObjFotoTexto(
           titulo: preguntaActual.descripcion,
           textoPlaceholder: 'Escribe tu nombre...',
+          textoInicial: respuestaTextoActual, // Pass the initial text here
           lineasTexto: 1,
           onFotoChanged: (imagen) {
             if (imagen != null) {
@@ -293,6 +302,7 @@ class _PreguntasState extends ConsumerState<Preguntas> {
                                   RespuestasService.finalizarFormulario(
                                     context,
                                     respuestasState,
+                                    ref,
                                   );
                                 },
                           color:
