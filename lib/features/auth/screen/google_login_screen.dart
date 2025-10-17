@@ -1,3 +1,5 @@
+import 'dart:developer' as console;
+
 import 'package:calet/features/auth/service/google_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -26,6 +28,7 @@ class _GoogleLoginScreenState extends ConsumerState<GoogleLoginScreen> {
       // Si el login es exitoso, el sessionProvider automáticamente
       // redirigirá a HomeScreen
     } catch (e) {
+      console.log('Error al iniciar sesión: $e');
       setState(() { _error = 'Error al iniciar sesión: $e'; });
     } finally {
       if (mounted) setState(() { _loading = false; });

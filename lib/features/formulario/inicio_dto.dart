@@ -5,7 +5,7 @@ Future<PreguntaDTO> getPregunta() async {
   try {
     DocumentSnapshot doc = await FirebaseFirestore.instance
         .collection('questions')
-        .doc('4ZOmpfB98ISOgwe46lXj')
+        .doc('P2IGoMdOwAcXggkHZW0y')
         .get();
 
     if (doc.exists) {

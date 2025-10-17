@@ -11,6 +11,7 @@ import 'questiond_dto.dart';
 import 'respuestas.dart';
 import 'respuestas_service.dart';
 import 'respuestas_indicator.dart';
+import 'dart:developer';
 
 class Preguntas extends ConsumerStatefulWidget {
   const Preguntas({super.key});
@@ -33,31 +34,30 @@ class _PreguntasState extends ConsumerState<Preguntas> {
 
   Future<void> _fetchPreguntasFromFirestore() async {
     try {
-      print('Iniciando carga de preguntas desde Firestore...');
+      log('Iniciando carga de preguntas desde Firestore...');
 
       // Obtener todos los documentos de la colección 'questions'
       final QuerySnapshot querySnapshot = await FirebaseFirestore.instance
           .collection('questions')
-          .orderBy('orden', descending: false)
           .get();
 
-      print('Documentos encontrados: ${querySnapshot.docs.length}');
+      log('Documentos encontrados: ${querySnapshot.docs.length}');
 
       // Mapear los documentos a una lista de DTOs
       _preguntas = querySnapshot.docs.map((doc) {
-        print('Procesando documento: ${doc.id}');
-        print('Datos del documento: ${doc.data()}');
+        log('Procesando documento: ${doc.id}');
+        log('Datos del documento: ${doc.data()}');
         return PreguntaDTO.fromMap(doc.data() as Map<String, dynamic>);
       }).toList();
 
-      print('Preguntas cargadas exitosamente: ${_preguntas.length}');
+      log('Preguntas cargadas exitosamente: ${_preguntas.length}');
 
       setState(() {
         _isLoading = false;
         _error = ''; // Limpiar error si la carga fue exitosa
       });
     } catch (e) {
-      print('Error al cargar preguntas: $e');
+      log('Error al cargar preguntas: $e');
       setState(() {
         _isLoading = false;
         _error = 'Error al cargar las preguntas: $e';
@@ -108,13 +108,13 @@ class _PreguntasState extends ConsumerState<Preguntas> {
 
     final String? respuestaActual =
         respuestaGuardadaObjeto.respuestaOpciones?.first;
-    print(
+    log(
       'DEBUG: Pregunta ID: $preguntaId, Respuesta cargada: $respuestaActual',
     );
 
     // Usar un switch para manejar diferentes tipos de preguntas
-    print('Tipo de pregunta: "${preguntaActual.tipo}"');
-    print('Opciones: ${preguntaActual.opciones}');
+    log('Tipo de pregunta: "${preguntaActual.tipo}"');
+    log('Opciones: ${preguntaActual.opciones}');
 
     switch (preguntaActual.tipo.toLowerCase().trim()) {
       case 'radio':
@@ -148,7 +148,7 @@ class _PreguntasState extends ConsumerState<Preguntas> {
           lineasTexto: 1,
           onFotoChanged: (imagen) {
             if (imagen != null) {
-              print('Imagen seleccionada: ${imagen.path}');
+              log('Imagen seleccionada: ${imagen.path}');
               RespuestasService.guardarRespuestaImagen(
                 ref,
                 preguntaId,
