@@ -5,6 +5,7 @@ class PreguntaDTO {
   final String descripcion;
   final String tipo;
   final List<String> opciones;
+  final String encabezado;
   final bool allowCustomOption;
   final String customOptionLabel;
 
@@ -13,6 +14,7 @@ class PreguntaDTO {
     required this.descripcion,
     required this.tipo,
     required this.opciones,
+    required this.encabezado,
     required this.allowCustomOption,
     required this.customOptionLabel,
   });
@@ -29,6 +31,7 @@ class PreguntaDTO {
           : <String>[],
       allowCustomOption: map['allowCustomOption'] as bool? ?? false,
       customOptionLabel: map['customOptionLabel'] as String? ?? 'Otro',
+      encabezado: map['encabezado'] as String? ?? '',
     );
   }
 }

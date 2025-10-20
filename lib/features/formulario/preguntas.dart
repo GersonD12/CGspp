@@ -110,23 +110,28 @@ class _PreguntasState extends ConsumerState<Preguntas> {
     // For radio buttons
     final String? respuestaOpcionActual =
         (respuestaGuardadaObjeto.respuestaOpciones?.isNotEmpty ?? false)
-            ? respuestaGuardadaObjeto.respuestaOpciones!.first
-            : null;
+        ? respuestaGuardadaObjeto.respuestaOpciones!.first
+        : null;
 
     // For text input
     final String? respuestaTextoActual = respuestaGuardadaObjeto.respuestaTexto;
 
-    log('DEBUG: Pregunta ID: $preguntaId, Respuesta de opción cargada: $respuestaOpcionActual');
-    log('DEBUG: Pregunta ID: $preguntaId, Respuesta de texto cargada: $respuestaTextoActual');
+    // For image input
+    final String? respuestaImagenActual =
+        respuestaGuardadaObjeto.respuestaImagen;
 
+    log(
+      'DEBUG: Pregunta ID: $preguntaId, Respuesta de opción cargada: $respuestaOpcionActual',
+    );
+    log(
+      'DEBUG: Pregunta ID: $preguntaId, Respuesta de texto cargada: $respuestaTextoActual',
+    );
 
     // Usar un switch para manejar diferentes tipos de preguntas
     log('Tipo de pregunta: "${preguntaActual.tipo}"');
     log('Opciones: ${preguntaActual.opciones}');
 
     switch (preguntaActual.tipo.toLowerCase().trim()) {
-      case 'radio':
-      case 'opcion_multiple':
       case 'multiple':
         return ObjPreguntas(
           pregunta: preguntaActual.descripcion,
@@ -145,15 +150,14 @@ class _PreguntasState extends ConsumerState<Preguntas> {
           },
         );
 
-      case 'foto_texto':
-      case 'foto':
       case 'imagen_texto':
-      case 'imput':
-      case 'texto_imagen':
         return ObjFotoTexto(
+          key: ValueKey(preguntaId), // Añadir Key única
           titulo: preguntaActual.descripcion,
-          textoPlaceholder: 'Escribe tu nombre...',
+          textoPlaceholder: preguntaActual.encabezado,
           textoInicial: respuestaTextoActual, // Pass the initial text here
+          imagenInicialPath: respuestaImagenActual,
+          textoArriba: false,
           lineasTexto: 1,
           onFotoChanged: (imagen) {
             if (imagen != null) {
@@ -177,6 +181,56 @@ class _PreguntasState extends ConsumerState<Preguntas> {
             );
           },
         );
+
+      case 'texto':
+        return ObjFotoTexto(
+          key: ValueKey(preguntaId), // Añadir Key única
+          titulo: preguntaActual.descripcion,
+          textoPlaceholder: preguntaActual.encabezado,
+          textoInicial: respuestaTextoActual,
+          mostrarImagen: false,
+          onTextoChanged: (texto) {
+            RespuestasService.guardarRespuestaTexto(
+              ref,
+              preguntaId,
+              preguntaActual.tipo,
+              preguntaActual.descripcion,
+              texto,
+            );
+          },
+        );
+
+      case 'imagen':
+        return ObjFotoTexto(
+          key: ValueKey(preguntaId), // Añadir Key única
+          titulo: preguntaActual.descripcion,
+          textoPlaceholder: preguntaActual.encabezado,
+          textoInicial: respuestaTextoActual,
+          imagenInicialPath: respuestaImagenActual,
+          mostrarTexto: false,
+          onFotoChanged: (imagen) {
+            if (imagen != null) {
+              log('Imagen seleccionada: ${imagen.path}');
+              RespuestasService.guardarRespuestaImagen(
+                ref,
+                preguntaId,
+                preguntaActual.tipo,
+                preguntaActual.descripcion,
+                imagen.path,
+              );
+            }
+          },
+          onTextoChanged: (texto) {
+            RespuestasService.guardarRespuestaTexto(
+              ref,
+              preguntaId,
+              preguntaActual.tipo,
+              preguntaActual.descripcion,
+              texto,
+            );
+          },
+        );
+
       default:
         return Column(
           children: [

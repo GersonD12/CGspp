@@ -24,8 +24,9 @@ class _ScreenCardsState extends State<ScreenCards> {
 
   Future<void> _fetchRandomUsers() async {
     try {
-      final usersSnapshot =
-          await FirebaseFirestore.instance.collection('users').get();
+      final usersSnapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .get();
       final allUsers = usersSnapshot.docs;
 
       // Shuffle the list of users
@@ -59,114 +60,113 @@ class _ScreenCardsState extends State<ScreenCards> {
       child: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _users.isEmpty
-              ? const Center(child: Text('No users found.'))
-              : Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: _users.map((user) {
-                    final userData = user.data() as Map<String, dynamic>;
-                    // TODO: Replace 'name' with the actual field from your user document.
-                    final userName = userData['name'] ?? 'No name';
+          ? const Center(child: Text('No users found.'))
+          : Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: _users.map((user) {
+                final userData = user.data() as Map<String, dynamic>;
+                // TODO: Replace 'name' with the actual field from your user document.
+                final userName = userData['displayName'] ?? 'No name';
 
-                    return Cards(
-                      squareColor: Colors.white,
-                      squareHeight: 170,
-                      squareWidth: 370,
-                      borderRadius: 20,
-                      text: userName,
-                      onTapAction: () {
-                        log('Card for $userName tapped');
+                return Cards(
+                  squareColor: Colors.white,
+                  squareHeight: 170,
+                  squareWidth: 370,
+                  borderRadius: 20,
+                  text: userName,
+                  onTapAction: () {
+                    log('Card for $userName tapped');
 
-                        final formResponses =
-                            userData['form_responses'] as Map<String, dynamic>?;
-                        final answers =
-                            formResponses?['answers'] as Map<String, dynamic>?;
+                    final formResponses =
+                        userData['form_responses'] as Map<String, dynamic>?;
+                    final answers =
+                        formResponses?['answers'] as Map<String, dynamic>?;
 
-                        final List<Widget> contentWidgets = [];
+                    final List<Widget> contentWidgets = [];
 
-                        if (answers != null) {
-                          // Sort keys to display questions in order, assuming keys are like 'pregunta_1', 'pregunta_2', etc.
-                          final sortedKeys = answers.keys.toList()
-                            ..sort((a, b) {
-                              final aNum = int.tryParse(a.split('_').last) ?? 0;
-                              final bNum = int.tryParse(b.split('_').last) ?? 0;
-                              return aNum.compareTo(bNum);
-                            });
+                    if (answers != null) {
+                      // Sort keys to display questions in order, assuming keys are like 'pregunta_1', 'pregunta_2', etc.
+                      final sortedKeys = answers.keys.toList()
+                        ..sort((a, b) {
+                          final aNum = int.tryParse(a.split('_').last) ?? 0;
+                          final bNum = int.tryParse(b.split('_').last) ?? 0;
+                          return aNum.compareTo(bNum);
+                        });
 
-                          for (var key in sortedKeys) {
-                            final answerData =
-                                answers[key] as Map<String, dynamic>;
-                            final question =
-                                answerData['descripcionPregunta'] as String?;
-                            final optionsAnswer =
-                                answerData['respuestaOpciones'] as List<dynamic>?;
-                            final textAnswer =
-                                answerData['respuestaTexto'] as String?;
+                      for (var key in sortedKeys) {
+                        final answerData = answers[key] as Map<String, dynamic>;
+                        final question =
+                            answerData['descripcionPregunta'] as String?;
+                        final optionsAnswer =
+                            answerData['respuestaOpciones'] as List<dynamic>?;
+                        final textAnswer =
+                            answerData['respuestaTexto'] as String?;
 
-                            String? displayAnswer;
-                            if (optionsAnswer != null &&
-                                optionsAnswer.isNotEmpty) {
-                              displayAnswer = optionsAnswer.join(', ');
-                            } else if (textAnswer != null &&
-                                textAnswer.isNotEmpty) {
-                              displayAnswer = textAnswer;
-                            }
-
-                            if (question != null && displayAnswer != null) {
-                              contentWidgets.add(
-                                Padding(
-                                  padding:
-                                      const EdgeInsets.symmetric(vertical: 8.0),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        question,
-                                        style: const TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 16,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        displayAnswer,
-                                        style: const TextStyle(fontSize: 14),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              );
-                            }
-                          }
+                        String? displayAnswer;
+                        if (optionsAnswer != null && optionsAnswer.isNotEmpty) {
+                          displayAnswer = optionsAnswer.join(', ');
+                        } else if (textAnswer != null &&
+                            textAnswer.isNotEmpty) {
+                          displayAnswer = textAnswer;
                         }
 
-                        if (contentWidgets.isEmpty) {
+                        if (question != null && displayAnswer != null) {
                           contentWidgets.add(
-                            const Center(
-                              child: Text(
-                                  'This user has not answered the form yet.'),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                vertical: 8.0,
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    question,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    displayAnswer,
+                                    style: const TextStyle(fontSize: 14),
+                                  ),
+                                ],
+                              ),
                             ),
                           );
                         }
+                      }
+                    }
 
-                        showDialog(
-                          context: context,
-                          builder: (BuildContext context) {
-                            return CustomModal(
-                              text: userName,
-                              content: SingleChildScrollView(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: contentWidgets,
-                                ),
-                              ),
-                            );
-                          },
+                    if (contentWidgets.isEmpty) {
+                      contentWidgets.add(
+                        const Center(
+                          child: Text(
+                            'This user has not answered the form yet.',
+                          ),
+                        ),
+                      );
+                    }
+
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return CustomModal(
+                          text: userName,
+                          content: SingleChildScrollView(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: contentWidgets,
+                            ),
+                          ),
                         );
                       },
                     );
-                  }).toList(),
-                ),
+                  },
+                );
+              }).toList(),
+            ),
     );
   }
 }

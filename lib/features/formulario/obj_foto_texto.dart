@@ -3,6 +3,7 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 
 class ObjFotoTexto extends StatefulWidget {
+  final String? imagenInicialPath;
   final String titulo;
   final String? textoPlaceholder;
   final String? textoInicial;
@@ -12,11 +13,14 @@ class ObjFotoTexto extends StatefulWidget {
   final double? alturaImagen;
   final double? anchoImagen;
   final bool mostrarTexto; // Nuevo: controla si se muestra el campo de texto
+  final bool
+  mostrarImagen; // Nuevo: controla si se muestra la sección de imagen
   final bool textoArriba; // Nuevo: true = texto arriba, false = texto abajo
   final int? lineasTexto; // Nuevo: controla la altura del campo de texto
 
   const ObjFotoTexto({
     super.key,
+    this.imagenInicialPath,
     required this.titulo,
     this.textoPlaceholder,
     this.textoInicial,
@@ -26,6 +30,7 @@ class ObjFotoTexto extends StatefulWidget {
     this.alturaImagen,
     this.anchoImagen,
     this.mostrarTexto = true, // Por defecto mostrar texto
+    this.mostrarImagen = true, // Por defecto mostrar imagen
     this.textoArriba = true, // Por defecto texto arriba
     this.lineasTexto, // Por defecto 4 líneas
   });
@@ -44,6 +49,10 @@ class _ObjFotoTextoState extends State<ObjFotoTexto> {
     super.initState();
     if (widget.textoInicial != null) {
       _textoController.text = widget.textoInicial!;
+    }
+    if (widget.imagenInicialPath != null &&
+        widget.imagenInicialPath!.isNotEmpty) {
+      _imagenSeleccionada = XFile(widget.imagenInicialPath!);
     }
   }
 
@@ -157,7 +166,9 @@ class _ObjFotoTextoState extends State<ObjFotoTexto> {
             hintText: widget.textoPlaceholder ?? 'Escribe aquí...',
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Colors.grey),
+              borderSide: const BorderSide(
+                color: Color.fromARGB(255, 255, 255, 255),
+              ),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
@@ -174,11 +185,13 @@ class _ObjFotoTextoState extends State<ObjFotoTexto> {
   }
 
   Widget _buildSeccionImagen() {
+    if (!widget.mostrarImagen) return const SizedBox.shrink();
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey[300]!),
+        border: Border.all(color: const Color.fromARGB(255, 255, 255, 255)!),
         borderRadius: BorderRadius.circular(12),
         color: Colors.grey[50],
       ),
@@ -223,10 +236,6 @@ class _ObjFotoTextoState extends State<ObjFotoTexto> {
               ),
             ),
             const SizedBox(height: 8),
-            Text(
-              'Imagen seleccionada: ${_imagenSeleccionada!.name}',
-              style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-            ),
           ] else ...[
             Container(
               height: 100,
