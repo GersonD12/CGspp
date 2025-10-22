@@ -199,14 +199,15 @@ class RespuestasService {
     String preguntaId,
     String tipoPregunta,
     String descripcionPregunta,
-    String rutaImagen,
+    String?
+    imageUrl, // Ahora espera la URL de Firebase (puede ser nula si se elimina)
   ) {
     final respuestasNotifier = ref.read(respuestasProvider.notifier);
     respuestasNotifier.agregarRespuesta(
       preguntaId,
       tipoPregunta,
       descripcionPregunta,
-      respuestaImagen: rutaImagen,
+      respuestaImagen: imageUrl, // Almacena la URL
     );
   }
 

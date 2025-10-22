@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class BotonSiguiente extends StatelessWidget {
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed; // Ahora puede ser nulo
   final String
   texto; // Propiedad para el texto, la variable en donde se va a guardar el texto
   final Color? color;
@@ -14,7 +14,7 @@ class BotonSiguiente extends StatelessWidget {
 
   const BotonSiguiente({
     super.key,
-    required this.onPressed,
+    this.onPressed, // Ya no es requerido
     this.texto = 'Siguiente', // Valor por defecto o inicial
     this.color,
     this.textColor,

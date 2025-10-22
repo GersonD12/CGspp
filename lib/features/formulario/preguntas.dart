@@ -1,4 +1,5 @@
 import 'dart:developer' show log;
+import 'package:calet/features/formulario/obj_imagen.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -201,32 +202,21 @@ class _PreguntasState extends ConsumerState<Preguntas> {
         );
 
       case 'imagen':
-        return ObjFotoTexto(
+        return Imagen(
+          iconData: Icons.add_photo_alternate,
+          imgSize: 200,
           key: ValueKey(preguntaId), // Añadir Key única
           titulo: preguntaActual.descripcion,
           textoPlaceholder: preguntaActual.encabezado,
-          textoInicial: respuestaTextoActual,
           imagenInicialPath: respuestaImagenActual,
-          mostrarTexto: false,
           onFotoChanged: (imagen) {
-            if (imagen != null) {
-              log('Imagen seleccionada: ${imagen.path}');
-              RespuestasService.guardarRespuestaImagen(
-                ref,
-                preguntaId,
-                preguntaActual.tipo,
-                preguntaActual.descripcion,
-                imagen.path,
-              );
-            }
-          },
-          onTextoChanged: (texto) {
-            RespuestasService.guardarRespuestaTexto(
+            log('Imagen seleccionada: ${imagen}');
+            RespuestasService.guardarRespuestaImagen(
               ref,
               preguntaId,
               preguntaActual.tipo,
               preguntaActual.descripcion,
-              texto,
+              imagen?.path,
             );
           },
         );
