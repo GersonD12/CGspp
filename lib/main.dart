@@ -7,18 +7,12 @@ import 'firebase_options.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   // Inicializar Firebase
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
-  
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
   // Configurar inyección de dependencias
   await setupInjection();
-  
-  runApp(
-    const ProviderScope(
-      child: App(),
-    ),
-  );
+
+  runApp(const ProviderScope(child: App()));
 }

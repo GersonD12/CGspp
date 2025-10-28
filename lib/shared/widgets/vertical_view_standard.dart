@@ -34,29 +34,25 @@ class VerticalViewStandard extends StatelessWidget {
     final theme = Theme.of(context);
     final headerBgColor = headerColor ?? theme.primaryColor;
     final textColor = foregroundColor ?? theme.primaryColor;
-    
+
     return Scaffold(
       appBar: AppBar(
         title: Text(
           title,
-          style: TextStyle(
-            color: textColor,
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(color: textColor, fontWeight: FontWeight.bold),
         ),
         centerTitle: centerTitle,
         backgroundColor: headerBgColor,
         foregroundColor: textColor,
-        elevation: 2,
+        elevation: 0,
+        automaticallyImplyLeading: showBackButton,
         leading: showBackButton
             ? (leading ??
-                IconButton(
-                  icon: Icon(
-                    Icons.arrow_back,
-                    color: textColor,
-                  ),
-                  onPressed: onBackPressed ?? () => Navigator.of(context).pop(),
-                ))
+                  IconButton(
+                    icon: Icon(Icons.arrow_back, color: textColor),
+                    onPressed:
+                        onBackPressed ?? () => Navigator.of(context).pop(),
+                  ))
             : null,
         actions: actions,
       ),
@@ -78,9 +74,11 @@ class VerticalViewStandardScrollable extends StatelessWidget {
   final Widget child;
   final String title;
   final List<Widget>? actions;
+  final bool appBarFloats;
   final double separationHeight;
   final Color? headerColor;
   final Color? foregroundColor;
+  final Color? backgroundColor; //agregado
   final bool showBackButton;
   final VoidCallback? onBackPressed;
   final Widget? leading;
@@ -96,12 +94,14 @@ class VerticalViewStandardScrollable extends StatelessWidget {
     this.separationHeight = 16.0,
     this.headerColor,
     this.foregroundColor,
+    this.backgroundColor, //agregado para tener un color de fondo personalizado
     this.showBackButton = true,
     this.onBackPressed,
     this.leading,
     this.padding,
     this.centerTitle = true,
     this.physics,
+    this.appBarFloats = false,
   });
 
   @override
@@ -109,42 +109,35 @@ class VerticalViewStandardScrollable extends StatelessWidget {
     final theme = Theme.of(context);
     final headerBgColor = headerColor ?? theme.primaryColor;
     final textColor = foregroundColor ?? theme.primaryColor;
-    
+    final bodyBgColor = backgroundColor ?? theme.scaffoldBackgroundColor;
+
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          title,
-          style: TextStyle(
-            color: textColor,
-            fontWeight: FontWeight.bold,
+      backgroundColor: bodyBgColor,
+      body: CustomScrollView(
+        slivers: <Widget>[
+          SliverAppBar(
+            title: Text(
+              title,
+              style: TextStyle(color: textColor, fontWeight: FontWeight.bold),
+            ),
+            centerTitle: true,
+            backgroundColor: headerBgColor,
+            foregroundColor: textColor,
+            elevation: 0,
+            scrolledUnderElevation: 0, // Mantiene el color fijo al hacer scroll
+            floating: appBarFloats, // Sube la AppBar cuando se desplaza
+            snap: appBarFloats, // La AppBar se muestra/oculta completamente
+
+            automaticallyImplyLeading: showBackButton,
+            actions: actions,
           ),
-        ),
-        centerTitle: centerTitle,
-        backgroundColor: headerBgColor,
-        foregroundColor: textColor,
-        elevation: 2,
-        leading: showBackButton
-            ? (leading ??
-                IconButton(
-                  icon: Icon(
-                    Icons.arrow_back,
-                    color: textColor,
-                  ),
-                  onPressed: onBackPressed ?? () => Navigator.of(context).pop(),
-                ))
-            : null,
-        actions: actions,
-      ),
-      body: SingleChildScrollView(
-        physics: physics,
-        padding: padding ?? const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            SizedBox(height: separationHeight),
-            child,
-            SizedBox(height: separationHeight),
-          ],
-        ),
+
+          // 2. CONTENIDO DE LA LISTA (SLIVER)
+          SliverPadding(
+            padding: const EdgeInsets.all(16.0),
+            sliver: SliverList(delegate: SliverChildListDelegate([child])),
+          ),
+        ],
       ),
     );
   }

@@ -19,8 +19,8 @@ class ProtectedWidget extends ConsumerWidget {
     final session = ref.watch(sessionProvider);
 
     return session.when(
-      data: (user) {
-        if (user != null) {
+      data: (sessionData) {
+        if (sessionData.user != null) {
           return child;
         } else {
           return unauthenticatedWidget ?? 
