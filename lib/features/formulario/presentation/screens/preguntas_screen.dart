@@ -1,32 +1,39 @@
-import 'dart:developer' show log;
-import 'package:calet/features/formulario/obj_imagen.dart';
+import 'dart:developer';
+import 'package:calet/features/formulario/presentation/widgets/image_picker_widget.dart';
+import 'package:calet/features/formulario/presentation/widgets/radio_question_widget.dart';
+import 'package:calet/features/formulario/presentation/obj_foto_texto.dart';
+import 'package:calet/features/formulario/presentation/Boton.dart';
+import 'package:calet/features/formulario/presentation/Cuadrado.dart';
+import 'package:calet/features/formulario/presentation/widgets/progress_widget.dart';
+import 'package:calet/shared/widgets/vertical_view_standard.dart';
+import 'package:calet/features/formulario/data/models/pregunta_dto.dart';
+import 'package:calet/features/formulario/presentation/providers/respuestas_provider.dart';
+import 'package:calet/features/formulario/data/models/respuesta_dto.dart';
+import 'package:calet/features/formulario/presentation/controllers/respuestas_controller.dart';
+import 'package:calet/features/formulario/presentation/widgets/respuestas_indicator.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'objeto_preguntas.dart';
-import 'boton.dart';
-import 'cuadrado.dart';
-import 'progreso.dart';
-import 'obj_foto_texto.dart';
-import '../../shared/widgets/vertical_view_standard.dart';
-import 'questiond_dto.dart';
-import 'respuestas.dart';
-import 'respuestas_service.dart';
-import 'respuestas_indicator.dart';
-import 'dart:developer';
 
-class Preguntas extends ConsumerStatefulWidget {
-  const Preguntas({super.key});
+class PreguntasScreen extends ConsumerStatefulWidget {
+  const PreguntasScreen({super.key});
 
   @override
-  ConsumerState<Preguntas> createState() => _PreguntasState();
+  ConsumerState<PreguntasScreen> createState() => _PreguntasScreenState();
 }
 
-class _PreguntasState extends ConsumerState<Preguntas> {
+class _PreguntasScreenState extends ConsumerState<PreguntasScreen> {
   int contador = 0;
   List<PreguntaDTO> _preguntas = [];
   bool _isLoading = true; // Indica si se están cargando los datos
   String _error = ''; // Almacena mensaje de error
+  late RespuestasController _controller; // Controlador para las respuestas
+  
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _controller = RespuestasController(ref);
+  }
 
   @override
   void initState() {
@@ -100,7 +107,7 @@ class _PreguntasState extends ConsumerState<Preguntas> {
     final respuestaGuardadaObjeto = respuestasState.todasLasRespuestas
         .firstWhere(
           (r) => r.preguntaId == preguntaId,
-          orElse: () => Respuesta(
+          orElse: () => RespuestaDTO(
             preguntaId: '',
             tipoPregunta: '',
             descripcionPregunta: '',
@@ -134,15 +141,14 @@ class _PreguntasState extends ConsumerState<Preguntas> {
 
     switch (preguntaActual.tipo.toLowerCase().trim()) {
       case 'multiple':
-        return ObjPreguntas(
+        return RadioQuestionWidget(
           pregunta: preguntaActual.descripcion,
           opciones: preguntaActual.opciones,
           allowCustomOption: preguntaActual.allowCustomOption,
           customOptionLabel: preguntaActual.customOptionLabel,
           respuestaActual: respuestaOpcionActual,
           onRespuestaChanged: (respuesta) {
-            RespuestasService.guardarRespuestaRadio(
-              ref,
+            _controller.guardarRespuestaUseCase.guardarRespuestaRadio(
               preguntaId,
               preguntaActual.tipo,
               preguntaActual.descripcion,
@@ -163,8 +169,7 @@ class _PreguntasState extends ConsumerState<Preguntas> {
           onFotoChanged: (imagen) {
             if (imagen != null) {
               log('Imagen seleccionada: ${imagen.path}');
-              RespuestasService.guardarRespuestaImagen(
-                ref,
+              _controller.guardarRespuestaUseCase.guardarRespuestaImagen(
                 preguntaId,
                 preguntaActual.tipo,
                 preguntaActual.descripcion,
@@ -173,8 +178,7 @@ class _PreguntasState extends ConsumerState<Preguntas> {
             }
           },
           onTextoChanged: (texto) {
-            RespuestasService.guardarRespuestaTexto(
-              ref,
+            _controller.guardarRespuestaUseCase.guardarRespuestaTexto(
               preguntaId,
               preguntaActual.tipo,
               preguntaActual.descripcion,
@@ -191,8 +195,7 @@ class _PreguntasState extends ConsumerState<Preguntas> {
           textoInicial: respuestaTextoActual,
           mostrarImagen: false,
           onTextoChanged: (texto) {
-            RespuestasService.guardarRespuestaTexto(
-              ref,
+            _controller.guardarRespuestaUseCase.guardarRespuestaTexto(
               preguntaId,
               preguntaActual.tipo,
               preguntaActual.descripcion,
@@ -202,7 +205,7 @@ class _PreguntasState extends ConsumerState<Preguntas> {
         );
 
       case 'imagen':
-        return Imagen(
+        return ImagePickerWidget(
           iconData: Icons.add_photo_alternate,
           imgSize: 200,
           key: ValueKey(preguntaId), // Añadir Key única
@@ -211,8 +214,7 @@ class _PreguntasState extends ConsumerState<Preguntas> {
           imagenInicialPath: respuestaImagenActual,
           onFotoChanged: (imagen) {
             log('Imagen seleccionada: ${imagen}');
-            RespuestasService.guardarRespuestaImagen(
-              ref,
+            _controller.guardarRespuestaUseCase.guardarRespuestaImagen(
               preguntaId,
               preguntaActual.tipo,
               preguntaActual.descripcion,
@@ -342,11 +344,10 @@ class _PreguntasState extends ConsumerState<Preguntas> {
                                     ? siguientePregunta
                                     : () {}) // función vacía si no hay respuesta
                               : () {
-                                  // Finalizar formulario usando el servicio
-                                  RespuestasService.finalizarFormulario(
+                                  // Finalizar formulario usando el controlador
+                                  _controller.finalizarFormulario(
                                     context,
                                     respuestasState,
-                                    ref,
                                   );
                                 },
                           color:
@@ -383,3 +384,4 @@ class _PreguntasState extends ConsumerState<Preguntas> {
     );
   }
 }
+

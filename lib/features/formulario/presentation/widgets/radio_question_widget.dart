@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-class ObjPreguntas extends StatelessWidget {
+class RadioQuestionWidget extends StatelessWidget {
   final String pregunta;
   final List<String> opciones;
   final bool allowCustomOption;
@@ -8,7 +8,7 @@ class ObjPreguntas extends StatelessWidget {
   final String? respuestaActual;
   final Function(String) onRespuestaChanged;
 
-  const ObjPreguntas({
+  const RadioQuestionWidget({
     super.key,
     required this.pregunta,
     required this.opciones,
@@ -125,3 +125,4 @@ class ObjPreguntas extends StatelessWidget {
     );
   }
 }
+

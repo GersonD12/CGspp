@@ -191,7 +191,7 @@ class _ObjFotoTextoState extends State<ObjFotoTexto> {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        border: Border.all(color: const Color.fromARGB(255, 255, 255, 255)!),
+        border: Border.all(color: const Color.fromARGB(255, 255, 255, 255)),
         borderRadius: BorderRadius.circular(12),
         color: Colors.grey[50],
       ),

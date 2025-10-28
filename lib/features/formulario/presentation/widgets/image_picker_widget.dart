@@ -1,10 +1,10 @@
 import 'dart:developer';
 import 'dart:io';
-import 'package:calet/features/formulario/boton.dart';
-import 'package:calet/features/formulario/reusable_modal.dart';
+import 'package:calet/features/formulario/presentation/Boton.dart';
+import 'package:calet/features/formulario/presentation/widgets/modal_helper.dart';
+import 'package:calet/core/infrastructure/storage_service.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'upload_image.dart';
 
 Future<XFile?> getImage() async {
   final ImagePicker picker = ImagePicker();
@@ -12,7 +12,7 @@ Future<XFile?> getImage() async {
   return image;
 }
 
-class Imagen extends StatefulWidget {
+class ImagePickerWidget extends StatefulWidget {
   final IconData iconData;
   final double imgSize;
   final String? imagenInicialPath;
@@ -21,7 +21,7 @@ class Imagen extends StatefulWidget {
   final bool esObligatorio;
   final String? textoPlaceholder;
 
-  const Imagen({
+  const ImagePickerWidget({
     super.key,
     required this.iconData,
     required this.imgSize,
@@ -33,10 +33,10 @@ class Imagen extends StatefulWidget {
   });
 
   @override
-  State<Imagen> createState() => _ImagenState();
+  State<ImagePickerWidget> createState() => _ImagePickerWidgetState();
 }
 
-class _ImagenState extends State<Imagen> {
+class _ImagePickerWidgetState extends State<ImagePickerWidget> {
   XFile? _imagenSeleccionada;
   bool _isUploading = false; // Mover _isUploading al estado del widget
 
@@ -211,7 +211,8 @@ class _ImagenState extends State<Imagen> {
                                 log(
                                   'Iniciando subida de: ${_imagenSeleccionada!}',
                                 );
-                                await uploadImage(
+                                final storageService = StorageService();
+                                await storageService.uploadFile(
                                   File(_imagenSeleccionada!.path),
                                 );
                               } catch (e) {
@@ -255,3 +256,4 @@ class _ImagenState extends State<Imagen> {
     );
   }
 }
+

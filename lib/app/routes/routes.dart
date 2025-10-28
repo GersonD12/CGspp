@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:calet/features/auth/screen/screens.dart';
-import 'package:calet/features/formulario/pantalla_formulario.dart';
+import 'package:calet/features/formulario/presentation/screens/formulario_screen.dart';
 import 'package:calet/features/cards/screen_cards.dart';
 
 // Sistema de rutas híbrido:
@@ -9,7 +9,7 @@ import 'package:calet/features/cards/screen_cards.dart';
 final routes = <String, WidgetBuilder>{
   // Rutas para navegación manual
   '/profile': (context) => const ProfileScreen(),
-  '/formulario': (context) => const PantallaFormulario(),
+  '/formulario': (context) => const FormularioScreen(),
   '/home': (context) => const HomeScreen(),
   '/cards': (context) => const ScreenCards(),
   // '/settings': (context) => const SettingsScreen(),
@@ -22,7 +22,7 @@ final routes = <String, WidgetBuilder>{
 
 // Constantes para rutas (evita errores de tipeo)
 class AppRoutes {
-  // Rutas para navegación manual
+  // Rutas para navegación manual+
   static const String profile = '/profile';
   static const String formulario = '/formulario';
   static const String pantallaFormulario = '/pantallaFormulario';

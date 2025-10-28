@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-/// Muestra un diálogo modal reutilizable y personalizable.
+/// Helper function para mostrar un diálogo modal reutilizable y personalizable.
 ///
 /// [context]: El BuildContext actual, necesario para mostrar el diálogo.
 /// [title]: El texto que aparecerá en el título del modal.
@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 ///            Aquí es donde reside la mayor parte de la personalización.
 /// [actions]: Una lista de widgets (generalmente botones como TextButton o
 ///            ElevatedButton) que se mostrarán en la parte inferior.
+/// [barrierDismissible]: Si es true, permite cerrar el modal tocando fuera de él.
 ///
 /// Devuelve un `Future` que se completa con el valor que se pasa a `Navigator.pop`,
 /// si lo hubiera.
@@ -16,11 +17,11 @@ Future<T?> showReusableModal<T>({
   required String title,
   required Widget content,
   List<Widget>? actions,
-  bool barrierDismissible = true, // Añadimos este parámetro
+  bool barrierDismissible = true,
 }) {
   return showDialog<T>(
     context: context,
-    barrierDismissible: barrierDismissible, // Usamos el nuevo parámetro aquí
+    barrierDismissible: barrierDismissible,
     builder: (BuildContext context) {
       return AlertDialog(
         title: Text(title),
@@ -33,3 +34,4 @@ Future<T?> showReusableModal<T>({
     },
   );
 }
+

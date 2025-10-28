@@ -146,3 +146,4 @@ class _ProgresoAnimadoState extends State<ProgresoAnimado>
     );
   }
 }
+
