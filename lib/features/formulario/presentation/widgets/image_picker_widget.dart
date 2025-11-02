@@ -160,7 +160,7 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
                           ? null
                           : () async {
                               final imagen = await getImage();
-                              if (imagen != null) {
+                              if (imagen != null && mounted) {
                                 setState(() {
                                   _imagenSeleccionada = imagen;
                                 });
@@ -178,11 +178,13 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
                       onTap: _isUploading
                           ? null
                           : () {
-                              setState(() {
-                                _imagenSeleccionada = null;
-                              });
-                              modalSetState(() {});
-                              Navigator.of(context).pop();
+                              if (mounted) {
+                                setState(() {
+                                  _imagenSeleccionada = null;
+                                });
+                                modalSetState(() {});
+                                Navigator.of(context).pop();
+                              }
                             },
                     ),
                   if (_imagenSeleccionada != null)
@@ -203,9 +205,12 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
                                 return;
                               }
 
+                              if (!mounted) return;
+
                               setState(() {
                                 _isUploading = true;
                               });
+                              modalSetState(() {});
 
                               try {
                                 log(
@@ -217,18 +222,23 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
                                 );
                               } catch (e) {
                                 log('Error al subir la imagen: $e');
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                      'Error al subir la imagen: $e',
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        'Error al subir la imagen: $e',
+                                      ),
+                                      backgroundColor: Colors.red,
                                     ),
-                                    backgroundColor: Colors.red,
-                                  ),
-                                );
+                                  );
+                                }
                               } finally {
                                 // Aseguramos que el modal se cierre sin importar el resultado
                                 if (context.mounted) {
                                   Navigator.of(context).pop();
+                                }
+                                // Resetear el estado de carga solo si el widget sigue montado
+                                if (mounted) {
                                   setState(() {
                                     _isUploading = false;
                                   });
