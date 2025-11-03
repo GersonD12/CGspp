@@ -1,6 +1,6 @@
 import 'dart:developer' as console;
 
-import 'package:calet/features/auth/service/google_auth.dart';
+import 'package:calet/features/auth/infrastructure/google_auth_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

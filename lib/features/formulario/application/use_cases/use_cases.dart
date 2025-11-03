@@ -2,7 +2,7 @@
 // 
 // Simplifica las importaciones de casos de uso:
 // ```dart
-// import 'package:calet/features/formulario/domain/use_cases/use_cases.dart';
+// import 'package:calet/features/formulario/application/use_cases/use_cases.dart';
 // ```
 
 export 'finalizar_formulario_usecase.dart';

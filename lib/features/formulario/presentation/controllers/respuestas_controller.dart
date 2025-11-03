@@ -1,6 +1,5 @@
 import 'package:calet/features/formulario/presentation/providers/respuestas_state.dart';
-import 'package:calet/features/formulario/domain/use_cases/guardar_respuesta_usecase.dart';
-import 'package:calet/features/formulario/domain/use_cases/finalizar_formulario_usecase.dart';
+import 'package:calet/features/formulario/application/use_cases/use_cases.dart';
 import 'package:calet/features/formulario/domain/repositories/respuestas_repository.dart';
 import 'package:calet/core/providers/session_provider.dart';
 import 'package:calet/core/di/injection.dart';
@@ -90,28 +89,30 @@ class RespuestasController {
       // Mostrar indicador de carga
       _mostrarLoading(context);
 
-      // Obtener el repositorio de GetIt
+      // Obtener el repositorio de GetIt y ejecutar el use case
       final repository = getIt<RespuestasRepository>();
-      
-      // Ejecutar el use case
       final useCase = FinalizarFormularioUseCase(repository: repository);
       await useCase.execute(
         userId: user.id,
         respuestasState: respuestasState,
       );
 
-      // Cerrar loading y diálogo
-      Navigator.of(context).pop(); // Cierra el loading
-      Navigator.of(context).pop(); // Cierra el modal
+      // Cerrar loading y diálogo de resumen
+      if (Navigator.canPop(context)) Navigator.of(context).pop(); // Cierra loading
+      if (Navigator.canPop(context)) Navigator.of(context).pop(); // Cierra modal de resumen
 
-      // Navegar a home
-      Navigator.pushNamedAndRemoveUntil(
-        context,
-        AppRoutes.home,
-        (route) => false,
-      );
+      // Navegar a home (si el context todavía está montado)
+      if (context.mounted) {
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          AppRoutes.home,
+          (route) => false,
+        );
+      }
     } catch (e) {
-      Navigator.of(context).pop(); // Cierra el loading
+      // Cerrar loading si está abierto
+      if (Navigator.canPop(context)) Navigator.of(context).pop();
+      // Mostrar error
       _mostrarError(context, 'Error al guardar las respuestas: $e');
     }
   }

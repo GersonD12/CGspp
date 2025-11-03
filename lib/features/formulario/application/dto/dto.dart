@@ -1,8 +1,8 @@
 // Barrel file para DTOs del feature formulario
 // 
-// Simplifica las importaciones de modelos:
+// Simplifica las importaciones de DTOs:
 // ```dart
-// import 'package:calet/features/formulario/data/models/models.dart';
+// import 'package:calet/features/formulario/application/dto/dto.dart';
 // ```
 
 export 'pregunta_dto.dart';

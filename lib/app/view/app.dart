@@ -1,8 +1,8 @@
 import 'package:calet/app/routes/routes.dart';
 import 'package:calet/core/providers/config_provider.dart';
 import 'package:calet/core/providers/session_provider.dart';
-import 'package:calet/features/auth/screen/google_login_screen.dart';
-import 'package:calet/features/auth/screen/home_screen.dart';
+import 'package:calet/features/auth/presentation/google_login_screen.dart';
+import 'package:calet/features/auth/presentation/home_screen.dart';
 import 'package:calet/features/formulario/presentation/screens/formulario_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

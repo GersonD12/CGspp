@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:calet/features/auth/screen/screens.dart';
+import 'package:calet/features/auth/presentation/screens.dart';
 import 'package:calet/features/formulario/presentation/screens/formulario_screen.dart';
-import 'package:calet/features/cards/screen_cards.dart';
+import 'package:calet/features/cards/presentation/screens/screen_cards.dart';
+import 'package:calet/features/profile/presentation/screens/profile_screen.dart';
 
 // Sistema de rutas híbrido:
 // - Navegación automática para autenticación (login/home)

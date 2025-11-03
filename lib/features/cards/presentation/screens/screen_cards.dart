@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:calet/shared/widgets/vertical_view_standard.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'cards.dart';
+import 'package:calet/features/cards/presentation/widgets/cards.dart';
 import 'dart:developer' show log;
-import 'package:calet/features/cards/modal_perfiles.dart';
+import 'package:calet/features/cards/presentation/widgets/modal_perfiles.dart';
 
 class ScreenCards extends StatefulWidget {
   const ScreenCards({super.key});

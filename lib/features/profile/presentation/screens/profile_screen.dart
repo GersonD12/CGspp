@@ -1,8 +1,8 @@
 import 'package:calet/shared/widgets/protected_screen_state.dart';
 import 'package:calet/shared/widgets/vertical_view_standard.dart';
-import 'package:calet/features/auth/service/google_auth.dart';
+import 'package:calet/features/auth/infrastructure/google_auth_service.dart';
 import 'package:calet/core/domain/entities/entities.dart';
-import 'package:calet/features/profile/profile_header.dart';
+import 'package:calet/features/profile/presentation/widgets/profile_header.dart';
 import 'package:flutter/material.dart';
 
 class ProfileScreen extends ProtectedScreenStatefulWidget {

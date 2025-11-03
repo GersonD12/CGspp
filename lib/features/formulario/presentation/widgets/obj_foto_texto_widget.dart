@@ -306,3 +306,4 @@ class _ObjFotoTextoState extends State<ObjFotoTexto> {
     );
   }
 }
+

@@ -1,4 +1,4 @@
-import '../../data/models/respuesta_dto.dart';
+import '../../application/dto/respuesta_dto.dart';
 
 /// Estado que representa el estado de las respuestas del formulario
 /// 

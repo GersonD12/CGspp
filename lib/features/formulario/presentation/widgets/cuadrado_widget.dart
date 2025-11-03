@@ -1,9 +1,5 @@
 import 'package:flutter/material.dart';
 
-void main() {
-  runApp(const Cuadrado());
-}
-
 class Cuadrado extends StatelessWidget {
   final Widget? child;
   const Cuadrado({super.key, this.child});
@@ -29,3 +25,4 @@ class Cuadrado extends StatelessWidget {
     );
   }
 }
+

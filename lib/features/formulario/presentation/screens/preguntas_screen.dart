@@ -1,16 +1,9 @@
 import 'dart:developer';
-import 'package:calet/features/formulario/presentation/widgets/image_picker_widget.dart';
-import 'package:calet/features/formulario/presentation/widgets/radio_question_widget.dart';
-import 'package:calet/features/formulario/presentation/obj_foto_texto.dart';
-import 'package:calet/features/formulario/presentation/Boton.dart';
-import 'package:calet/features/formulario/presentation/Cuadrado.dart';
-import 'package:calet/features/formulario/presentation/widgets/progress_widget.dart';
+import 'package:calet/features/formulario/presentation/widgets/widgets.dart';
 import 'package:calet/shared/widgets/vertical_view_standard.dart';
-import 'package:calet/features/formulario/data/models/pregunta_dto.dart';
+import 'package:calet/features/formulario/application/dto/dto.dart';
 import 'package:calet/features/formulario/presentation/providers/respuestas_provider.dart';
-import 'package:calet/features/formulario/data/models/respuesta_dto.dart';
 import 'package:calet/features/formulario/presentation/controllers/respuestas_controller.dart';
-import 'package:calet/features/formulario/presentation/widgets/respuestas_indicator.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -212,13 +205,13 @@ class _PreguntasScreenState extends ConsumerState<PreguntasScreen> {
           titulo: preguntaActual.descripcion,
           textoPlaceholder: preguntaActual.encabezado,
           imagenInicialPath: respuestaImagenActual,
-          onFotoChanged: (imagen) {
-            log('Imagen seleccionada: ${imagen}');
+          onFotoChanged: (imageUrl) {
+            log('Imagen subida: $imageUrl');
             _controller.guardarRespuestaUseCase.guardarRespuestaImagen(
               preguntaId,
               preguntaActual.tipo,
               preguntaActual.descripcion,
-              imagen?.path,
+              imageUrl, // Ahora es la URL de Firebase directamente
             );
           },
         );

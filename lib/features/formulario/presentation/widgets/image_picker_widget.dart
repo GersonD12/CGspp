@@ -1,10 +1,16 @@
 import 'dart:developer';
 import 'dart:io';
-import 'package:calet/features/formulario/presentation/Boton.dart';
+import 'package:calet/features/formulario/presentation/widgets/boton_siguiente_widget.dart';
 import 'package:calet/features/formulario/presentation/widgets/modal_helper.dart';
 import 'package:calet/core/infrastructure/storage_service.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+
+/// Determina si una cadena es una URL (HTTP/HTTPS)
+bool _isUrl(String? path) {
+  if (path == null || path.isEmpty) return false;
+  return path.startsWith('http://') || path.startsWith('https://');
+}
 
 Future<XFile?> getImage() async {
   final ImagePicker picker = ImagePicker();
@@ -17,7 +23,7 @@ class ImagePickerWidget extends StatefulWidget {
   final double imgSize;
   final String? imagenInicialPath;
   final String titulo;
-  final Function(XFile?)? onFotoChanged;
+  final Function(String?)? onFotoChanged; // Cambio: recibe URL de Firebase
   final bool esObligatorio;
   final String? textoPlaceholder;
 
@@ -42,6 +48,9 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final imagenDisplayPath = widget.imagenInicialPath ?? _imagenSeleccionada?.path;
+    final isNetworkImage = _isUrl(imagenDisplayPath);
+    
     return Column(
       children: [
         const SizedBox(height: 4),
@@ -68,7 +77,7 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
               ),
             ],
           ), // Cierre de BoxDecoration
-          child: _imagenSeleccionada == null
+          child: imagenDisplayPath == null
               ? Center(
                   // Muestra el ícono si no hay imagen
                   child: Icon(
@@ -78,13 +87,28 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
                   ),
                 )
               : ClipRRect(
-                  // Muestra la imagen seleccionada
+                  // Muestra la imagen (URL de red o archivo local)
                   borderRadius: BorderRadius.circular(8.0),
-                  child: Image.file(
-                    File(_imagenSeleccionada!.path),
-                    fit: BoxFit.cover,
-                    width: double.infinity,
-                  ),
+                  child: isNetworkImage
+                      ? Image.network(
+                          imagenDisplayPath,
+                          fit: BoxFit.cover,
+                          width: double.infinity,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Center(
+                              child: Icon(
+                                Icons.broken_image,
+                                color: Colors.grey,
+                                size: widget.imgSize * 0.3,
+                              ),
+                            );
+                          },
+                        )
+                      : Image.file(
+                          File(imagenDisplayPath),
+                          fit: BoxFit.cover,
+                          width: double.infinity,
+                        ),
                 ),
         ),
         const SizedBox(height: 16),
@@ -217,9 +241,25 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
                                   'Iniciando subida de: ${_imagenSeleccionada!}',
                                 );
                                 final storageService = StorageService();
-                                await storageService.uploadFile(
+                                final url = await storageService.uploadFile(
                                   File(_imagenSeleccionada!.path),
                                 );
+                                
+                                if (url != null) {
+                                  log('Imagen subida exitosamente. URL: $url');
+                                  // Notificar al parent con la URL de Firebase
+                                  widget.onFotoChanged?.call(url);
+                                  if (context.mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text('Imagen subida exitosamente'),
+                                        backgroundColor: Colors.green,
+                                      ),
+                                    );
+                                  }
+                                } else {
+                                  throw Exception('No se obtuvo URL de la imagen subida');
+                                }
                               } catch (e) {
                                 log('Error al subir la imagen: $e');
                                 if (context.mounted) {

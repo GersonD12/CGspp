@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../data/models/respuesta_dto.dart';
+import '../../application/dto/respuesta_dto.dart';
 import 'respuestas_state.dart';
 
 /// Notifier para manejar el estado de las respuestas usando Riverpod

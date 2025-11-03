@@ -1,2 +1,9 @@
-export 'profile_screen.dart';
-export 'profile_header.dart';
+// Barrel file principal del feature profile
+// 
+// Simplifica las importaciones del módulo profile:
+// ```dart
+// import 'package:calet/features/profile/profile.dart';
+// ```
+
+export 'presentation/presentation.dart';
+
