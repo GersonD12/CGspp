@@ -32,7 +32,6 @@ class RespuestasRepositoryImpl implements RespuestasRepository {
     // Crear el mapa final que se subirá a Firestore
     final respuestasMap = {
       'form_responses': {
-        'completed_at': FieldValue.serverTimestamp(),
         'answers': answersMap,
       },
     };

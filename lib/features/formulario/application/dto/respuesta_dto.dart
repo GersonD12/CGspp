@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 /// DTO (Data Transfer Object) para representar una respuesta
 /// 
 /// Este modelo se usa para la transferencia de datos entre las capas
@@ -9,7 +11,8 @@ class RespuestaDTO {
   final String? respuestaTexto;
   final String? respuestaImagen;
   final List<String>? respuestaOpciones;
-  final DateTime fechaRespuesta;
+  final DateTime createdAt;
+  final DateTime updatedAt;
 
   const RespuestaDTO({
     required this.preguntaId,
@@ -18,7 +21,8 @@ class RespuestaDTO {
     this.respuestaTexto,
     this.respuestaImagen,
     this.respuestaOpciones,
-    required this.fechaRespuesta,
+    required this.createdAt,
+    required this.updatedAt,
   });
 
   /// Convertir a Map para serialización
@@ -30,21 +34,54 @@ class RespuestaDTO {
       'respuestaTexto': respuestaTexto,
       'respuestaImagen': respuestaImagen,
       'respuestaOpciones': respuestaOpciones,
-      'fechaRespuesta': fechaRespuesta.millisecondsSinceEpoch,
+      'createdAt': Timestamp.fromDate(createdAt),
+      'updatedAt': Timestamp.fromDate(updatedAt),
     };
   }
 
   /// Crear desde Map
   factory RespuestaDTO.fromMap(Map<String, dynamic> map) {
-    // Manejar fechaRespuesta que puede ser int o num desde Firestore
-    final fechaValue = map['fechaRespuesta'];
-    final int fechaMillis;
-    if (fechaValue is int) {
-      fechaMillis = fechaValue;
-    } else if (fechaValue is num) {
-      fechaMillis = fechaValue.toInt();
+    DateTime createdAt;
+    DateTime updatedAt;
+    
+    if (map.containsKey('fechaRespuesta')) {
+      // Retrocompatibilidad: respuestas antiguas solo tenían fechaRespuesta
+      final fechaValue = map['fechaRespuesta'];
+      if (fechaValue is Timestamp) {
+        createdAt = fechaValue.toDate();
+        updatedAt = fechaValue.toDate();
+      } else if (fechaValue is int || fechaValue is num) {
+        final millis = (fechaValue as num).toInt();
+        createdAt = DateTime.fromMillisecondsSinceEpoch(millis);
+        updatedAt = DateTime.fromMillisecondsSinceEpoch(millis);
+      } else {
+        final ahora = DateTime.now();
+        createdAt = ahora;
+        updatedAt = ahora;
+      }
     } else {
-      fechaMillis = DateTime.now().millisecondsSinceEpoch;
+      // Nuevo formato con createdAt y updatedAt
+      final createdAtValue = map['createdAt'];
+      if (createdAtValue is Timestamp) {
+        createdAt = createdAtValue.toDate();
+      } else if (createdAtValue is int || createdAtValue is num) {
+        createdAt = DateTime.fromMillisecondsSinceEpoch(
+          (createdAtValue as num).toInt()
+        );
+      } else {
+        createdAt = DateTime.now();
+      }
+
+      final updatedAtValue = map['updatedAt'];
+      if (updatedAtValue is Timestamp) {
+        updatedAt = updatedAtValue.toDate();
+      } else if (updatedAtValue is int || updatedAtValue is num) {
+        updatedAt = DateTime.fromMillisecondsSinceEpoch(
+          (updatedAtValue as num).toInt()
+        );
+      } else {
+        updatedAt = DateTime.now();
+      }
     }
 
     return RespuestaDTO(
@@ -56,7 +93,8 @@ class RespuestaDTO {
       respuestaOpciones: map['respuestaOpciones'] != null
           ? List<String>.from(map['respuestaOpciones'] as List<dynamic>)
           : null,
-      fechaRespuesta: DateTime.fromMillisecondsSinceEpoch(fechaMillis),
+      createdAt: createdAt,
+      updatedAt: updatedAt,
     );
   }
 
@@ -68,7 +106,8 @@ class RespuestaDTO {
     String? respuestaTexto,
     String? respuestaImagen,
     List<String>? respuestaOpciones,
-    DateTime? fechaRespuesta,
+    DateTime? createdAt,
+    DateTime? updatedAt,
   }) {
     return RespuestaDTO(
       preguntaId: preguntaId ?? this.preguntaId,
@@ -77,7 +116,8 @@ class RespuestaDTO {
       respuestaTexto: respuestaTexto ?? this.respuestaTexto,
       respuestaImagen: respuestaImagen ?? this.respuestaImagen,
       respuestaOpciones: respuestaOpciones ?? this.respuestaOpciones,
-      fechaRespuesta: fechaRespuesta ?? this.fechaRespuesta,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
     );
   }
 }

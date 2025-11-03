@@ -9,7 +9,8 @@ class RespuestaEntity {
   final String? respuestaTexto;
   final String? respuestaImagen;
   final List<String>? respuestaOpciones;
-  final DateTime fechaRespuesta;
+  final DateTime createdAt;
+  final DateTime updatedAt;
 
   const RespuestaEntity({
     required this.preguntaId,
@@ -18,7 +19,8 @@ class RespuestaEntity {
     this.respuestaTexto,
     this.respuestaImagen,
     this.respuestaOpciones,
-    required this.fechaRespuesta,
+    required this.createdAt,
+    required this.updatedAt,
   });
 
   /// Crea una copia de la entidad con cambios
@@ -29,7 +31,8 @@ class RespuestaEntity {
     String? respuestaTexto,
     String? respuestaImagen,
     List<String>? respuestaOpciones,
-    DateTime? fechaRespuesta,
+    DateTime? createdAt,
+    DateTime? updatedAt,
   }) {
     return RespuestaEntity(
       preguntaId: preguntaId ?? this.preguntaId,
@@ -38,7 +41,8 @@ class RespuestaEntity {
       respuestaTexto: respuestaTexto ?? this.respuestaTexto,
       respuestaImagen: respuestaImagen ?? this.respuestaImagen,
       respuestaOpciones: respuestaOpciones ?? this.respuestaOpciones,
-      fechaRespuesta: fechaRespuesta ?? this.fechaRespuesta,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
     );
   }
 
@@ -67,11 +71,12 @@ class RespuestaEntity {
     if (identical(this, other)) return true;
     return other is RespuestaEntity && 
            other.preguntaId == preguntaId &&
-           other.fechaRespuesta == fechaRespuesta;
+           other.createdAt == createdAt &&
+           other.updatedAt == updatedAt;
   }
 
   @override
-  int get hashCode => preguntaId.hashCode ^ fechaRespuesta.hashCode;
+  int get hashCode => preguntaId.hashCode ^ createdAt.hashCode ^ updatedAt.hashCode;
 
   @override
   String toString() {

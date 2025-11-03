@@ -15,6 +15,7 @@ class RespuestasNotifier extends StateNotifier<RespuestasState> {
     String? respuestaImagen,
     List<String>? respuestaOpciones,
   }) {
+    final ahora = DateTime.now();
     final nuevaRespuesta = RespuestaDTO(
       preguntaId: preguntaId,
       tipoPregunta: tipoPregunta,
@@ -22,7 +23,8 @@ class RespuestasNotifier extends StateNotifier<RespuestasState> {
       respuestaTexto: respuestaTexto,
       respuestaImagen: respuestaImagen,
       respuestaOpciones: respuestaOpciones,
-      fechaRespuesta: DateTime.now(),
+      createdAt: ahora,
+      updatedAt: ahora,
     );
 
     final nuevasRespuestas = Map<String, RespuestaDTO>.from(state.respuestas);
@@ -37,7 +39,7 @@ class RespuestasNotifier extends StateNotifier<RespuestasState> {
     if (respuestaExistente != null) {
       final respuestaActualizada = respuestaExistente.copyWith(
         respuestaTexto: texto,
-        fechaRespuesta: DateTime.now(),
+        updatedAt: DateTime.now(),
       );
 
       final nuevasRespuestas = Map<String, RespuestaDTO>.from(state.respuestas);
@@ -53,7 +55,7 @@ class RespuestasNotifier extends StateNotifier<RespuestasState> {
     if (respuestaExistente != null) {
       final respuestaActualizada = respuestaExistente.copyWith(
         respuestaImagen: rutaImagen,
-        fechaRespuesta: DateTime.now(),
+        updatedAt: DateTime.now(),
       );
 
       final nuevasRespuestas = Map<String, RespuestaDTO>.from(state.respuestas);
@@ -69,7 +71,7 @@ class RespuestasNotifier extends StateNotifier<RespuestasState> {
     if (respuestaExistente != null) {
       final respuestaActualizada = respuestaExistente.copyWith(
         respuestaOpciones: opciones,
-        fechaRespuesta: DateTime.now(),
+        updatedAt: DateTime.now(),
       );
 
       final nuevasRespuestas = Map<String, RespuestaDTO>.from(state.respuestas);

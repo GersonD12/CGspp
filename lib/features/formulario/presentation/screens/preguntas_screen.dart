@@ -148,6 +148,7 @@ class _PreguntasScreenState extends ConsumerState<PreguntasScreen> {
     final preguntaActual = _preguntas[contador];
     final preguntaId = preguntaActual.id; // Usar el ID real de Firestore
     final respuestasState = ref.watch(respuestasProvider);
+    final ahora = DateTime.now();
     final respuestaGuardadaObjeto = respuestasState.todasLasRespuestas
         .firstWhere(
           (r) => r.preguntaId == preguntaId,
@@ -155,7 +156,8 @@ class _PreguntasScreenState extends ConsumerState<PreguntasScreen> {
             preguntaId: '',
             tipoPregunta: '',
             descripcionPregunta: '',
-            fechaRespuesta: DateTime.now(),
+            createdAt: ahora,
+            updatedAt: ahora,
           ),
         );
 

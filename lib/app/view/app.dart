@@ -14,28 +14,31 @@ class App extends ConsumerWidget {
     final config = ref.watch(configProvider);
     final session = ref.watch(sessionProvider);
     
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      theme: config.theme,
-      // Rutas para navegación manual
-      routes: routes,
-      // Navegación automática para autenticación
-      home: session.when(
-        data: (sessionData) {
-          if (sessionData.user != null) {
-            return const HomeScreen();
-          } else {
-            return const GoogleLoginScreen();
-          }
-        },
-        loading: () => const Scaffold(
-          body: Center(
-            child: CircularProgressIndicator(),
+    return HeroMode(
+      enabled: false, // Deshabilitar animaciones Hero para evitar conflictos
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        theme: config.theme,
+        // Rutas para navegación manual
+        routes: routes,
+        // Navegación automática para autenticación
+        home: session.when(
+          data: (sessionData) {
+            if (sessionData.user != null) {
+              return const HomeScreen();
+            } else {
+              return const GoogleLoginScreen();
+            }
+          },
+          loading: () => const Scaffold(
+            body: Center(
+              child: CircularProgressIndicator(),
+            ),
           ),
-        ),
-        error: (error, stack) => Scaffold(
-          body: Center(
-            child: Text('Error: $error'),
+          error: (error, stack) => Scaffold(
+            body: Center(
+              child: Text('Error: $error'),
+            ),
           ),
         ),
       ),
