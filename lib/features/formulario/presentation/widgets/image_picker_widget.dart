@@ -1,8 +1,6 @@
-import 'dart:developer';
 import 'dart:io';
 import 'package:calet/features/formulario/presentation/widgets/boton_siguiente_widget.dart';
 import 'package:calet/features/formulario/presentation/widgets/modal_helper.dart';
-import 'package:calet/core/infrastructure/storage_service.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -23,7 +21,7 @@ class ImagePickerWidget extends StatefulWidget {
   final double imgSize;
   final String? imagenInicialPath;
   final String titulo;
-  final Function(String?)? onFotoChanged; // Cambio: recibe URL de Firebase
+  final Function(String?)? onFotoChanged; // Recibe ruta local del archivo
   final bool esObligatorio;
   final String? textoPlaceholder;
 
@@ -44,7 +42,6 @@ class ImagePickerWidget extends StatefulWidget {
 
 class _ImagePickerWidgetState extends State<ImagePickerWidget> {
   XFile? _imagenSeleccionada;
-  bool _isUploading = false; // Mover _isUploading al estado del widget
 
   @override
   Widget build(BuildContext context) {
@@ -135,172 +132,86 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
     // Usamos StatefulBuilder para permitir que el contenido del modal se actualice
     return StatefulBuilder(
       builder: (BuildContext context, StateSetter modalSetState) {
-        return PopScope(
-          canPop: !_isUploading, // Bloquea el cierre si se está subiendo
-          child: Stack(
-            children: [
-              Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: 270,
-                    height: 160,
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.grey),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: _imagenSeleccionada == null
-                        ? Center(
-                            child: Icon(
-                              widget.iconData,
-                              color: Colors.grey,
-                              size: widget.imgSize * 0.3,
-                            ),
-                          )
-                        : ClipRRect(
-                            borderRadius: BorderRadius.circular(8.0),
-                            child: Image.file(
-                              File(_imagenSeleccionada!.path),
-                              fit: BoxFit.cover,
-                              width: double.infinity,
-                            ),
-                          ),
-                  ),
-                  if (_imagenSeleccionada == null)
-                    ListTile(
-                      leading: const Icon(Icons.camera_alt),
-                      title: const Text('Desde la cámara'),
-                      onTap: _isUploading
-                          ? null
-                          : () {
-                              Navigator.of(context).pop();
-                            },
-                    ),
-                  if (_imagenSeleccionada == null)
-                    ListTile(
-                      leading: const Icon(Icons.photo_library),
-                      title: const Text('Desde la galería'),
-                      onTap: _isUploading
-                          ? null
-                          : () async {
-                              final imagen = await getImage();
-                              if (imagen != null && mounted) {
-                                setState(() {
-                                  _imagenSeleccionada = imagen;
-                                });
-                                modalSetState(() {});
-                              }
-                            },
-                    ),
-                  if (_imagenSeleccionada != null)
-                    ListTile(
-                      leading: const Icon(Icons.delete, color: Colors.red),
-                      title: const Text(
-                        'Eliminar imagen',
-                        style: TextStyle(color: Colors.red),
-                      ),
-                      onTap: _isUploading
-                          ? null
-                          : () {
-                              if (mounted) {
-                                setState(() {
-                                  _imagenSeleccionada = null;
-                                });
-                                modalSetState(() {});
-                                Navigator.of(context).pop();
-                              }
-                            },
-                    ),
-                  if (_imagenSeleccionada != null)
-                    ListTile(
-                      leading: const Icon(
-                        Icons.cloud_upload,
-                        color: Colors.green,
-                      ),
-                      title: const Text(
-                        'Subir Imagen',
-                        style: TextStyle(color: Colors.black),
-                      ),
-                      onTap: _isUploading
-                          ? null
-                          : () async {
-                              if (_imagenSeleccionada == null) {
-                                log('No hay imagen seleccionada para subir.');
-                                return;
-                              }
-
-                              if (!mounted) return;
-
-                              setState(() {
-                                _isUploading = true;
-                              });
-                              modalSetState(() {});
-
-                              try {
-                                log(
-                                  'Iniciando subida de: ${_imagenSeleccionada!}',
-                                );
-                                final storageService = StorageService();
-                                final url = await storageService.uploadFile(
-                                  File(_imagenSeleccionada!.path),
-                                );
-                                
-                                if (url != null) {
-                                  log('Imagen subida exitosamente. URL: $url');
-                                  // Notificar al parent con la URL de Firebase
-                                  widget.onFotoChanged?.call(url);
-                                  if (context.mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text('Imagen subida exitosamente'),
-                                        backgroundColor: Colors.green,
-                                      ),
-                                    );
-                                  }
-                                } else {
-                                  throw Exception('No se obtuvo URL de la imagen subida');
-                                }
-                              } catch (e) {
-                                log('Error al subir la imagen: $e');
-                                if (context.mounted) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(
-                                        'Error al subir la imagen: $e',
-                                      ),
-                                      backgroundColor: Colors.red,
-                                    ),
-                                  );
-                                }
-                              } finally {
-                                // Aseguramos que el modal se cierre sin importar el resultado
-                                if (context.mounted) {
-                                  Navigator.of(context).pop();
-                                }
-                                // Resetear el estado de carga solo si el widget sigue montado
-                                if (mounted) {
-                                  setState(() {
-                                    _isUploading = false;
-                                  });
-                                }
-                              }
-                            },
-                    ),
-                ],
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 270,
+              height: 160,
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.grey),
+                borderRadius: BorderRadius.circular(8),
               ),
-              if (_isUploading)
-                Positioned.fill(
-                  child: Container(
-                    color: Colors.black.withOpacity(0.5),
-                    child: const Center(
-                      child: CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+              child: _imagenSeleccionada == null
+                  ? Center(
+                      child: Icon(
+                        widget.iconData,
+                        color: Colors.grey,
+                        size: widget.imgSize * 0.3,
+                      ),
+                    )
+                  : ClipRRect(
+                      borderRadius: BorderRadius.circular(8.0),
+                      child: Image.file(
+                        File(_imagenSeleccionada!.path),
+                        fit: BoxFit.cover,
+                        width: double.infinity,
                       ),
                     ),
-                  ),
+            ),
+            if (_imagenSeleccionada == null)
+              ListTile(
+                leading: const Icon(Icons.photo_library),
+                title: const Text('Desde la galería'),
+                onTap: () async {
+                  final imagen = await getImage();
+                  if (imagen != null && mounted) {
+                    setState(() {
+                      _imagenSeleccionada = imagen;
+                    });
+                    // Notificar con la ruta local inmediatamente
+                    widget.onFotoChanged?.call(imagen.path);
+                    modalSetState(() {});
+                    if (context.mounted) {
+                      Navigator.of(context).pop();
+                    }
+                  }
+                },
+              ),
+            if (_imagenSeleccionada != null)
+              ListTile(
+                leading: const Icon(Icons.delete, color: Colors.red),
+                title: const Text(
+                  'Eliminar imagen',
+                  style: TextStyle(color: Colors.red),
                 ),
-            ],
-          ),
+                onTap: () {
+                  if (mounted) {
+                    setState(() {
+                      _imagenSeleccionada = null;
+                    });
+                    // Notificar que se eliminó
+                    widget.onFotoChanged?.call(null);
+                    modalSetState(() {});
+                    Navigator.of(context).pop();
+                  }
+                },
+              ),
+            if (_imagenSeleccionada != null)
+              ListTile(
+                leading: const Icon(
+                  Icons.check,
+                  color: Colors.green,
+                ),
+                title: const Text(
+                  'Confirmar',
+                  style: TextStyle(color: Colors.black),
+                ),
+                onTap: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+          ],
         );
       },
     );

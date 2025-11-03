@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class PreguntaDTO {
+  final String id; // ID del documento en Firestore
   final DateTime createdAt;
   final String descripcion;
   final String tipo;
@@ -10,6 +11,7 @@ class PreguntaDTO {
   final String customOptionLabel;
 
   PreguntaDTO({
+    required this.id,
     required this.createdAt,
     required this.descripcion,
     required this.tipo,
@@ -19,8 +21,9 @@ class PreguntaDTO {
     required this.customOptionLabel,
   });
 
-  factory PreguntaDTO.fromMap(Map<String, dynamic> map) {
+  factory PreguntaDTO.fromMap(String id, Map<String, dynamic> map) {
     return PreguntaDTO(
+      id: id,
       createdAt: map['createdAt'] != null
           ? (map['createdAt'] as Timestamp).toDate()
           : DateTime.now(),

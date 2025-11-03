@@ -35,6 +35,7 @@ class BotonSiguiente extends StatelessWidget {
               onPressed: onPressed,
               backgroundColor: color,
               elevation: elevation,
+              heroTag: null, // Deshabilitar Hero para evitar conflictos
               child: Icon(icon, color: textColor),
             )
           : FloatingActionButton.extended(
@@ -51,6 +52,7 @@ class BotonSiguiente extends StatelessWidget {
               icon: Icon(icon, color: textColor),
               backgroundColor: color,
               elevation: elevation,
+              heroTag: null, // Deshabilitar Hero para evitar conflictos
             ),
     );
   }

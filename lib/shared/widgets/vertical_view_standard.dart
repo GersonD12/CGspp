@@ -127,8 +127,16 @@ class VerticalViewStandardScrollable extends StatelessWidget {
             scrolledUnderElevation: 0, // Mantiene el color fijo al hacer scroll
             floating: appBarFloats, // Sube la AppBar cuando se desplaza
             snap: appBarFloats, // La AppBar se muestra/oculta completamente
-
-            automaticallyImplyLeading: showBackButton,
+            pinned: !appBarFloats, // Fija la AppBar si no flota
+            leading: showBackButton
+                ? (leading ??
+                      IconButton(
+                        icon: Icon(Icons.arrow_back, color: textColor),
+                        onPressed:
+                            onBackPressed ?? () => Navigator.of(context).pop(),
+                      ))
+                : null,
+            automaticallyImplyLeading: false, // We handle leading manually
             actions: actions,
           ),
 

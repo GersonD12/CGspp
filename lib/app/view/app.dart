@@ -3,7 +3,6 @@ import 'package:calet/core/providers/config_provider.dart';
 import 'package:calet/core/providers/session_provider.dart';
 import 'package:calet/features/auth/presentation/google_login_screen.dart';
 import 'package:calet/features/auth/presentation/home_screen.dart';
-import 'package:calet/features/formulario/presentation/screens/formulario_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -24,11 +23,7 @@ class App extends ConsumerWidget {
       home: session.when(
         data: (sessionData) {
           if (sessionData.user != null) {
-            if (sessionData.isNew) {
-              return const FormularioScreen();
-            } else {
-              return const HomeScreen();
-            }
+            return const HomeScreen();
           } else {
             return const GoogleLoginScreen();
           }

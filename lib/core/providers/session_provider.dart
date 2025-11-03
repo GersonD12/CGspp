@@ -20,24 +20,41 @@ final sessionProvider = StreamProvider<SessionData>((ref) {
       return SessionData(null, false);
     }
 
+    // Verificar que el token siga siendo válido en el servidor
+    // Esto detecta si el usuario fue eliminado
+    User? currentUser = firebaseUser;
+    try {
+      await firebaseUser.reload();
+      // Obtener el usuario actualizado después de reload
+      currentUser = FirebaseAuth.instance.currentUser;
+      if (currentUser == null) {
+        return SessionData(null, false);
+      }
+    } catch (e) {
+      log('Token inválido o usuario eliminado: $e');
+      // Forzar cierre de sesión si el token es inválido
+      await FirebaseAuth.instance.signOut();
+      return SessionData(null, false);
+    }
+
     final userDoc = FirebaseFirestore.instance
         .collection('users')
-        .doc(firebaseUser.uid);
+        .doc(currentUser.uid);
 
     final doc = await userDoc.get();
     final bool isNew = !doc.exists;
 
     if (isNew) {
-      log('New user detected: ${firebaseUser.email}');
+      log('New user detected: ${currentUser.email}');
       await userDoc.set({
-        'email': firebaseUser.email,
-        'displayName': firebaseUser.displayName,
-        'photoURL': firebaseUser.photoURL,
+        'email': currentUser.email,
+        'displayName': currentUser.displayName,
+        'photoURL': currentUser.photoURL,
         'createdAt': FieldValue.serverTimestamp(),
       });
     }
 
-    final userEntity = UserEntity.fromFirebaseUser(firebaseUser);
+    final userEntity = UserEntity.fromFirebaseUser(currentUser);
     return SessionData(userEntity, isNew);
   });
 });

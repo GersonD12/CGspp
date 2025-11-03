@@ -8,5 +8,8 @@ abstract class RespuestasRepository {
     String userId,
     RespuestasState respuestasState,
   );
+
+  /// Descarga las respuestas guardadas del formulario
+  Future<RespuestasState?> downloadRespuestas(String userId);
 }
 

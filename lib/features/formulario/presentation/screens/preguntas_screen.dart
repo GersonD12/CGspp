@@ -4,6 +4,9 @@ import 'package:calet/shared/widgets/vertical_view_standard.dart';
 import 'package:calet/features/formulario/application/dto/dto.dart';
 import 'package:calet/features/formulario/presentation/providers/respuestas_provider.dart';
 import 'package:calet/features/formulario/presentation/controllers/respuestas_controller.dart';
+import 'package:calet/core/providers/session_provider.dart';
+import 'package:calet/core/di/injection.dart';
+import 'package:calet/features/formulario/domain/repositories/respuestas_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -21,17 +24,22 @@ class _PreguntasScreenState extends ConsumerState<PreguntasScreen> {
   bool _isLoading = true; // Indica si se están cargando los datos
   String _error = ''; // Almacena mensaje de error
   late RespuestasController _controller; // Controlador para las respuestas
+  bool _respuestasCargadas = false; // Flag para evitar cargar respuestas múltiples veces
   
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _controller = RespuestasController(ref);
-  }
-
   @override
   void initState() {
     super.initState();
     _fetchPreguntasFromFirestore();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _controller = RespuestasController(ref);
+    if (!_respuestasCargadas) {
+      _loadRespuestasGuardadas();
+      _respuestasCargadas = true;
+    }
   }
 
   Future<void> _fetchPreguntasFromFirestore() async {
@@ -49,7 +57,10 @@ class _PreguntasScreenState extends ConsumerState<PreguntasScreen> {
       _preguntas = querySnapshot.docs.map((doc) {
         log('Procesando documento: ${doc.id}');
         log('Datos del documento: ${doc.data()}');
-        return PreguntaDTO.fromMap(doc.data() as Map<String, dynamic>);
+        return PreguntaDTO.fromMap(
+          doc.id,
+          doc.data() as Map<String, dynamic>,
+        );
       }).toList();
 
       log('Preguntas cargadas exitosamente: ${_preguntas.length}');
@@ -64,6 +75,46 @@ class _PreguntasScreenState extends ConsumerState<PreguntasScreen> {
         _isLoading = false;
         _error = 'Error al cargar las preguntas: $e';
       });
+    }
+  }
+
+  /// Carga las respuestas guardadas del usuario desde Firestore
+  Future<void> _loadRespuestasGuardadas() async {
+    try {
+      final user = ref.read(currentUserProvider);
+      if (user == null) {
+        log('Usuario no autenticado, no se pueden cargar respuestas guardadas');
+        return;
+      }
+
+      log('Cargando respuestas guardadas para usuario: ${user.id}');
+      
+      final repository = getIt<RespuestasRepository>();
+      final respuestasState = await repository.downloadRespuestas(user.id);
+
+      if (respuestasState != null && respuestasState.totalRespuestas > 0) {
+        log('Respuestas guardadas encontradas: ${respuestasState.totalRespuestas}');
+        
+        // Cargar las respuestas en el provider
+        final notifier = ref.read(respuestasProvider.notifier);
+        for (final respuesta in respuestasState.todasLasRespuestas) {
+          notifier.agregarRespuesta(
+            respuesta.preguntaId,
+            respuesta.tipoPregunta,
+            respuesta.descripcionPregunta,
+            respuestaTexto: respuesta.respuestaTexto,
+            respuestaImagen: respuesta.respuestaImagen,
+            respuestaOpciones: respuesta.respuestaOpciones,
+          );
+        }
+        
+        log('Respuestas guardadas cargadas exitosamente en el provider');
+      } else {
+        log('No se encontraron respuestas guardadas');
+      }
+    } catch (e) {
+      log('Error al cargar respuestas guardadas: $e');
+      // No mostrar error al usuario, simplemente continuar sin respuestas previas
     }
   }
 
@@ -95,7 +146,7 @@ class _PreguntasScreenState extends ConsumerState<PreguntasScreen> {
     }
 
     final preguntaActual = _preguntas[contador];
-    final preguntaId = 'pregunta_${contador + 1}';
+    final preguntaId = preguntaActual.id; // Usar el ID real de Firestore
     final respuestasState = ref.watch(respuestasProvider);
     final respuestaGuardadaObjeto = respuestasState.todasLasRespuestas
         .firstWhere(
@@ -159,16 +210,14 @@ class _PreguntasScreenState extends ConsumerState<PreguntasScreen> {
           imagenInicialPath: respuestaImagenActual,
           textoArriba: false,
           lineasTexto: 1,
-          onFotoChanged: (imagen) {
-            if (imagen != null) {
-              log('Imagen seleccionada: ${imagen.path}');
-              _controller.guardarRespuestaUseCase.guardarRespuestaImagen(
-                preguntaId,
-                preguntaActual.tipo,
-                preguntaActual.descripcion,
-                imagen.path,
-              );
-            }
+          onFotoChanged: (imageUrl) {
+            log('Ruta imagen seleccionada: $imageUrl');
+            _controller.guardarRespuestaUseCase.guardarRespuestaImagen(
+              preguntaId,
+              preguntaActual.tipo,
+              preguntaActual.descripcion,
+              imageUrl, // Ruta local del archivo (se subirá al finalizar)
+            );
           },
           onTextoChanged: (texto) {
             _controller.guardarRespuestaUseCase.guardarRespuestaTexto(
@@ -206,12 +255,12 @@ class _PreguntasScreenState extends ConsumerState<PreguntasScreen> {
           textoPlaceholder: preguntaActual.encabezado,
           imagenInicialPath: respuestaImagenActual,
           onFotoChanged: (imageUrl) {
-            log('Imagen subida: $imageUrl');
+            log('Ruta imagen seleccionada: $imageUrl');
             _controller.guardarRespuestaUseCase.guardarRespuestaImagen(
               preguntaId,
               preguntaActual.tipo,
               preguntaActual.descripcion,
-              imageUrl, // Ahora es la URL de Firebase directamente
+              imageUrl, // Ruta local del archivo (se subirá al finalizar)
             );
           },
         );
@@ -235,7 +284,7 @@ class _PreguntasScreenState extends ConsumerState<PreguntasScreen> {
     final respuestasState = ref.watch(respuestasProvider);
 
     // Verifica si la pregunta actual ha sido respondida
-    final preguntaId = 'pregunta_${contador + 1}';
+    final preguntaId = contador < _preguntas.length ? _preguntas[contador].id : '';
     final isCurrentQuestionAnswered = respuestasState.todasLasRespuestas.any((
       r,
     ) {
@@ -273,7 +322,7 @@ class _PreguntasScreenState extends ConsumerState<PreguntasScreen> {
         185,
       ), // Color de toda la pantalla
       centerTitle: true,
-      showBackButton: false, // Deshabilitar el botón de retroceso
+      showBackButton: true, // Permitir volver a home
       child: Column(
         children: [
           const SizedBox(height: 20), // Espacio arriba

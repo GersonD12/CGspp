@@ -1,10 +1,12 @@
 import 'dart:io';
+import 'dart:math';
 import 'package:firebase_storage/firebase_storage.dart';
 
 /// Servicio para manejar operaciones de almacenamiento
 /// Abstrae el acceso a Firebase Storage usando patrón Singleton
 class StorageService {
   final FirebaseStorage _storage;
+  final Random _random = Random();
 
   // Constructor privado para Singleton
   StorageService._internal(this._storage);
@@ -19,13 +21,23 @@ class StorageService {
   /// Sube un archivo a Firebase Storage
   /// 
   /// [imageFile] El archivo a subir
-  /// [path] Ruta opcional dentro de "images/", por defecto usa el nombre del archivo
+  /// [path] Ruta opcional dentro de "images/", por defecto genera un nombre único
   /// 
   /// Retorna la URL de descarga del archivo subido
   Future<String?> uploadFile(File imageFile, {String? path}) async {
     try {
-      final fileName = imageFile.path.split('/').last;
-      final storagePath = path ?? 'images/$fileName';
+      String storagePath;
+      
+      if (path != null) {
+        // Si se proporciona un path personalizado, usarlo
+        storagePath = path;
+      } else {
+        // Generar un nombre único basado en timestamp y número aleatorio
+        final timestamp = DateTime.now().millisecondsSinceEpoch;
+        final randomSuffix = _random.nextInt(1000000);
+        final extension = imageFile.path.split('.').last;
+        storagePath = 'images/$timestamp$randomSuffix.$extension';
+      }
       
       final ref = _storage.ref().child(storagePath);
       final uploadTask = ref.putFile(imageFile);

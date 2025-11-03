@@ -31,12 +31,20 @@ class GuardarRespuestaUseCase {
     String texto,
   ) {
     final respuestasNotifier = ref.read(respuestasProvider.notifier);
-    respuestasNotifier.agregarRespuesta(
-      preguntaId,
-      tipoPregunta,
-      descripcionPregunta,
-      respuestaTexto: texto,
-    );
+    final respuestaExistente = ref.read(respuestasProvider).respuestas[preguntaId];
+    
+    if (respuestaExistente != null) {
+      // Actualizar manteniendo otros valores
+      respuestasNotifier.actualizarRespuestaTexto(preguntaId, texto);
+    } else {
+      // Crear nueva respuesta
+      respuestasNotifier.agregarRespuesta(
+        preguntaId,
+        tipoPregunta,
+        descripcionPregunta,
+        respuestaTexto: texto,
+      );
+    }
   }
 
   /// Guardar respuesta de imagen
@@ -47,12 +55,20 @@ class GuardarRespuestaUseCase {
     String? imageUrl,
   ) {
     final respuestasNotifier = ref.read(respuestasProvider.notifier);
-    respuestasNotifier.agregarRespuesta(
-      preguntaId,
-      tipoPregunta,
-      descripcionPregunta,
-      respuestaImagen: imageUrl,
-    );
+    final respuestaExistente = ref.read(respuestasProvider).respuestas[preguntaId];
+    
+    if (respuestaExistente != null) {
+      // Actualizar manteniendo otros valores
+      respuestasNotifier.actualizarRespuestaImagen(preguntaId, imageUrl ?? '');
+    } else {
+      // Crear nueva respuesta
+      respuestasNotifier.agregarRespuesta(
+        preguntaId,
+        tipoPregunta,
+        descripcionPregunta,
+        respuestaImagen: imageUrl,
+      );
+    }
   }
 }
 

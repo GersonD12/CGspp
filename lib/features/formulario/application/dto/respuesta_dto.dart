@@ -36,6 +36,17 @@ class RespuestaDTO {
 
   /// Crear desde Map
   factory RespuestaDTO.fromMap(Map<String, dynamic> map) {
+    // Manejar fechaRespuesta que puede ser int o num desde Firestore
+    final fechaValue = map['fechaRespuesta'];
+    final int fechaMillis;
+    if (fechaValue is int) {
+      fechaMillis = fechaValue;
+    } else if (fechaValue is num) {
+      fechaMillis = fechaValue.toInt();
+    } else {
+      fechaMillis = DateTime.now().millisecondsSinceEpoch;
+    }
+
     return RespuestaDTO(
       preguntaId: map['preguntaId'] as String,
       tipoPregunta: map['tipoPregunta'] as String,
@@ -45,9 +56,7 @@ class RespuestaDTO {
       respuestaOpciones: map['respuestaOpciones'] != null
           ? List<String>.from(map['respuestaOpciones'] as List<dynamic>)
           : null,
-      fechaRespuesta: DateTime.fromMillisecondsSinceEpoch(
-        map['fechaRespuesta'] as int,
-      ),
+      fechaRespuesta: DateTime.fromMillisecondsSinceEpoch(fechaMillis),
     );
   }
 

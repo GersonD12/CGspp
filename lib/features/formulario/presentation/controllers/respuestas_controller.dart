@@ -3,7 +3,6 @@ import 'package:calet/features/formulario/application/use_cases/use_cases.dart';
 import 'package:calet/features/formulario/domain/repositories/respuestas_repository.dart';
 import 'package:calet/core/providers/session_provider.dart';
 import 'package:calet/core/di/injection.dart';
-import 'package:calet/app/routes/routes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:developer' show log;
@@ -13,65 +12,6 @@ class RespuestasController {
   final WidgetRef ref;
 
   RespuestasController(this.ref);
-
-  /// Muestra el resumen de respuestas en un modal
-  void mostrarResumenRespuestas(
-    BuildContext context,
-    RespuestasState respuestasState,
-  ) {
-    log('Mostrando modal con ${respuestasState.todasLasRespuestas.length} respuestas');
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Resumen de Respuestas'),
-        content: SizedBox(
-          width: double.maxFinite,
-          child: ListView.builder(
-            shrinkWrap: true,
-            itemCount: respuestasState.todasLasRespuestas.length,
-            itemBuilder: (context, index) {
-              final respuesta = respuestasState.todasLasRespuestas[index];
-              return Card(
-                margin: const EdgeInsets.symmetric(vertical: 4),
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Pregunta ${index + 1}: ${respuesta.descripcionPregunta}',
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(height: 4),
-                      if (respuesta.respuestaTexto != null)
-                        Text('Texto: ${respuesta.respuestaTexto}'),
-                      if (respuesta.respuestaImagen != null)
-                        Text('Imagen: ${respuesta.respuestaImagen}'),
-                      if (respuesta.respuestaOpciones != null)
-                        Text(
-                          'Opciones: ${respuesta.respuestaOpciones!.join(', ')}',
-                        ),
-                    ],
-                  ),
-                ),
-              );
-            },
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cerrar'),
-          ),
-          ElevatedButton(
-            onPressed: () => _guardarYFinalizar(context, respuestasState),
-            child: const Text('Finalizar'),
-          ),
-        ],
-      ),
-    );
-  }
 
   /// Guarda y finaliza el formulario
   Future<void> _guardarYFinalizar(
@@ -85,10 +25,15 @@ class RespuestasController {
       return;
     }
 
+    // Capturar el navigator antes de abrir cualquier diálogo
+    final navigator = Navigator.of(context);
+
     try {
+      log('Mostrando loading...');
       // Mostrar indicador de carga
       _mostrarLoading(context);
 
+      log('Ejecutando use case...');
       // Obtener el repositorio de GetIt y ejecutar el use case
       final repository = getIt<RespuestasRepository>();
       final useCase = FinalizarFormularioUseCase(repository: repository);
@@ -97,21 +42,25 @@ class RespuestasController {
         respuestasState: respuestasState,
       );
 
-      // Cerrar loading y diálogo de resumen
-      if (Navigator.canPop(context)) Navigator.of(context).pop(); // Cierra loading
-      if (Navigator.canPop(context)) Navigator.of(context).pop(); // Cierra modal de resumen
+      log('Respuestas guardadas exitosamente');
+      // Cerrar loading (el diálogo)
+      if (context.mounted && navigator.canPop()) {
+        navigator.pop();
+        log('Loading cerrado');
+      }
 
-      // Navegar a home (si el context todavía está montado)
+      log('Navegando a home...');
+      // Cerrar el formulario y volver a la pantalla anterior
       if (context.mounted) {
-        Navigator.pushNamedAndRemoveUntil(
-          context,
-          AppRoutes.home,
-          (route) => false,
-        );
+        navigator.pop();
+        log('Navegación a home completada');
       }
     } catch (e) {
+      log('Error al guardar: $e');
       // Cerrar loading si está abierto
-      if (Navigator.canPop(context)) Navigator.of(context).pop();
+      if (context.mounted && navigator.canPop()) {
+        navigator.pop();
+      }
       // Mostrar error
       _mostrarError(context, 'Error al guardar las respuestas: $e');
     }
@@ -122,8 +71,13 @@ class RespuestasController {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) =>
-          const Center(child: CircularProgressIndicator()),
+      builder: (context) => const Dialog(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        child: Center(
+          child: CircularProgressIndicator(),
+        ),
+      ),
     );
   }
 
@@ -143,7 +97,11 @@ class RespuestasController {
     log('Total respuestas: ${respuestasState.totalRespuestas}');
 
     if (respuestasState.totalRespuestas > 0) {
-      mostrarResumenRespuestas(context, respuestasState);
+      log('Iniciando guardado de respuestas...');
+      // Guardar directamente sin mostrar resumen
+      _guardarYFinalizar(context, respuestasState);
+    } else {
+      log('No hay respuestas para guardar');
     }
   }
 

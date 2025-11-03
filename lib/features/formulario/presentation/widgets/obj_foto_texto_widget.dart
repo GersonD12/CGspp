@@ -1,6 +1,12 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'dart:io';
+
+/// Determina si una cadena es una URL (HTTP/HTTPS)
+bool _isUrlObjFotoTexto(String? path) {
+  if (path == null || path.isEmpty) return false;
+  return path.startsWith('http://') || path.startsWith('https://');
+}
 
 class ObjFotoTexto extends StatefulWidget {
   final String? imagenInicialPath;
@@ -8,7 +14,7 @@ class ObjFotoTexto extends StatefulWidget {
   final String? textoPlaceholder;
   final String? textoInicial;
   final Function(String)? onTextoChanged;
-  final Function(XFile?)? onFotoChanged;
+  final Function(String?)? onFotoChanged; // Recibe ruta local del archivo
   final bool esObligatorio;
   final double? alturaImagen;
   final double? anchoImagen;
@@ -50,8 +56,10 @@ class _ObjFotoTextoState extends State<ObjFotoTexto> {
     if (widget.textoInicial != null) {
       _textoController.text = widget.textoInicial!;
     }
+    // Solo asignar XFile si es una ruta local (no URL)
     if (widget.imagenInicialPath != null &&
-        widget.imagenInicialPath!.isNotEmpty) {
+        widget.imagenInicialPath!.isNotEmpty &&
+        !_isUrlObjFotoTexto(widget.imagenInicialPath)) {
       _imagenSeleccionada = XFile(widget.imagenInicialPath!);
     }
   }
@@ -75,7 +83,8 @@ class _ObjFotoTextoState extends State<ObjFotoTexto> {
         setState(() {
           _imagenSeleccionada = imagen;
         });
-        widget.onFotoChanged?.call(imagen);
+        // Notificar con la ruta local
+        widget.onFotoChanged?.call(imagen.path);
       }
     } catch (e) {
       _mostrarError('Error al seleccionar imagen: $e');
@@ -95,7 +104,8 @@ class _ObjFotoTextoState extends State<ObjFotoTexto> {
         setState(() {
           _imagenSeleccionada = imagen;
         });
-        widget.onFotoChanged?.call(imagen);
+        // Notificar con la ruta local
+        widget.onFotoChanged?.call(imagen.path);
       }
     } catch (e) {
       _mostrarError('Error al tomar foto: $e');
@@ -216,52 +226,77 @@ class _ObjFotoTextoState extends State<ObjFotoTexto> {
           const SizedBox(height: 16),
 
           // Vista previa de la imagen
-          if (_imagenSeleccionada != null) ...[
-            Container(
-              constraints: BoxConstraints(
-                maxHeight: widget.alturaImagen ?? 200,
-                maxWidth: widget.anchoImagen ?? 300,
-              ),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.grey[300]!),
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: Image.file(
-                  File(_imagenSeleccionada!.path),
-                  fit: BoxFit.cover,
+          Builder(
+            builder: (context) {
+              final imagenDisplayPath = widget.imagenInicialPath ?? _imagenSeleccionada?.path;
+              final isNetworkImage = _isUrlObjFotoTexto(imagenDisplayPath);
+              
+              if (imagenDisplayPath != null) {
+                return Column(
+                  children: [
+                    Container(
+                      constraints: BoxConstraints(
+                        maxHeight: widget.alturaImagen ?? 200,
+                        maxWidth: widget.anchoImagen ?? 300,
+                      ),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.grey[300]!),
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: isNetworkImage
+                            ? Image.network(
+                                imagenDisplayPath,
+                                fit: BoxFit.cover,
+                                width: double.infinity,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Center(
+                                    child: Icon(
+                                      Icons.broken_image,
+                                      color: Colors.grey,
+                                      size: widget.alturaImagen != null ? widget.alturaImagen! * 0.3 : 60,
+                                    ),
+                                  );
+                                },
+                              )
+                            : Image.file(
+                                File(imagenDisplayPath),
+                                fit: BoxFit.cover,
+                                width: double.infinity,
+                              ),
+                      ),
+                    ),
+                  ],
+                );
+              } else {
+                return Container(
+                  height: 100,
                   width: double.infinity,
-                ),
-              ),
-            ),
-            const SizedBox(height: 8),
-          ] else ...[
-            Container(
-              height: 100,
-              width: double.infinity,
-              decoration: BoxDecoration(
-                color: Colors.grey[200],
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(
-                  color: Colors.grey[300]!,
-                  style: BorderStyle.solid,
-                  width: 2,
-                ),
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.image_outlined, size: 40, color: Colors.grey[400]),
-                  const SizedBox(height: 8),
-                  Text(
-                    'No hay imagen seleccionada',
-                    style: TextStyle(color: Colors.grey[500], fontSize: 14),
+                  decoration: BoxDecoration(
+                    color: Colors.grey[200],
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: Colors.grey[300]!,
+                      style: BorderStyle.solid,
+                      width: 2,
+                    ),
                   ),
-                ],
-              ),
-            ),
-          ],
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.image_outlined, size: 40, color: Colors.grey[400]),
+                      const SizedBox(height: 8),
+                      Text(
+                        'No hay imagen seleccionada',
+                        style: TextStyle(color: Colors.grey[500], fontSize: 14),
+                      ),
+                    ],
+                  ),
+                );
+              }
+            },
+          ),
         ],
       ),
     );
