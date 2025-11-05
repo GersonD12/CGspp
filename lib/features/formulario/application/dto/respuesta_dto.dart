@@ -44,44 +44,28 @@ class RespuestaDTO {
     DateTime createdAt;
     DateTime updatedAt;
     
-    if (map.containsKey('fechaRespuesta')) {
-      // Retrocompatibilidad: respuestas antiguas solo tenían fechaRespuesta
-      final fechaValue = map['fechaRespuesta'];
-      if (fechaValue is Timestamp) {
-        createdAt = fechaValue.toDate();
-        updatedAt = fechaValue.toDate();
-      } else if (fechaValue is int || fechaValue is num) {
-        final millis = (fechaValue as num).toInt();
-        createdAt = DateTime.fromMillisecondsSinceEpoch(millis);
-        updatedAt = DateTime.fromMillisecondsSinceEpoch(millis);
-      } else {
-        final ahora = DateTime.now();
-        createdAt = ahora;
-        updatedAt = ahora;
-      }
+    // Leer createdAt
+    final createdAtValue = map['createdAt'];
+    if (createdAtValue is Timestamp) {
+      createdAt = createdAtValue.toDate();
+    } else if (createdAtValue is int || createdAtValue is num) {
+      createdAt = DateTime.fromMillisecondsSinceEpoch(
+        (createdAtValue as num).toInt()
+      );
     } else {
-      // Nuevo formato con createdAt y updatedAt
-      final createdAtValue = map['createdAt'];
-      if (createdAtValue is Timestamp) {
-        createdAt = createdAtValue.toDate();
-      } else if (createdAtValue is int || createdAtValue is num) {
-        createdAt = DateTime.fromMillisecondsSinceEpoch(
-          (createdAtValue as num).toInt()
-        );
-      } else {
-        createdAt = DateTime.now();
-      }
+      createdAt = DateTime.now();
+    }
 
-      final updatedAtValue = map['updatedAt'];
-      if (updatedAtValue is Timestamp) {
-        updatedAt = updatedAtValue.toDate();
-      } else if (updatedAtValue is int || updatedAtValue is num) {
-        updatedAt = DateTime.fromMillisecondsSinceEpoch(
-          (updatedAtValue as num).toInt()
-        );
-      } else {
-        updatedAt = DateTime.now();
-      }
+    // Leer updatedAt
+    final updatedAtValue = map['updatedAt'];
+    if (updatedAtValue is Timestamp) {
+      updatedAt = updatedAtValue.toDate();
+    } else if (updatedAtValue is int || updatedAtValue is num) {
+      updatedAt = DateTime.fromMillisecondsSinceEpoch(
+        (updatedAtValue as num).toInt()
+      );
+    } else {
+      updatedAt = DateTime.now();
     }
 
     return RespuestaDTO(
