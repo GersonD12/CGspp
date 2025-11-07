@@ -11,7 +11,7 @@ export 'image_picker_widget.dart';
 export 'modal_helper.dart';
 export 'obj_foto_texto_widget.dart';
 export 'progress_widget.dart';
-export 'radio_question_widget.dart';
+export 'pill_question_widget.dart';
 export 'respuestas_indicator.dart';
 export 'respuestas_progress_widget.dart';
 export 'respuestas_stats_widget.dart';
