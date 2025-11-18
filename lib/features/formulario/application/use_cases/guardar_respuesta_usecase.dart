@@ -31,8 +31,10 @@ class GuardarRespuestaUseCase {
     String texto,
   ) {
     final respuestasNotifier = ref.read(respuestasProvider.notifier);
-    final respuestaExistente = ref.read(respuestasProvider).respuestas[preguntaId];
-    
+    final respuestaExistente = ref
+        .read(respuestasProvider)
+        .respuestas[preguntaId];
+
     if (respuestaExistente != null) {
       // Actualizar manteniendo otros valores
       respuestasNotifier.actualizarRespuestaTexto(preguntaId, texto);
@@ -55,8 +57,10 @@ class GuardarRespuestaUseCase {
     String? imageUrl,
   ) {
     final respuestasNotifier = ref.read(respuestasProvider.notifier);
-    final respuestaExistente = ref.read(respuestasProvider).respuestas[preguntaId];
-    
+    final respuestaExistente = ref
+        .read(respuestasProvider)
+        .respuestas[preguntaId];
+
     if (respuestaExistente != null) {
       // Actualizar manteniendo otros valores
       respuestasNotifier.actualizarRespuestaImagen(preguntaId, imageUrl ?? '');
@@ -70,5 +74,30 @@ class GuardarRespuestaUseCase {
       );
     }
   }
-}
 
+  /// Guardar respuesta de número
+  void guardarRespuestaNumero(
+    String preguntaId,
+    String tipoPregunta,
+    String descripcionPregunta,
+    String numero,
+  ) {
+    final respuestasNotifier = ref.read(respuestasProvider.notifier);
+    final respuestaExistente = ref
+        .read(respuestasProvider)
+        .respuestas[preguntaId];
+
+    if (respuestaExistente != null) {
+      // Actualizar manteniendo otros valores
+      respuestasNotifier.actualizarRespuestaTexto(preguntaId, numero);
+    } else {
+      // Crear nueva respuesta
+      respuestasNotifier.agregarRespuesta(
+        preguntaId,
+        tipoPregunta,
+        descripcionPregunta,
+        respuestaTexto: numero,
+      );
+    }
+  }
+}

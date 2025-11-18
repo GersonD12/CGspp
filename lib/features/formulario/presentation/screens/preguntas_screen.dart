@@ -1,4 +1,5 @@
 import 'dart:developer';
+import 'package:calet/features/formulario/presentation/widgets/obj_numero.dart';
 import 'package:calet/features/formulario/presentation/widgets/widgets.dart';
 import 'package:calet/shared/widgets/vertical_view_standard.dart';
 import 'package:calet/features/formulario/application/dto/dto.dart';
@@ -24,8 +25,9 @@ class _PreguntasScreenState extends ConsumerState<PreguntasScreen> {
   bool _isLoading = true; // Indica si se están cargando los datos
   String _error = ''; // Almacena mensaje de error
   late RespuestasController _controller; // Controlador para las respuestas
-  bool _respuestasCargadas = false; // Flag para evitar cargar respuestas múltiples veces
-  
+  bool _respuestasCargadas =
+      false; // Flag para evitar cargar respuestas múltiples veces
+
   @override
   void initState() {
     super.initState();
@@ -57,10 +59,7 @@ class _PreguntasScreenState extends ConsumerState<PreguntasScreen> {
       _preguntas = querySnapshot.docs.map((doc) {
         log('Procesando documento: ${doc.id}');
         log('Datos del documento: ${doc.data()}');
-        return PreguntaDTO.fromMap(
-          doc.id,
-          doc.data() as Map<String, dynamic>,
-        );
+        return PreguntaDTO.fromMap(doc.id, doc.data() as Map<String, dynamic>);
       }).toList();
 
       log('Preguntas cargadas exitosamente: ${_preguntas.length}');
@@ -88,13 +87,15 @@ class _PreguntasScreenState extends ConsumerState<PreguntasScreen> {
       }
 
       log('Cargando respuestas guardadas para usuario: ${user.id}');
-      
+
       final repository = getIt<RespuestasRepository>();
       final respuestasState = await repository.downloadRespuestas(user.id);
 
       if (respuestasState != null && respuestasState.totalRespuestas > 0) {
-        log('Respuestas guardadas encontradas: ${respuestasState.totalRespuestas}');
-        
+        log(
+          'Respuestas guardadas encontradas: ${respuestasState.totalRespuestas}',
+        );
+
         // Cargar las respuestas en el provider
         final notifier = ref.read(respuestasProvider.notifier);
         for (final respuesta in respuestasState.todasLasRespuestas) {
@@ -107,7 +108,7 @@ class _PreguntasScreenState extends ConsumerState<PreguntasScreen> {
             respuestaOpciones: respuesta.respuestaOpciones,
           );
         }
-        
+
         log('Respuestas guardadas cargadas exitosamente en el provider');
       } else {
         log('No se encontraron respuestas guardadas');
@@ -248,6 +249,23 @@ class _PreguntasScreenState extends ConsumerState<PreguntasScreen> {
           },
         );
 
+      case 'numero':
+        return ObjNumero(
+          key: ValueKey(preguntaId), // Añadir Key única
+          titulo: preguntaActual.descripcion,
+          textoPlaceholder: preguntaActual.encabezado,
+          maxLength: 4,
+          controller: TextEditingController(text: respuestaTextoActual ?? ''),
+          onChanged: (numero) {
+            _controller.guardarRespuestaUseCase.guardarRespuestaNumero(
+              preguntaId,
+              preguntaActual.tipo,
+              preguntaActual.descripcion,
+              numero,
+            );
+          },
+        );
+
       case 'imagen':
         return ImagePickerWidget(
           iconData: Icons.add_photo_alternate,
@@ -286,7 +304,9 @@ class _PreguntasScreenState extends ConsumerState<PreguntasScreen> {
     final respuestasState = ref.watch(respuestasProvider);
 
     // Verifica si la pregunta actual ha sido respondida
-    final preguntaId = contador < _preguntas.length ? _preguntas[contador].id : '';
+    final preguntaId = contador < _preguntas.length
+        ? _preguntas[contador].id
+        : '';
     final isCurrentQuestionAnswered = respuestasState.todasLasRespuestas.any((
       r,
     ) {
@@ -428,4 +448,3 @@ class _PreguntasScreenState extends ConsumerState<PreguntasScreen> {
     );
   }
 }
-
