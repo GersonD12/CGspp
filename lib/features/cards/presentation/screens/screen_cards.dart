@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:calet/features/cards/presentation/widgets/cards.dart';
 import 'dart:developer' show log;
 import 'package:calet/features/cards/presentation/widgets/modal_perfiles.dart';
+import 'package:calet/features/cards/presentation/widgets/pildora.dart';
 
 class ScreenCards extends StatefulWidget {
   const ScreenCards({super.key});
@@ -117,7 +118,7 @@ class _ScreenCardsState extends State<ScreenCards> {
                                 vertical: 8.0,
                               ),
                               child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
                                   Text(
                                     question,
@@ -125,11 +126,24 @@ class _ScreenCardsState extends State<ScreenCards> {
                                       fontWeight: FontWeight.bold,
                                       fontSize: 16,
                                     ),
+                                    textAlign: TextAlign.center,
                                   ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    displayAnswer,
-                                    style: const TextStyle(fontSize: 14),
+                                  const SizedBox(height: 5),
+                                  Pildora(
+                                    text: displayAnswer,
+                                    color: const Color.fromARGB(
+                                      255,
+                                      250,
+                                      249,
+                                      249,
+                                    ),
+                                    textColor: Colors.black,
+                                    borderColor: const Color.fromARGB(
+                                      255,
+                                      121,
+                                      121,
+                                      121,
+                                    ),
                                   ),
                                 ],
                               ),
