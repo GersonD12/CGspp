@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-/// Un campo de texto que solo acepta una cantidad específica de dígitos numéricos.
+/// Un campo de texto que solo acepta números dentro de un rango específico.
 class ObjNumero extends StatelessWidget {
   /// El controlador para el campo de texto.
   final TextEditingController? controller;
@@ -10,8 +10,12 @@ class ObjNumero extends StatelessWidget {
   final String textoPlaceholder;
   final String titulo;
 
-  /// El número máximo de dígitos que el usuario puede introducir.
-  final int maxLength;
+  /// El número máximo permitido.
+  final int? maxNumber;
+  
+  /// El número mínimo permitido.
+  final int? minNumber;
+  
   final Function(String)? onChanged;
 
   const ObjNumero({
@@ -19,7 +23,8 @@ class ObjNumero extends StatelessWidget {
     this.controller,
     required this.textoPlaceholder,
     required this.titulo,
-    required this.maxLength,
+    this.maxNumber,
+    this.minNumber,
     this.onChanged,
   });
 
@@ -31,33 +36,53 @@ class ObjNumero extends StatelessWidget {
         TextFormField(
           controller: controller,
           onChanged: onChanged,
-          // 1. Limita la longitud del texto y muestra un contador.
-          maxLength: maxLength,
           decoration: InputDecoration(
             labelText: textoPlaceholder,
-            // Oculta el contador de caracteres por defecto si no lo deseas.
-            // Puedes quitar esta línea si quieres que se vea "0/10".
-            counterText: '',
             border: const OutlineInputBorder(),
+            // Mostrar el rango permitido si está definido
+            helperText: _getHelperText(),
           ),
-          // 2. Muestra el teclado numérico.
+          // Muestra el teclado numérico.
           keyboardType: TextInputType.number,
-          // 3. Filtra la entrada para permitir solo dígitos.
+          // Filtra la entrada para permitir solo dígitos.
           inputFormatters: <TextInputFormatter>[
             FilteringTextInputFormatter.digitsOnly,
           ],
-          // (Opcional) Añade validación para asegurarte de que el campo no esté vacío.
+          // Validación para asegurar que el número esté en el rango permitido.
           validator: (value) {
             if (value == null || value.isEmpty) {
               return 'Este campo es obligatorio.';
             }
-            if (value.length < maxLength) {
-              return 'Se requieren $maxLength dígitos.';
+            
+            final numero = int.tryParse(value);
+            if (numero == null) {
+              return 'Debe ingresar un número válido.';
             }
+            
+            if (minNumber != null && numero < minNumber!) {
+              return 'El número debe ser mayor o igual a $minNumber.';
+            }
+            
+            if (maxNumber != null && numero > maxNumber!) {
+              return 'El número debe ser menor o igual a $maxNumber.';
+            }
+            
             return null;
           },
         ),
       ],
     );
+  }
+  
+  /// Genera el texto de ayuda que muestra el rango permitido
+  String? _getHelperText() {
+    if (minNumber != null && maxNumber != null) {
+      return 'Rango permitido: $minNumber - $maxNumber';
+    } else if (minNumber != null) {
+      return 'Mínimo: $minNumber';
+    } else if (maxNumber != null) {
+      return 'Máximo: $maxNumber';
+    }
+    return null;
   }
 }

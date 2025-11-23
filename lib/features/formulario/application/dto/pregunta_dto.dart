@@ -9,6 +9,8 @@ class PreguntaDTO {
   final String encabezado;
   final bool allowCustomOption;
   final String customOptionLabel;
+  final int? maxNumber; // Límite superior para preguntas de tipo número
+  final int? minNumber; // Límite inferior para preguntas de tipo número
 
   PreguntaDTO({
     required this.id,
@@ -19,6 +21,8 @@ class PreguntaDTO {
     required this.encabezado,
     required this.allowCustomOption,
     required this.customOptionLabel,
+    this.maxNumber,
+    this.minNumber,
   });
 
   factory PreguntaDTO.fromMap(String id, Map<String, dynamic> map) {
@@ -35,6 +39,8 @@ class PreguntaDTO {
       allowCustomOption: map['allowCustomOption'] as bool? ?? false,
       customOptionLabel: map['customOptionLabel'] as String? ?? 'Otro',
       encabezado: map['encabezado'] as String? ?? '',
+      maxNumber: map['maxNumber'] != null ? (map['maxNumber'] as num).toInt() : null,
+      minNumber: map['minNumber'] != null ? (map['minNumber'] as num).toInt() : null,
     );
   }
 }

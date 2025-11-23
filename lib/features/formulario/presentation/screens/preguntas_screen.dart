@@ -1,3 +1,4 @@
+import 'package:calet/features/formulario/presentation/widgets/obj_numero.dart';
 import 'package:calet/features/formulario/presentation/widgets/widgets.dart';
 import 'package:calet/shared/widgets/vertical_view_standard.dart';
 import 'package:calet/features/formulario/application/dto/dto.dart';
@@ -227,7 +228,8 @@ class _PreguntasScreenState extends ConsumerState<PreguntasScreen> {
           key: ValueKey(preguntaId), // Añadir Key única
           titulo: preguntaActual.descripcion,
           textoPlaceholder: preguntaActual.encabezado,
-          maxLength: 4,
+          maxNumber: preguntaActual.maxNumber,
+          minNumber: preguntaActual.minNumber,
           controller: TextEditingController(text: respuestaTextoActual ?? ''),
           onChanged: (numero) {
             _controller.guardarRespuestaUseCase.guardarRespuestaNumero(
