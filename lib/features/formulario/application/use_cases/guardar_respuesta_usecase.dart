@@ -10,6 +10,7 @@ class GuardarRespuestaUseCase {
   /// Guardar respuesta para pregunta de radio/múltiple
   void guardarRespuestaRadio(
     String preguntaId,
+    String grupoId,
     String tipoPregunta,
     String descripcionPregunta,
     String respuesta,
@@ -17,6 +18,7 @@ class GuardarRespuestaUseCase {
     final respuestasNotifier = ref.read(respuestasProvider.notifier);
     respuestasNotifier.agregarRespuesta(
       preguntaId,
+      grupoId,
       tipoPregunta,
       descripcionPregunta,
       respuestaOpciones: [respuesta],
@@ -26,6 +28,7 @@ class GuardarRespuestaUseCase {
   /// Guardar respuesta de texto
   void guardarRespuestaTexto(
     String preguntaId,
+    String grupoId,
     String tipoPregunta,
     String descripcionPregunta,
     String texto,
@@ -40,6 +43,7 @@ class GuardarRespuestaUseCase {
       // Crear nueva respuesta
       respuestasNotifier.agregarRespuesta(
         preguntaId,
+        grupoId,
         tipoPregunta,
         descripcionPregunta,
         respuestaTexto: texto,
@@ -50,6 +54,7 @@ class GuardarRespuestaUseCase {
   /// Guardar respuesta de imagen
   void guardarRespuestaImagen(
     String preguntaId,
+    String grupoId,
     String tipoPregunta,
     String descripcionPregunta,
     String? imageUrl,
@@ -64,6 +69,7 @@ class GuardarRespuestaUseCase {
       // Crear nueva respuesta
       respuestasNotifier.agregarRespuesta(
         preguntaId,
+        grupoId,
         tipoPregunta,
         descripcionPregunta,
         respuestaImagen: imageUrl,

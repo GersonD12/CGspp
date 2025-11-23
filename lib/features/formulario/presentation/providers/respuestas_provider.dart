@@ -9,6 +9,7 @@ class RespuestasNotifier extends StateNotifier<RespuestasState> {
   /// Agregar o actualizar una respuesta
   void agregarRespuesta(
     String preguntaId,
+    String grupoId,
     String tipoPregunta,
     String descripcionPregunta, {
     String? respuestaTexto,
@@ -18,6 +19,7 @@ class RespuestasNotifier extends StateNotifier<RespuestasState> {
     final ahora = DateTime.now();
     final nuevaRespuesta = RespuestaDTO(
       preguntaId: preguntaId,
+      grupoId: grupoId,
       tipoPregunta: tipoPregunta,
       descripcionPregunta: descripcionPregunta,
       respuestaTexto: respuestaTexto,

@@ -16,23 +16,33 @@ class RespuestasRepositoryImpl implements RespuestasRepository {
       : _firestore = firestore ?? FirebaseFirestore.instance;
 
   @override
-  /// Sube las respuestas a Firestore
+  /// Sube las respuestas a Firestore agrupadas por grupoId
   Future<void> uploadRespuestas(
     String userId,
     RespuestasState respuestasState,
   ) async {
     final userDocRef = _firestore.collection('users').doc(userId);
 
-    // Convertir las respuestas a un mapa, usando preguntaId como clave
-    final Map<String, dynamic> answersMap = {};
+    // Agrupar respuestas por grupoId
+    final Map<String, Map<String, dynamic>> gruposMap = {};
+    
     for (final respuesta in respuestasState.todasLasRespuestas) {
-      answersMap[respuesta.preguntaId] = respuesta.toMap();
+      final grupoId = respuesta.grupoId;
+      
+      // Si el grupo no existe, crearlo
+      if (!gruposMap.containsKey(grupoId)) {
+        gruposMap[grupoId] = {};
+      }
+      
+      // Agregar la respuesta al grupo correspondiente
+      gruposMap[grupoId]![respuesta.preguntaId] = respuesta.toMap();
     }
 
     // Crear el mapa final que se subirá a Firestore
+    // Estructura: form_responses -> grupos -> {grupoId: {preguntaId: respuesta}}
     final respuestasMap = {
       'form_responses': {
-        'answers': answersMap,
+        'grupos': gruposMap,
       },
     };
 
@@ -62,32 +72,62 @@ class RespuestasRepositoryImpl implements RespuestasRepository {
 
       final formResponses = data['form_responses'] as Map<String, dynamic>?;
       log('downloadRespuestas: form_responses: $formResponses');
-      if (formResponses == null || !formResponses.containsKey('answers')) {
-        log('downloadRespuestas: No hay answers en form_responses');
-        return null;
-      }
-
-      final answers = formResponses['answers'] as Map<String, dynamic>?;
-      log('downloadRespuestas: answers: $answers');
-      if (answers == null || answers.isEmpty) {
-        log('downloadRespuestas: answers está vacío');
-        return null;
-      }
-
+      
       // Convertir el mapa de respuestas a RespuestaDTO y luego a RespuestasState
       final Map<String, RespuestaDTO> respuestasMap = {};
 
-      answers.forEach((preguntaId, answerData) {
-        try {
-          log('downloadRespuestas: Procesando pregunta $preguntaId con datos: $answerData');
-          final respuestaDTO = RespuestaDTO.fromMap(answerData as Map<String, dynamic>);
-          respuestasMap[preguntaId] = respuestaDTO;
-          log('downloadRespuestas: Respuesta procesada exitosamente para $preguntaId');
-        } catch (e) {
-          log('downloadRespuestas: Error al procesar respuesta $preguntaId: $e');
-          // Ignorar respuestas con formato inválido
+      // Intentar leer la nueva estructura agrupada (grupos)
+      if (formResponses != null && formResponses.containsKey('grupos')) {
+        final grupos = formResponses['grupos'] as Map<String, dynamic>?;
+        log('downloadRespuestas: grupos: $grupos');
+        
+        if (grupos != null && grupos.isNotEmpty) {
+          // Iterar sobre cada grupo
+          grupos.forEach((grupoId, grupoData) {
+            if (grupoData is Map<String, dynamic>) {
+              // Iterar sobre las respuestas del grupo
+              grupoData.forEach((preguntaId, answerData) {
+                try {
+                  log('downloadRespuestas: Procesando pregunta $preguntaId del grupo $grupoId con datos: $answerData');
+                  final respuestaDTO = RespuestaDTO.fromMap(answerData as Map<String, dynamic>);
+                  respuestasMap[preguntaId] = respuestaDTO;
+                  log('downloadRespuestas: Respuesta procesada exitosamente para $preguntaId');
+                } catch (e) {
+                  log('downloadRespuestas: Error al procesar respuesta $preguntaId: $e');
+                  // Ignorar respuestas con formato inválido
+                }
+              });
+            }
+          });
         }
-      });
+      } 
+      // Compatibilidad con estructura antigua (answers directo)
+      else if (formResponses != null && formResponses.containsKey('answers')) {
+        final answers = formResponses['answers'] as Map<String, dynamic>?;
+        log('downloadRespuestas: answers (estructura antigua): $answers');
+        
+        if (answers != null && answers.isNotEmpty) {
+          answers.forEach((preguntaId, answerData) {
+            try {
+              log('downloadRespuestas: Procesando pregunta $preguntaId con datos: $answerData');
+              final respuestaDTO = RespuestaDTO.fromMap(answerData as Map<String, dynamic>);
+              respuestasMap[preguntaId] = respuestaDTO;
+              log('downloadRespuestas: Respuesta procesada exitosamente para $preguntaId');
+            } catch (e) {
+              log('downloadRespuestas: Error al procesar respuesta $preguntaId: $e');
+              // Ignorar respuestas con formato inválido
+            }
+          });
+        }
+      } else {
+        log('downloadRespuestas: No hay grupos ni answers en form_responses');
+        return null;
+      }
+
+      if (respuestasMap.isEmpty) {
+        log('downloadRespuestas: No se encontraron respuestas válidas');
+        return null;
+      }
 
       log('downloadRespuestas: Total respuestas cargadas: ${respuestasMap.length}');
       return RespuestasState(respuestas: respuestasMap);

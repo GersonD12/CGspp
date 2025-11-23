@@ -6,6 +6,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 /// data y presentation. No contiene lógica de negocio específica.
 class RespuestaDTO {
   final String preguntaId;
+  final String grupoId; // ID del grupo/sección al que pertenece la pregunta
   final String tipoPregunta;
   final String descripcionPregunta;
   final String? respuestaTexto;
@@ -16,6 +17,7 @@ class RespuestaDTO {
 
   const RespuestaDTO({
     required this.preguntaId,
+    required this.grupoId,
     required this.tipoPregunta,
     required this.descripcionPregunta,
     this.respuestaTexto,
@@ -29,6 +31,7 @@ class RespuestaDTO {
   Map<String, dynamic> toMap() {
     return {
       'preguntaId': preguntaId,
+      'grupoId': grupoId,
       'tipoPregunta': tipoPregunta,
       'descripcionPregunta': descripcionPregunta,
       'respuestaTexto': respuestaTexto,
@@ -70,6 +73,7 @@ class RespuestaDTO {
 
     return RespuestaDTO(
       preguntaId: map['preguntaId'] as String,
+      grupoId: map['grupoId'] as String? ?? '', // Compatibilidad con datos antiguos
       tipoPregunta: map['tipoPregunta'] as String,
       descripcionPregunta: map['descripcionPregunta'] as String,
       respuestaTexto: map['respuestaTexto'] as String?,
@@ -85,6 +89,7 @@ class RespuestaDTO {
   /// Crear copia con cambios
   RespuestaDTO copyWith({
     String? preguntaId,
+    String? grupoId,
     String? tipoPregunta,
     String? descripcionPregunta,
     String? respuestaTexto,
@@ -95,6 +100,7 @@ class RespuestaDTO {
   }) {
     return RespuestaDTO(
       preguntaId: preguntaId ?? this.preguntaId,
+      grupoId: grupoId ?? this.grupoId,
       tipoPregunta: tipoPregunta ?? this.tipoPregunta,
       descripcionPregunta: descripcionPregunta ?? this.descripcionPregunta,
       respuestaTexto: respuestaTexto ?? this.respuestaTexto,

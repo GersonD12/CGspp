@@ -43,21 +43,44 @@ class _PreguntasScreenState extends ConsumerState<PreguntasScreen> {
 
   Future<void> _fetchPreguntasFromFirestore() async {
     try {
-
-      // Obtener todos los documentos de la colección 'questions'
-      final QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+      // Obtener todos los documentos de la colección 'questions' (grupos/secciones)
+      final QuerySnapshot gruposSnapshot = await FirebaseFirestore.instance
           .collection('questions')
           .get();
 
+      // Lista para almacenar todas las preguntas de todos los grupos
+      List<PreguntaDTO> todasLasPreguntas = [];
 
-      // Mapear los documentos a una lista de DTOs
-      _preguntas = querySnapshot.docs.map((doc) {
-        return PreguntaDTO.fromMap(
-          doc.id,
-          doc.data() as Map<String, dynamic>,
-        );
+      // Para cada documento (grupo), obtener su subcolección 'questions'
+      final List<Future<void>> futures = gruposSnapshot.docs.map((grupoDoc) async {
+        try {
+          // Obtener la subcolección 'questions' de este grupo
+          final QuerySnapshot preguntasSnapshot = await grupoDoc.reference
+              .collection('questions')
+              .get();
+
+          // Mapear las preguntas de esta subcolección a DTOs
+          final preguntasDelGrupo = preguntasSnapshot.docs.map((preguntaDoc) {
+            return PreguntaDTO.fromMap(
+              preguntaDoc.id,
+              grupoDoc.id, // Pasar el ID del grupo
+              preguntaDoc.data() as Map<String, dynamic>,
+            );
+          }).toList();
+
+          // Agregar las preguntas de este grupo a la lista total
+          todasLasPreguntas.addAll(preguntasDelGrupo);
+        } catch (e) {
+          // Si hay un error al obtener las preguntas de un grupo, continuar con los demás
+          print('Error al cargar preguntas del grupo ${grupoDoc.id}: $e');
+        }
       }).toList();
 
+      // Esperar a que todas las consultas se completen
+      await Future.wait(futures);
+
+      // Asignar todas las preguntas a la lista del estado
+      _preguntas = todasLasPreguntas;
 
       setState(() {
         _isLoading = false;
@@ -90,6 +113,7 @@ class _PreguntasScreenState extends ConsumerState<PreguntasScreen> {
         for (final respuesta in respuestasState.todasLasRespuestas) {
           notifier.agregarRespuesta(
             respuesta.preguntaId,
+            respuesta.grupoId,
             respuesta.tipoPregunta,
             respuesta.descripcionPregunta,
             respuestaTexto: respuesta.respuestaTexto,
@@ -133,6 +157,7 @@ class _PreguntasScreenState extends ConsumerState<PreguntasScreen> {
 
     final preguntaActual = _preguntas[contador];
     final preguntaId = preguntaActual.id; // Usar el ID real de Firestore
+    final grupoId = preguntaActual.grupoId; // ID del grupo al que pertenece
     final respuestasState = ref.watch(respuestasProvider);
     final ahora = DateTime.now();
     final respuestaGuardadaObjeto = respuestasState.todasLasRespuestas
@@ -140,6 +165,7 @@ class _PreguntasScreenState extends ConsumerState<PreguntasScreen> {
           (r) => r.preguntaId == preguntaId,
           orElse: () => RespuestaDTO(
             preguntaId: '',
+            grupoId: grupoId,
             tipoPregunta: '',
             descripcionPregunta: '',
             createdAt: ahora,
@@ -170,6 +196,7 @@ class _PreguntasScreenState extends ConsumerState<PreguntasScreen> {
           onRespuestaChanged: (respuesta) {
             _controller.guardarRespuestaUseCase.guardarRespuestaRadio(
               preguntaId,
+              grupoId,
               preguntaActual.tipo,
               preguntaActual.descripcion,
               respuesta,
@@ -189,6 +216,7 @@ class _PreguntasScreenState extends ConsumerState<PreguntasScreen> {
           onFotoChanged: (imageUrl) {
             _controller.guardarRespuestaUseCase.guardarRespuestaImagen(
               preguntaId,
+              grupoId,
               preguntaActual.tipo,
               preguntaActual.descripcion,
               imageUrl, // Ruta local del archivo (se subirá al finalizar)
@@ -197,6 +225,7 @@ class _PreguntasScreenState extends ConsumerState<PreguntasScreen> {
           onTextoChanged: (texto) {
             _controller.guardarRespuestaUseCase.guardarRespuestaTexto(
               preguntaId,
+              grupoId,
               preguntaActual.tipo,
               preguntaActual.descripcion,
               texto,
@@ -214,6 +243,7 @@ class _PreguntasScreenState extends ConsumerState<PreguntasScreen> {
           onTextoChanged: (texto) {
             _controller.guardarRespuestaUseCase.guardarRespuestaTexto(
               preguntaId,
+              grupoId,
               preguntaActual.tipo,
               preguntaActual.descripcion,
               texto,
@@ -232,6 +262,7 @@ class _PreguntasScreenState extends ConsumerState<PreguntasScreen> {
           onFotoChanged: (imageUrl) {
             _controller.guardarRespuestaUseCase.guardarRespuestaImagen(
               preguntaId,
+              grupoId,
               preguntaActual.tipo,
               preguntaActual.descripcion,
               imageUrl, // Ruta local del archivo (se subirá al finalizar)

@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 class PreguntaDTO {
   final String id; // ID del documento en Firestore
+  final String grupoId; // ID del grupo/sección al que pertenece
   final DateTime createdAt;
   final String descripcion;
   final String tipo;
@@ -12,6 +13,7 @@ class PreguntaDTO {
 
   PreguntaDTO({
     required this.id,
+    required this.grupoId,
     required this.createdAt,
     required this.descripcion,
     required this.tipo,
@@ -21,9 +23,10 @@ class PreguntaDTO {
     required this.customOptionLabel,
   });
 
-  factory PreguntaDTO.fromMap(String id, Map<String, dynamic> map) {
+  factory PreguntaDTO.fromMap(String id, String grupoId, Map<String, dynamic> map) {
     return PreguntaDTO(
       id: id,
+      grupoId: grupoId,
       createdAt: map['createdAt'] != null
           ? (map['createdAt'] as Timestamp).toDate()
           : DateTime.now(),
