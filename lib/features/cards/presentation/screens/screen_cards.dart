@@ -71,10 +71,12 @@ class _ScreenCardsState extends State<ScreenCards> {
 
                 return Cards(
                   squareColor: Colors.white,
-                  squareHeight: 170,
-                  squareWidth: 370,
+                  squareHeight: 200,
+                  squareWidth: 380,
                   borderRadius: 20,
                   text: userName,
+                  textColor: const Color.fromARGB(199, 41, 41, 41),
+                  textSize: 20,
                   onTapAction: () {
                     log('Card for $userName tapped');
 
@@ -102,16 +104,28 @@ class _ScreenCardsState extends State<ScreenCards> {
                             answerData['respuestaOpciones'] as List<dynamic>?;
                         final textAnswer =
                             answerData['respuestaTexto'] as String?;
+                        final respuestaImagen =
+                            answerData['respuestaImagen'] as String?;
 
                         String? displayAnswer;
+                        String? linkImage;
+
+                        // Asignar la imagen si existe
+                        if (respuestaImagen != null &&
+                            respuestaImagen.isNotEmpty) {
+                          linkImage = respuestaImagen;
+                        }
+
+                        // Asignar la respuesta de texto o de opciones
                         if (optionsAnswer != null && optionsAnswer.isNotEmpty) {
                           displayAnswer = optionsAnswer.join(', ');
                         } else if (textAnswer != null &&
                             textAnswer.isNotEmpty) {
                           displayAnswer = textAnswer;
                         }
-
-                        if (question != null && displayAnswer != null) {
+                        //Si la respuesta es null no se muestra nada xD
+                        if (question != null &&
+                            (displayAnswer != null || linkImage != null)) {
                           contentWidgets.add(
                             Padding(
                               padding: const EdgeInsets.symmetric(
@@ -128,23 +142,58 @@ class _ScreenCardsState extends State<ScreenCards> {
                                     ),
                                     textAlign: TextAlign.center,
                                   ),
-                                  const SizedBox(height: 5),
-                                  Pildora(
-                                    text: displayAnswer,
-                                    color: const Color.fromARGB(
-                                      255,
-                                      250,
-                                      249,
-                                      249,
+                                  const SizedBox(height: 4),
+                                  if (displayAnswer != null)
+                                    Text(
+                                      displayAnswer,
+                                      style: const TextStyle(fontSize: 14),
                                     ),
-                                    textColor: Colors.black,
-                                    borderColor: const Color.fromARGB(
-                                      255,
-                                      121,
-                                      121,
-                                      121,
+                                  if (linkImage != null)
+                                    Image.network(
+                                      linkImage,
+                                      loadingBuilder:
+                                          (
+                                            BuildContext context,
+                                            Widget child,
+                                            ImageChunkEvent? loadingProgress,
+                                          ) {
+                                            if (loadingProgress == null) {
+                                              return child; // La imagen ya se cargó
+                                            }
+                                            return const Center(
+                                              child:
+                                                  CircularProgressIndicator(), // Círculo de carga
+                                            );
+                                          },
+                                      errorBuilder:
+                                          (context, error, stackTrace) =>
+                                              const SizedBox(
+                                                height: 100,
+                                                width: double.infinity,
+                                                child: Icon(
+                                                  Icons.image_not_supported,
+                                                ),
+                                              ), // Widget en caso de error
                                     ),
-                                  ),
+                                  if (linkImage == null &&
+                                      (textAnswer == null ||
+                                          textAnswer.isEmpty) &&
+                                      (optionsAnswer == null ||
+                                          optionsAnswer.isEmpty))
+                                    Container(
+                                      height: 100,
+                                      width: double.infinity,
+                                      decoration: BoxDecoration(
+                                        color: Colors.grey[200],
+                                        borderRadius: BorderRadius.circular(
+                                          8.0,
+                                        ),
+                                      ),
+                                      child: const Icon(
+                                        Icons.image_outlined,
+                                        color: Colors.grey,
+                                      ),
+                                    ),
                                 ],
                               ),
                             ),
@@ -168,6 +217,8 @@ class _ScreenCardsState extends State<ScreenCards> {
                       builder: (BuildContext context) {
                         return CustomModal(
                           text: userName,
+                          width: 800,
+                          height: 900,
                           content: SingleChildScrollView(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,

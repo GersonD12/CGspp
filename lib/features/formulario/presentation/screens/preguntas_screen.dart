@@ -1,5 +1,3 @@
-import 'dart:developer';
-import 'package:calet/features/formulario/presentation/widgets/obj_numero.dart';
 import 'package:calet/features/formulario/presentation/widgets/widgets.dart';
 import 'package:calet/shared/widgets/vertical_view_standard.dart';
 import 'package:calet/features/formulario/application/dto/dto.dart';
@@ -46,30 +44,27 @@ class _PreguntasScreenState extends ConsumerState<PreguntasScreen> {
 
   Future<void> _fetchPreguntasFromFirestore() async {
     try {
-      log('Iniciando carga de preguntas desde Firestore...');
 
       // Obtener todos los documentos de la colección 'questions'
       final QuerySnapshot querySnapshot = await FirebaseFirestore.instance
           .collection('questions')
           .get();
 
-      log('Documentos encontrados: ${querySnapshot.docs.length}');
 
       // Mapear los documentos a una lista de DTOs
       _preguntas = querySnapshot.docs.map((doc) {
-        log('Procesando documento: ${doc.id}');
-        log('Datos del documento: ${doc.data()}');
-        return PreguntaDTO.fromMap(doc.id, doc.data() as Map<String, dynamic>);
+        return PreguntaDTO.fromMap(
+          doc.id,
+          doc.data() as Map<String, dynamic>,
+        );
       }).toList();
 
-      log('Preguntas cargadas exitosamente: ${_preguntas.length}');
 
       setState(() {
         _isLoading = false;
         _error = ''; // Limpiar error si la carga fue exitosa
       });
     } catch (e) {
-      log('Error al cargar preguntas: $e');
       setState(() {
         _isLoading = false;
         _error = 'Error al cargar las preguntas: $e';
@@ -82,20 +77,15 @@ class _PreguntasScreenState extends ConsumerState<PreguntasScreen> {
     try {
       final user = ref.read(currentUserProvider);
       if (user == null) {
-        log('Usuario no autenticado, no se pueden cargar respuestas guardadas');
         return;
       }
 
-      log('Cargando respuestas guardadas para usuario: ${user.id}');
-
+      
       final repository = getIt<RespuestasRepository>();
       final respuestasState = await repository.downloadRespuestas(user.id);
 
       if (respuestasState != null && respuestasState.totalRespuestas > 0) {
-        log(
-          'Respuestas guardadas encontradas: ${respuestasState.totalRespuestas}',
-        );
-
+        
         // Cargar las respuestas en el provider
         final notifier = ref.read(respuestasProvider.notifier);
         for (final respuesta in respuestasState.todasLasRespuestas) {
@@ -108,13 +98,9 @@ class _PreguntasScreenState extends ConsumerState<PreguntasScreen> {
             respuestaOpciones: respuesta.respuestaOpciones,
           );
         }
-
-        log('Respuestas guardadas cargadas exitosamente en el provider');
-      } else {
-        log('No se encontraron respuestas guardadas');
+        
       }
     } catch (e) {
-      log('Error al cargar respuestas guardadas: $e');
       // No mostrar error al usuario, simplemente continuar sin respuestas previas
     }
   }
@@ -174,21 +160,9 @@ class _PreguntasScreenState extends ConsumerState<PreguntasScreen> {
     // For image input
     final String? respuestaImagenActual =
         respuestaGuardadaObjeto.respuestaImagen;
-
-    log(
-      'DEBUG: Pregunta ID: $preguntaId, Respuesta de opción cargada: $respuestaOpcionActual',
-    );
-    log(
-      'DEBUG: Pregunta ID: $preguntaId, Respuesta de texto cargada: $respuestaTextoActual',
-    );
-
-    // Usar un switch para manejar diferentes tipos de preguntas
-    log('Tipo de pregunta: "${preguntaActual.tipo}"');
-    log('Opciones: ${preguntaActual.opciones}');
-
     switch (preguntaActual.tipo.toLowerCase().trim()) {
       case 'multiple':
-        return RadioQuestionWidget(
+        return PillQuestionWidget(
           pregunta: preguntaActual.descripcion,
           opciones: preguntaActual.opciones,
           allowCustomOption: preguntaActual.allowCustomOption,
@@ -214,7 +188,6 @@ class _PreguntasScreenState extends ConsumerState<PreguntasScreen> {
           textoArriba: false,
           lineasTexto: 1,
           onFotoChanged: (imageUrl) {
-            log('Ruta imagen seleccionada: $imageUrl');
             _controller.guardarRespuestaUseCase.guardarRespuestaImagen(
               preguntaId,
               preguntaActual.tipo,
@@ -275,7 +248,6 @@ class _PreguntasScreenState extends ConsumerState<PreguntasScreen> {
           textoPlaceholder: preguntaActual.encabezado,
           imagenInicialPath: respuestaImagenActual,
           onFotoChanged: (imageUrl) {
-            log('Ruta imagen seleccionada: $imageUrl');
             _controller.guardarRespuestaUseCase.guardarRespuestaImagen(
               preguntaId,
               preguntaActual.tipo,
