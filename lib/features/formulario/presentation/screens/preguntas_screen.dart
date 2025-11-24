@@ -22,6 +22,7 @@ class PreguntasScreen extends ConsumerStatefulWidget {
 class _PreguntasScreenState extends ConsumerState<PreguntasScreen> {
   int contador = 0;
   List<PreguntaDTO> _preguntas = [];
+  List<List<PreguntaDTO>> _preguntasAgrupadas = []; // Lista de bloques: cada bloque puede ser una pregunta o un grupo de múltiples
   Map<String, List<PreguntaDTO>> _preguntasPorGrupo = {};
   Map<String, SeccionDTO> _secciones = {};
   List<String> _ordenSecciones = [];
@@ -54,6 +55,9 @@ class _PreguntasScreenState extends ConsumerState<PreguntasScreen> {
       _ordenSecciones = resultado['ordenSecciones'] as List<String>;
       _preguntasPorGrupo = resultado['preguntasPorGrupo'] as Map<String, List<PreguntaDTO>>;
 
+      // Agrupar preguntas múltiples de la misma sección
+      _preguntasAgrupadas = _agruparPreguntasMultiples(_preguntas);
+
       setState(() {
         _isLoading = false;
         _error = '';
@@ -74,6 +78,49 @@ class _PreguntasScreenState extends ConsumerState<PreguntasScreen> {
     }
   }
 
+  /// Agrupa las preguntas múltiples de la misma sección
+  /// Todas las preguntas múltiples de una sección se agrupan juntas y se ordenan por 'orden'
+  /// Las preguntas no múltiples mantienen su posición original relativa
+  List<List<PreguntaDTO>> _agruparPreguntasMultiples(List<PreguntaDTO> preguntas) {
+    if (preguntas.isEmpty) return [];
+
+    // 1. Agrupar todas las preguntas múltiples por sección y ordenarlas
+    final Map<String, List<PreguntaDTO>> multiplesPorSeccion = {};
+    for (final pregunta in preguntas) {
+      if (pregunta.tipo.toLowerCase().trim() == 'multiple') {
+        multiplesPorSeccion.putIfAbsent(pregunta.grupoId, () => []).add(pregunta);
+      }
+    }
+    
+    // Ordenar múltiples dentro de cada sección por 'orden'
+    for (final lista in multiplesPorSeccion.values) {
+      lista.sort((a, b) => a.orden.compareTo(b.orden));
+    }
+
+    // 2. Construir lista final: cuando encontramos la primera múltiple de una sección,
+    // agregamos todas las múltiples de esa sección agrupadas
+    final List<List<PreguntaDTO>> grupos = [];
+    final Set<String> seccionesMultiplesProcesadas = {};
+    
+    for (final pregunta in preguntas) {
+      final esMultiple = pregunta.tipo.toLowerCase().trim() == 'multiple';
+      
+      if (esMultiple) {
+        // Primera vez que encontramos una múltiple de esta sección
+        if (!seccionesMultiplesProcesadas.contains(pregunta.grupoId)) {
+          grupos.add(multiplesPorSeccion[pregunta.grupoId]!);
+          seccionesMultiplesProcesadas.add(pregunta.grupoId);
+        }
+        // Si ya procesamos esta sección, saltamos esta pregunta (ya está en el grupo)
+      } else {
+        // Pregunta no múltiple: agregar individualmente
+        grupos.add([pregunta]);
+      }
+    }
+
+    return grupos;
+  }
+
   Future<void> _loadRespuestasGuardadas() async {
     if (_preguntas.isEmpty) return;
 
@@ -82,15 +129,12 @@ class _PreguntasScreenState extends ConsumerState<PreguntasScreen> {
     await useCase.execute(preguntasActivasIds: preguntasActivasIds);
   }
 
-  List<PreguntaDTO> _getPreguntasDeSeccionActual() {
-    if (_preguntas.isEmpty || contador >= _preguntas.length) {
+  /// Obtiene el bloque actual de preguntas (puede ser una sola o un grupo de múltiples)
+  List<PreguntaDTO> _getBloqueActual() {
+    if (_preguntasAgrupadas.isEmpty || contador >= _preguntasAgrupadas.length) {
       return [];
     }
-    final grupoIdActual = _preguntas[contador].grupoId;
-    return PreguntasProgressHelper.getPreguntasDeSeccion(
-      grupoId: grupoIdActual,
-      preguntasPorGrupo: _preguntasPorGrupo,
-    );
+    return _preguntasAgrupadas[contador];
   }
 
   void _continuarASiguienteSeccion() {
@@ -106,16 +150,12 @@ class _PreguntasScreenState extends ConsumerState<PreguntasScreen> {
           );
           
           if (siguienteSeccionId != null) {
-            // Encontrar la primera pregunta de la siguiente sección
-            final preguntasSiguienteSeccion = _preguntasPorGrupo[siguienteSeccionId] ?? [];
-            if (preguntasSiguienteSeccion.isNotEmpty) {
-              final primeraPreguntaSiguiente = preguntasSiguienteSeccion.first;
-              final indicePrimeraPregunta = _preguntas.indexWhere(
-                (p) => p.id == primeraPreguntaSiguiente.id
-              );
-              if (indicePrimeraPregunta != -1) {
-                contador = indicePrimeraPregunta;
-              }
+            // Encontrar el primer bloque de la siguiente sección
+            final indicePrimerBloque = _preguntasAgrupadas.indexWhere(
+              (bloque) => bloque.isNotEmpty && bloque.first.grupoId == siguienteSeccionId
+            );
+            if (indicePrimerBloque != -1) {
+              contador = indicePrimerBloque;
             }
           }
         }
@@ -201,28 +241,47 @@ class _PreguntasScreenState extends ConsumerState<PreguntasScreen> {
   }
 
   void siguientePregunta() async {
-    if (contador >= _preguntas.length - 1) return;
+    if (contador >= _preguntasAgrupadas.length - 1) return;
     
-    final preguntaActual = _preguntas[contador];
+    final bloqueActual = _getBloqueActual();
+    if (bloqueActual.isEmpty) return;
+    
+    final preguntaActual = bloqueActual.first;
     final grupoIdActual = preguntaActual.grupoId;
     
-    // Verificar ANTES de avanzar si estamos en la última pregunta de la sección actual
-    final esUltimaPreguntaDeSeccion = PreguntasNavigationHelper.esUltimaPreguntaDeSeccion(
-      preguntaActual: preguntaActual,
-      preguntasPorGrupo: _preguntasPorGrupo,
-    );
+    // Verificar si el siguiente bloque es de otra sección
+    if (contador < _preguntasAgrupadas.length - 1) {
+      final siguienteBloque = _preguntasAgrupadas[contador + 1];
+      if (siguienteBloque.isNotEmpty && siguienteBloque.first.grupoId != grupoIdActual) {
+        // Cambiamos de sección, guardar y mostrar pantalla intermedia
+        await _guardarRespuestasDeSeccion(grupoIdActual);
+        setState(() {
+          _mostrandoPantallaIntermedia = true;
+          _seccionCompletadaId = grupoIdActual;
+        });
+        return;
+      }
+    }
     
-    if (esUltimaPreguntaDeSeccion) {
-      // Estamos en la última pregunta de la sección actual
-      // Guardar respuestas y mostrar pantalla intermedia ANTES de avanzar
+    // Verificar si es el último bloque de la sección actual
+    bool esUltimoBloqueSeccion = true;
+    for (int i = contador + 1; i < _preguntasAgrupadas.length; i++) {
+      final bloque = _preguntasAgrupadas[i];
+      if (bloque.isNotEmpty && bloque.first.grupoId == grupoIdActual) {
+        esUltimoBloqueSeccion = false;
+        break;
+      }
+    }
+    
+    if (esUltimoBloqueSeccion) {
+      // Estamos en el último bloque de la sección
       await _guardarRespuestasDeSeccion(grupoIdActual);
-      
       setState(() {
         _mostrandoPantallaIntermedia = true;
         _seccionCompletadaId = grupoIdActual;
       });
     } else {
-      // No es la última pregunta, avanzar normalmente
+      // Avanzar al siguiente bloque
       setState(() {
         contador++;
       });
@@ -232,7 +291,25 @@ class _PreguntasScreenState extends ConsumerState<PreguntasScreen> {
   void anteriorPregunta() async {
     if (contador == 0) return;
     
-    final preguntaActual = _preguntas[contador];
+    final bloqueActual = _getBloqueActual();
+    if (bloqueActual.isEmpty) return;
+    
+    final preguntaActual = bloqueActual.first;
+    
+    // Verificar si el bloque anterior es de otra sección
+    if (contador > 0) {
+      final bloqueAnterior = _preguntasAgrupadas[contador - 1];
+      if (bloqueAnterior.isNotEmpty && bloqueAnterior.first.grupoId != preguntaActual.grupoId) {
+        // Cambiamos de sección, mostrar pantalla intermedia
+        setState(() {
+          _mostrandoPantallaIntermedia = true;
+          _seccionCompletadaId = null;
+        });
+        return;
+      }
+    }
+    
+    // Verificar si es la primera pregunta de la sección
     final esPrimeraPreguntaDeSeccion = PreguntasNavigationHelper.esPrimeraPreguntaDeSeccion(
       preguntaActual: preguntaActual,
       preguntasPorGrupo: _preguntasPorGrupo,
@@ -250,102 +327,72 @@ class _PreguntasScreenState extends ConsumerState<PreguntasScreen> {
     }
   }
 
+  /// Callbacks para guardar respuestas
+  void _onMultipleChanged(String preguntaId, String grupoId, String tipo, String descripcion, String encabezado, String? emoji, List<String> respuestas, Map<String, String>? opcionesConEmoji, Map<String, String>? opcionesConText) {
+    _controller?.guardarRespuestaUseCase.guardarRespuestaRadio(
+      preguntaId, grupoId, tipo, descripcion, encabezado, emoji, respuestas, opcionesConEmoji, opcionesConText,
+    );
+  }
+
+  void _onTextoChanged(String preguntaId, String grupoId, String tipo, String descripcion, String encabezado, String? emoji, String? texto) {
+    _controller?.guardarRespuestaUseCase.guardarRespuestaTexto(
+      preguntaId, grupoId, tipo, descripcion, encabezado, emoji, texto ?? '',
+    );
+  }
+
+  void _onNumeroChanged(String preguntaId, String grupoId, String tipo, String descripcion, String encabezado, String? emoji, String? numero) {
+    _controller?.guardarRespuestaUseCase.guardarRespuestaNumero(
+      preguntaId, grupoId, tipo, descripcion, encabezado, emoji, numero ?? '',
+    );
+  }
+
+  void _onImagenChanged(String preguntaId, String grupoId, String tipo, String descripcion, String encabezado, String? emoji, List<String> imagenes) {
+    _controller?.guardarRespuestaUseCase.guardarRespuestaImagenes(
+      preguntaId, grupoId, tipo, descripcion, encabezado, emoji, imagenes,
+    );
+  }
+
   Widget _buildPreguntaWidget() {
     if (_error.isNotEmpty) {
-      return Center(
-        child: Text(
-          _error,
-          style: const TextStyle(color: Colors.black87),
-        ),
-      );
+      return Center(child: Text(_error, style: const TextStyle(color: Colors.black87)));
     }
-    if (_preguntas.isEmpty) {
-      return const Center(
-        child: Text(
-          'No hay preguntas para mostrar.',
-          style: TextStyle(color: Colors.black87),
-        ),
-      );
-    }
-
-    final preguntaActual = _preguntas[contador];
-    final preguntaId = preguntaActual.id;
-    final grupoId = preguntaActual.grupoId;
-    final respuestasState = ref.watch(respuestasProvider);
-    final ahora = DateTime.now();
     
-    final respuestaGuardadaObjeto = respuestasState.todasLasRespuestas.firstWhere(
-      (r) => r.preguntaId == preguntaId,
-      orElse: () => RespuestaDTO(
-        preguntaId: '',
-        grupoId: grupoId,
-        tipoPregunta: '',
-        descripcionPregunta: '',
-        encabezadoPregunta: '',
-        createdAt: ahora,
-        updatedAt: ahora,
-      ),
-    );
+    final bloqueActual = _getBloqueActual();
+    if (bloqueActual.isEmpty) {
+      return const Center(child: Text('No hay preguntas para mostrar.', style: TextStyle(color: Colors.black87)));
+    }
 
-    return PreguntaWidgetFactory.create(
-      pregunta: preguntaActual,
-      respuestaGuardada: respuestaGuardadaObjeto,
-      onMultipleChanged: (
-        preguntaId,
-        grupoId,
-        tipo,
-        descripcion,
-        encabezado,
-        emoji,
-        respuestas,
-        opcionesConEmoji,
-        opcionesConText,
-      ) {
-        _controller?.guardarRespuestaUseCase.guardarRespuestaRadio(
-          preguntaId,
-          grupoId,
-          tipo,
-          descripcion,
-          encabezado,
-          emoji,
-          respuestas,
-          opcionesConEmoji,
-          opcionesConText,
-        );
-      },
-      onTextoChanged: (preguntaId, grupoId, tipo, descripcion, encabezado, emoji, texto) {
-        _controller?.guardarRespuestaUseCase.guardarRespuestaTexto(
-          preguntaId,
-          grupoId,
-          tipo,
-          descripcion,
-          encabezado,
-          emoji,
-          texto,
-        );
-      },
-      onNumeroChanged: (preguntaId, grupoId, tipo, descripcion, encabezado, emoji, numero) {
-        _controller?.guardarRespuestaUseCase.guardarRespuestaNumero(
-          preguntaId,
-          grupoId,
-          tipo,
-          descripcion,
-          encabezado,
-          emoji,
-          numero,
-        );
-      },
-      onImagenChanged: (preguntaId, grupoId, tipo, descripcion, encabezado, emoji, imagenes) {
-        _controller?.guardarRespuestaUseCase.guardarRespuestaImagenes(
-          preguntaId,
-          grupoId,
-          tipo,
-          descripcion,
-          encabezado,
-          emoji,
-          imagenes,
-        );
-      },
+    final respuestasState = ref.watch(respuestasProvider);
+    final respuestasMap = {
+      for (final r in respuestasState.todasLasRespuestas) r.preguntaId: r
+    };
+
+    // Si hay múltiples preguntas, usar el widget de grupo
+    if (bloqueActual.length > 1) {
+      return PreguntasMultipleGroupWidget(
+        preguntas: bloqueActual,
+        respuestasGuardadas: respuestasMap,
+        onMultipleChanged: _onMultipleChanged,
+        onTextoChanged: _onTextoChanged,
+        onNumeroChanged: _onNumeroChanged,
+        onImagenChanged: _onImagenChanged,
+      );
+    }
+
+    // Una sola pregunta
+    final pregunta = bloqueActual.first;
+    final respuestaGuardada = respuestasMap[pregunta.id];
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      child: PreguntaWidgetFactory.create(
+        pregunta: pregunta,
+        respuestaGuardada: respuestaGuardada,
+        onMultipleChanged: _onMultipleChanged,
+        onTextoChanged: _onTextoChanged,
+        onNumeroChanged: _onNumeroChanged,
+        onImagenChanged: _onImagenChanged,
+      ),
     );
   }
 
@@ -415,34 +462,57 @@ class _PreguntasScreenState extends ConsumerState<PreguntasScreen> {
     }
 
     final respuestasState = ref.watch(respuestasProvider);
-    final preguntaId = contador < _preguntas.length ? _preguntas[contador].id : '';
-    final isCurrentQuestionAnswered = PreguntasProgressHelper.isPreguntaRespondida(
-      preguntaId: preguntaId,
-      respuestasState: respuestasState,
-    );
-
-    final preguntasSeccionActual = _getPreguntasDeSeccionActual();
-    final grupoIdActual = contador < _preguntas.length ? _preguntas[contador].grupoId : '';
-    final preguntaActual = contador < _preguntas.length ? _preguntas[contador] : null;
+    final bloqueActual = _getBloqueActual();
     
-    final indiceEnSeccion = preguntaActual != null
-        ? PreguntasProgressHelper.getIndiceEnSeccion(
-            pregunta: preguntaActual,
-            preguntasSeccion: preguntasSeccionActual,
-          )
-        : 0;
+    // Verificar si todas las preguntas del bloque actual están respondidas
+    bool isCurrentQuestionAnswered = false;
+    if (bloqueActual.isNotEmpty) {
+      if (bloqueActual.length > 1) {
+        // Si hay múltiples preguntas en el bloque, verificar que todas estén respondidas
+        isCurrentQuestionAnswered = bloqueActual.every((pregunta) {
+          return PreguntasProgressHelper.isPreguntaRespondida(
+            preguntaId: pregunta.id,
+            respuestasState: respuestasState,
+          );
+        });
+      } else {
+        // Solo una pregunta en el bloque
+        isCurrentQuestionAnswered = PreguntasProgressHelper.isPreguntaRespondida(
+          preguntaId: bloqueActual.first.id,
+          respuestasState: respuestasState,
+        );
+      }
+    }
+
+    final grupoIdActual = bloqueActual.isNotEmpty ? bloqueActual.first.grupoId : '';
+    
+    // Calcular el progreso basado en bloques (páginas) dentro de la sección actual
+    int indiceBloqueEnSeccion = 0;
+    int totalBloquesEnSeccion = 0;
+    
+    if (grupoIdActual.isNotEmpty) {
+      // Contar bloques de la sección actual
+      for (int i = 0; i < _preguntasAgrupadas.length; i++) {
+        final bloque = _preguntasAgrupadas[i];
+        if (bloque.isNotEmpty && bloque.first.grupoId == grupoIdActual) {
+          if (i == contador) {
+            indiceBloqueEnSeccion = totalBloquesEnSeccion;
+          }
+          totalBloquesEnSeccion++;
+        }
+      }
+    }
     
     final progreso = PreguntasProgressHelper.calcularProgreso(
-      indicePreguntaEnSeccion: indiceEnSeccion,
-      totalPreguntasEnSeccion: preguntasSeccionActual.length,
+      indicePreguntaEnSeccion: indiceBloqueEnSeccion,
+      totalPreguntasEnSeccion: totalBloquesEnSeccion,
     );
     
-    final totalPreguntasSeccion = preguntasSeccionActual.length;
     final titulo = PreguntasProgressHelper.generarTitulo(
-      contador: contador,
-      totalPreguntas: _preguntas.length,
-      indiceEnSeccion: indiceEnSeccion,
-      totalPreguntasSeccion: totalPreguntasSeccion,
+      contador: indiceBloqueEnSeccion,
+      totalPreguntas: totalBloquesEnSeccion,
+      indiceEnSeccion: indiceBloqueEnSeccion,
+      totalPreguntasSeccion: totalBloquesEnSeccion,
       seccionActual: _secciones[grupoIdActual],
     );
 
@@ -480,6 +550,7 @@ class _PreguntasScreenState extends ConsumerState<PreguntasScreen> {
                     centerTitle: true,
                     showBackButton: false, // Nunca mostrar botón de retroceso en la pantalla de preguntas
                     padding: EdgeInsets.zero, // Sin padding adicional
+                    hasScrollBody: true, // Permitir scroll cuando hay múltiples preguntas
                     child: Column(
                       children: [
                         const SizedBox(height: 20),
@@ -497,72 +568,27 @@ class _PreguntasScreenState extends ConsumerState<PreguntasScreen> {
                           ),
                         ),
                         const SizedBox(height: 10),
-                        // Tarjeta blanca con el contenido de la pregunta
-                        Expanded(
-                          child: Center(
-                            child: Cuadrado(
-                              child: SingleChildScrollView(
-                                padding: const EdgeInsets.all(16.0),
-                                child: _buildPreguntaWidget(),
-                              ),
-                            ),
-                          ),
-                        ),
+                        // Contenido de la pregunta sin tarjeta blanca
+                        _buildPreguntaWidget(),
                       ],
                     ),
                   ),
                 ),
-                // Botones de navegación fuera de la tarjeta, siempre en la parte inferior
-                // Respetar el safe area inferior para que no queden muy abajo
-                Padding(
-                  padding: EdgeInsets.only(
-                    left: 16.0,
-                    right: 16.0,
-                    top: 16.0,
-                    bottom: 16.0 + MediaQuery.of(context).padding.bottom, // Agregar padding del safe area inferior
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      // Botón Atrás
-                      puedeRetroceder
-                          ? BotonSiguiente(
-                              onPressed: anteriorPregunta,
-                              icon: Icons.arrow_back_ios_outlined,
-                              texto: 'Atrás',
-                              color: const Color.fromARGB(255, 248, 226, 185),
-                              textColor: const Color.fromARGB(255, 0, 0, 0),
-                              elevation: 4.0,
-                              height: 60,
-                              width: 120,
-                            )
-                          : const SizedBox(width: 120), // Espacio para mantener centrado el botón siguiente
-                      // Botón Siguiente
-                      BotonSiguiente(
-                        texto: contador >= _preguntas.length - 1 ? 'Ver respuestas' : 'Siguiente',
-                        onPressed: contador < _preguntas.length - 1
-                            ? (isCurrentQuestionAnswered ? siguientePregunta : () {})
-                            : () async {
-                                if (contador < _preguntas.length) {
-                                  final grupoIdActual = _preguntas[contador].grupoId;
-                                  await _guardarRespuestasDeSeccion(grupoIdActual);
-                                }
-                                _controller?.finalizarFormulario(context, respuestasState);
-                              },
-                        color: (contador < _preguntas.length - 1 && !isCurrentQuestionAnswered)
-                            ? const Color.fromARGB(255, 235, 213, 172)
-                            : const Color.fromARGB(255, 248, 226, 185),
-                        icon: contador < _preguntas.length - 1
-                            ? Icons.arrow_forward_ios_outlined
-                            : Icons.check_rounded,
-                        elevation: (contador < _preguntas.length - 1 && !isCurrentQuestionAnswered) ? 0.0 : 5.0,
-                        textColor: const Color.fromARGB(255, 0, 0, 0),
-                        fontSize: 16,
-                        width: 150,
-                        height: 60,
-                      ),
-                    ],
-                  ),
+                // Botones de navegación
+                PreguntasNavigationButtons(
+                  puedeRetroceder: puedeRetroceder,
+                  puedeAvanzar: contador < _preguntasAgrupadas.length - 1,
+                  preguntaRespondida: isCurrentQuestionAnswered,
+                  esUltimaPregunta: contador >= _preguntasAgrupadas.length - 1,
+                  onAtras: anteriorPregunta,
+                  onSiguiente: siguientePregunta,
+                  onFinalizar: () async {
+                    final bloqueActual = _getBloqueActual();
+                    if (bloqueActual.isNotEmpty) {
+                      await _guardarRespuestasDeSeccion(bloqueActual.first.grupoId);
+                    }
+                    _controller?.finalizarFormulario(context, respuestasState);
+                  },
                 ),
               ],
             ),
@@ -572,3 +598,4 @@ class _PreguntasScreenState extends ConsumerState<PreguntasScreen> {
     );
   }
 }
+

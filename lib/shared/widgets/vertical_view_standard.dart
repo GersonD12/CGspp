@@ -85,6 +85,7 @@ class VerticalViewStandardScrollable extends StatelessWidget {
   final EdgeInsets? padding;
   final bool centerTitle;
   final ScrollPhysics? physics;
+  final bool hasScrollBody;
 
   const VerticalViewStandardScrollable({
     super.key,
@@ -102,6 +103,7 @@ class VerticalViewStandardScrollable extends StatelessWidget {
     this.centerTitle = true,
     this.physics,
     this.appBarFloats = false,
+    this.hasScrollBody = false,
   });
 
   @override
@@ -145,7 +147,7 @@ class VerticalViewStandardScrollable extends StatelessWidget {
 
             // CONTENIDO - Usar SliverFillRemaining para manejar Expanded dentro del child
             SliverFillRemaining(
-              hasScrollBody: false,
+              hasScrollBody: hasScrollBody,
               child: SafeArea(
                 top: false, // Ya manejamos el top con MediaQuery.padding.top en el botón
                 bottom: true, // Respetar el safe area inferior
