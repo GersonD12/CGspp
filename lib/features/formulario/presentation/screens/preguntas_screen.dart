@@ -93,31 +93,32 @@ class _PreguntasScreenState extends ConsumerState<PreguntasScreen> {
     );
   }
 
-  Future<void> _verificarYGuardarSeccionCompletada(String grupoIdAnterior, {bool esAvance = true}) async {
-    if (contador >= _preguntas.length) return;
-    
-    final grupoIdActual = _preguntas[contador].grupoId;
-    
-    if (PreguntasNavigationHelper.seCompletoSeccion(
-      grupoIdAnterior: grupoIdAnterior,
-      grupoIdActual: grupoIdActual,
-    )) {
-      await _guardarRespuestasDeSeccion(grupoIdAnterior);
-      
-      if (esAvance) {
-        setState(() {
-          _mostrandoPantallaIntermedia = true;
-          _seccionCompletadaId = grupoIdAnterior;
-        });
-      }
-    }
-  }
-
   void _continuarASiguienteSeccion() {
     setState(() {
       if (_mostrarPantallaInicial) {
         _mostrarPantallaInicial = false;
       } else {
+        // Avanzar a la siguiente sección
+        if (_seccionCompletadaId != null) {
+          final siguienteSeccionId = PreguntasNavigationHelper.getSiguienteSeccion(
+            seccionActualId: _seccionCompletadaId!,
+            ordenSecciones: _ordenSecciones,
+          );
+          
+          if (siguienteSeccionId != null) {
+            // Encontrar la primera pregunta de la siguiente sección
+            final preguntasSiguienteSeccion = _preguntasPorGrupo[siguienteSeccionId] ?? [];
+            if (preguntasSiguienteSeccion.isNotEmpty) {
+              final primeraPreguntaSiguiente = preguntasSiguienteSeccion.first;
+              final indicePrimeraPregunta = _preguntas.indexWhere(
+                (p) => p.id == primeraPreguntaSiguiente.id
+              );
+              if (indicePrimeraPregunta != -1) {
+                contador = indicePrimeraPregunta;
+              }
+            }
+          }
+        }
         _mostrandoPantallaIntermedia = false;
         _seccionCompletadaId = null;
       }
@@ -125,15 +126,10 @@ class _PreguntasScreenState extends ConsumerState<PreguntasScreen> {
   }
 
   void _retrocederDesdePantallaIntermedia() {
-    if (contador == 0) return;
-    
-    final grupoIdActual = _preguntas[contador].grupoId;
-    final indiceSeccionActual = _ordenSecciones.indexOf(grupoIdActual);
-    
-    if (indiceSeccionActual > 0) {
-      final seccionAnteriorId = _ordenSecciones[indiceSeccionActual - 1];
+    if (_seccionCompletadaId != null) {
+      // Retroceder a la última pregunta de la sección que se acaba de completar
       final indiceUltimaPregunta = PreguntasNavigationHelper.getIndiceUltimaPreguntaSeccion(
-        seccionId: seccionAnteriorId,
+        seccionId: _seccionCompletadaId!,
         preguntas: _preguntas,
         preguntasPorGrupo: _preguntasPorGrupo,
       );
@@ -144,12 +140,38 @@ class _PreguntasScreenState extends ConsumerState<PreguntasScreen> {
           _mostrandoPantallaIntermedia = false;
           _seccionCompletadaId = null;
         });
+      } else {
+        setState(() {
+          _mostrandoPantallaIntermedia = false;
+          _seccionCompletadaId = null;
+        });
       }
-    } else {
-      setState(() {
-        _mostrandoPantallaIntermedia = false;
-        _seccionCompletadaId = null;
-      });
+    } else if (contador < _preguntas.length) {
+      // Retroceder normalmente dentro de la misma sección
+      final grupoIdActual = _preguntas[contador].grupoId;
+      final indiceSeccionActual = _ordenSecciones.indexOf(grupoIdActual);
+      
+      if (indiceSeccionActual > 0) {
+        final seccionAnteriorId = _ordenSecciones[indiceSeccionActual - 1];
+        final indiceUltimaPregunta = PreguntasNavigationHelper.getIndiceUltimaPreguntaSeccion(
+          seccionId: seccionAnteriorId,
+          preguntas: _preguntas,
+          preguntasPorGrupo: _preguntasPorGrupo,
+        );
+        
+        if (indiceUltimaPregunta != null) {
+          setState(() {
+            contador = indiceUltimaPregunta;
+            _mostrandoPantallaIntermedia = false;
+            _seccionCompletadaId = null;
+          });
+        }
+      } else {
+        setState(() {
+          _mostrandoPantallaIntermedia = false;
+          _seccionCompletadaId = null;
+        });
+      }
     }
   }
 
@@ -181,13 +203,30 @@ class _PreguntasScreenState extends ConsumerState<PreguntasScreen> {
   void siguientePregunta() async {
     if (contador >= _preguntas.length - 1) return;
     
-    final grupoIdAnterior = _preguntas[contador].grupoId;
+    final preguntaActual = _preguntas[contador];
+    final grupoIdActual = preguntaActual.grupoId;
     
-    setState(() {
-      contador++;
-    });
-
-    await _verificarYGuardarSeccionCompletada(grupoIdAnterior, esAvance: true);
+    // Verificar ANTES de avanzar si estamos en la última pregunta de la sección actual
+    final esUltimaPreguntaDeSeccion = PreguntasNavigationHelper.esUltimaPreguntaDeSeccion(
+      preguntaActual: preguntaActual,
+      preguntasPorGrupo: _preguntasPorGrupo,
+    );
+    
+    if (esUltimaPreguntaDeSeccion) {
+      // Estamos en la última pregunta de la sección actual
+      // Guardar respuestas y mostrar pantalla intermedia ANTES de avanzar
+      await _guardarRespuestasDeSeccion(grupoIdActual);
+      
+      setState(() {
+        _mostrandoPantallaIntermedia = true;
+        _seccionCompletadaId = grupoIdActual;
+      });
+    } else {
+      // No es la última pregunta, avanzar normalmente
+      setState(() {
+        contador++;
+      });
+    }
   }
 
   void anteriorPregunta() async {
@@ -313,26 +352,35 @@ class _PreguntasScreenState extends ConsumerState<PreguntasScreen> {
   Widget _buildPantallaIntermedia() {
     SeccionDTO? seccionAMostrar;
     bool esRetroceso = false;
+    VoidCallback? onRetroceder;
     
     if (_mostrarPantallaInicial && _ordenSecciones.isNotEmpty) {
       final primeraSeccionId = _ordenSecciones.first;
       seccionAMostrar = _secciones[primeraSeccionId];
+      // En la pantalla inicial, no hay retroceso
+      onRetroceder = null;
     } else if (_mostrandoPantallaIntermedia && _seccionCompletadaId != null) {
+      // Mostrar la siguiente sección después de completar una
       final siguienteSeccionId = PreguntasNavigationHelper.getSiguienteSeccion(
         seccionActualId: _seccionCompletadaId!,
         ordenSecciones: _ordenSecciones,
       );
       
       if (siguienteSeccionId == null) {
+        // No hay siguiente sección, continuar normalmente
         _continuarASiguienteSeccion();
         return const SizedBox.shrink();
       }
       
       seccionAMostrar = _secciones[siguienteSeccionId];
+      // Siempre permitir retroceder a la última pregunta de la sección completada
+      onRetroceder = _retrocederDesdePantallaIntermedia;
     } else if (_mostrandoPantallaIntermedia && _seccionCompletadaId == null && contador < _preguntas.length) {
+      // Retrocediendo: mostrar la sección actual
       final grupoIdActual = _preguntas[contador].grupoId;
       seccionAMostrar = _secciones[grupoIdActual];
       esRetroceso = true;
+      onRetroceder = _retrocederDesdePantallaIntermedia;
     }
 
     if (seccionAMostrar == null) {
@@ -344,7 +392,7 @@ class _PreguntasScreenState extends ConsumerState<PreguntasScreen> {
       esRetroceso: esRetroceso,
       mostrarPantallaInicial: _mostrarPantallaInicial,
       onContinuar: _continuarASiguienteSeccion,
-      onRetroceder: esRetroceso && !_mostrarPantallaInicial ? _retrocederDesdePantallaIntermedia : null,
+      onRetroceder: onRetroceder,
     );
   }
 
@@ -398,101 +446,125 @@ class _PreguntasScreenState extends ConsumerState<PreguntasScreen> {
       seccionActual: _secciones[grupoIdActual],
     );
 
-    final esPrimeraPreguntaPrimeraSeccion = PreguntasProgressHelper.esPrimeraPreguntaPrimeraSeccion(
-      contador: contador,
-      preguntas: _preguntas,
-      ordenSecciones: _ordenSecciones,
-    );
+    // Puede retroceder si no es la primera pregunta (contador > 0)
+    final puedeRetroceder = contador > 0;
 
-    final puedeRetroceder = contador > 0 || 
-        PreguntasNavigationHelper.getIndiceUltimaPreguntaSeccionAnterior(
-          contador: contador,
-          preguntas: _preguntas,
-          preguntasPorGrupo: _preguntasPorGrupo,
-          ordenSecciones: _ordenSecciones,
-        ) != null;
-
-    return VerticalViewStandardScrollable(
-      title: titulo,
-      headerColor: const Color.fromARGB(255, 248, 226, 185),
-      foregroundColor: Colors.black,
+    return Scaffold(
       backgroundColor: const Color.fromARGB(255, 248, 226, 185),
-      centerTitle: true,
-      showBackButton: esPrimeraPreguntaPrimeraSeccion,
-      child: Column(
+      body: Column(
         children: [
-          const SizedBox(height: 20),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20.0),
+          // Pequeño espacio arriba de la barra de progreso
+          const SizedBox(height: 60),
+          // Barra de progreso arriba del todo, sin bordes redondeados, ocupa todo el ancho
+          SizedBox(
+            width: double.infinity,
             child: ProgresoAnimado(
               progress: progreso,
               color: const Color.fromARGB(255, 76, 94, 175),
-              height: 25.0,
+              height: 10.0,
               backgroundColor: const Color.fromARGB(255, 226, 219, 204),
-              borderRadius: BorderRadius.circular(15.0),
+              borderRadius: BorderRadius.zero, // Sin bordes redondeados
               duration: const Duration(milliseconds: 300),
             ),
           ),
-          const SizedBox(height: 60),
-          Center(
-            child: Cuadrado(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
+          // AppBar y contenido
+          Expanded(
+            child: Column(
+              children: [
+                Expanded(
+                  child: VerticalViewStandardScrollable(
+                    title: '', // Sin título en el AppBar
+                    headerColor: const Color.fromARGB(255, 248, 226, 185),
+                    foregroundColor: Colors.black,
+                    backgroundColor: const Color.fromARGB(255, 248, 226, 185),
+                    centerTitle: true,
+                    showBackButton: false, // Nunca mostrar botón de retroceso en la pantalla de preguntas
+                    padding: EdgeInsets.zero, // Sin padding adicional
+                    child: Column(
                       children: [
-                        puedeRetroceder
-                            ? BotonSiguiente(
-                                onPressed: anteriorPregunta,
-                                icon: Icons.arrow_back_ios_outlined,
-                                texto: '',
-                                color: const Color.fromARGB(255, 248, 226, 185),
-                                textColor: const Color.fromARGB(255, 0, 0, 0),
-                                elevation: 4.0,
-                                height: 40,
-                                width: 40,
-                              )
-                            : const SizedBox(width: 56),
-                      ],
-                    ),
-                    _buildPreguntaWidget(),
-                    const SizedBox(height: 10),
-                    const RespuestasIndicator(),
-                    const SizedBox(height: 20),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        BotonSiguiente(
-                          texto: contador >= _preguntas.length - 1 ? 'Ver respuestas' : 'Siguiente',
-                          onPressed: contador < _preguntas.length - 1
-                              ? (isCurrentQuestionAnswered ? siguientePregunta : () {})
-                              : () async {
-                                  if (contador < _preguntas.length) {
-                                    final grupoIdActual = _preguntas[contador].grupoId;
-                                    await _guardarRespuestasDeSeccion(grupoIdActual);
-                                  }
-                                  _controller?.finalizarFormulario(context, respuestasState);
-                                },
-                          color: (contador < _preguntas.length - 1 && !isCurrentQuestionAnswered)
-                              ? const Color.fromARGB(255, 235, 213, 172)
-                              : const Color.fromARGB(255, 248, 226, 185),
-                          icon: contador < _preguntas.length - 1
-                              ? Icons.arrow_forward_ios_outlined
-                              : Icons.check_rounded,
-                          elevation: (contador < _preguntas.length - 1 && !isCurrentQuestionAnswered) ? 0.0 : 5.0,
-                          textColor: const Color.fromARGB(255, 0, 0, 0),
-                          fontSize: 16,
-                          width: 150,
-                          height: 60,
+                        const SizedBox(height: 20),
+                        // Título de la sección en el contenido principal
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                          child: Text(
+                            titulo,
+                            style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black87,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        // Tarjeta blanca con el contenido de la pregunta
+                        Expanded(
+                          child: Center(
+                            child: Cuadrado(
+                              child: SingleChildScrollView(
+                                padding: const EdgeInsets.all(16.0),
+                                child: _buildPreguntaWidget(),
+                              ),
+                            ),
+                          ),
                         ),
                       ],
                     ),
-                  ],
+                  ),
                 ),
-              ),
+                // Botones de navegación fuera de la tarjeta, siempre en la parte inferior
+                // Respetar el safe area inferior para que no queden muy abajo
+                Padding(
+                  padding: EdgeInsets.only(
+                    left: 16.0,
+                    right: 16.0,
+                    top: 16.0,
+                    bottom: 16.0 + MediaQuery.of(context).padding.bottom, // Agregar padding del safe area inferior
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      // Botón Atrás
+                      puedeRetroceder
+                          ? BotonSiguiente(
+                              onPressed: anteriorPregunta,
+                              icon: Icons.arrow_back_ios_outlined,
+                              texto: 'Atrás',
+                              color: const Color.fromARGB(255, 248, 226, 185),
+                              textColor: const Color.fromARGB(255, 0, 0, 0),
+                              elevation: 4.0,
+                              height: 60,
+                              width: 120,
+                            )
+                          : const SizedBox(width: 120), // Espacio para mantener centrado el botón siguiente
+                      // Botón Siguiente
+                      BotonSiguiente(
+                        texto: contador >= _preguntas.length - 1 ? 'Ver respuestas' : 'Siguiente',
+                        onPressed: contador < _preguntas.length - 1
+                            ? (isCurrentQuestionAnswered ? siguientePregunta : () {})
+                            : () async {
+                                if (contador < _preguntas.length) {
+                                  final grupoIdActual = _preguntas[contador].grupoId;
+                                  await _guardarRespuestasDeSeccion(grupoIdActual);
+                                }
+                                _controller?.finalizarFormulario(context, respuestasState);
+                              },
+                        color: (contador < _preguntas.length - 1 && !isCurrentQuestionAnswered)
+                            ? const Color.fromARGB(255, 235, 213, 172)
+                            : const Color.fromARGB(255, 248, 226, 185),
+                        icon: contador < _preguntas.length - 1
+                            ? Icons.arrow_forward_ios_outlined
+                            : Icons.check_rounded,
+                        elevation: (contador < _preguntas.length - 1 && !isCurrentQuestionAnswered) ? 0.0 : 5.0,
+                        textColor: const Color.fromARGB(255, 0, 0, 0),
+                        fontSize: 16,
+                        width: 150,
+                        height: 60,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
           ),
         ],

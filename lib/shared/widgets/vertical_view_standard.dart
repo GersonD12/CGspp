@@ -118,38 +118,43 @@ class VerticalViewStandardScrollable extends StatelessWidget {
         child: CustomScrollView(
           physics: physics,
           slivers: <Widget>[
-            SliverAppBar(
-              title: Text(
-                title,
-                style: TextStyle(color: textColor, fontWeight: FontWeight.bold),
+            // Botón de retroceso solo si showBackButton es true (sin AppBar)
+            if (showBackButton)
+              SliverToBoxAdapter(
+                child: Container(
+                  color: headerBgColor,
+                  padding: EdgeInsets.only(
+                    top: MediaQuery.of(context).padding.top,
+                    left: 8,
+                    right: 8,
+                    bottom: 8,
+                  ),
+                  child: Row(
+                    children: [
+                      leading ??
+                          IconButton(
+                            icon: Icon(Icons.arrow_back, color: textColor),
+                            onPressed:
+                                onBackPressed ?? () => Navigator.of(context).pop(),
+                          ),
+                      if (actions != null) ...actions!,
+                    ],
+                  ),
+                ),
               ),
-              centerTitle: centerTitle,
-              backgroundColor: headerBgColor,
-              foregroundColor: textColor,
-              elevation: 0,
-              scrolledUnderElevation: 0, // Mantiene el color fijo al hacer scroll
-              floating: appBarFloats, // Sube la AppBar cuando se desplaza
-              snap: appBarFloats, // La AppBar se muestra/oculta completamente
-              pinned: !appBarFloats, // Fija la AppBar si no flota
-              leading: showBackButton
-                  ? (leading ??
-                        IconButton(
-                          icon: Icon(Icons.arrow_back, color: textColor),
-                          onPressed:
-                              onBackPressed ?? () => Navigator.of(context).pop(),
-                        ))
-                  : null,
-              automaticallyImplyLeading: false, // We handle leading manually
-              actions: actions,
-            ),
 
-            // 2. CONTENIDO DE LA LISTA (SLIVER)
-            SliverToBoxAdapter(
-              child: Container(
-                color: bodyBgColor,
-                child: Padding(
-                  padding: padding ?? const EdgeInsets.all(16.0),
-                  child: child,
+            // CONTENIDO - Usar SliverFillRemaining para manejar Expanded dentro del child
+            SliverFillRemaining(
+              hasScrollBody: false,
+              child: SafeArea(
+                top: false, // Ya manejamos el top con MediaQuery.padding.top en el botón
+                bottom: true, // Respetar el safe area inferior
+                child: Container(
+                  color: bodyBgColor,
+                  child: Padding(
+                    padding: padding ?? const EdgeInsets.all(16.0),
+                    child: child,
+                  ),
                 ),
               ),
             ),
