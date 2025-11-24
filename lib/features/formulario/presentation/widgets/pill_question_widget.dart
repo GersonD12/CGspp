@@ -34,8 +34,22 @@ class _PillQuestionWidgetState extends State<PillQuestionWidget> {
   @override
   void initState() {
     super.initState();
+    _inicializarSelecciones();
+  }
+
+  @override
+  void didUpdateWidget(PillQuestionWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Si las respuestas actuales cambiaron, actualizar la selección
+    if (oldWidget.respuestasActuales != widget.respuestasActuales) {
+      _inicializarSelecciones();
+    }
+  }
+
+  void _inicializarSelecciones() {
     // Inicializar con respuestas actuales o lista vacía
     _seleccionadas = List<String>.from(widget.respuestasActuales ?? []);
+    
     // Extraer texto personalizado si existe
     _customText = _seleccionadas.firstWhere(
       (r) => !widget.opciones.any((op) => op.value == r) && r != widget.customOptionLabel,
@@ -199,6 +213,8 @@ class _PillQuestionWidgetState extends State<PillQuestionWidget> {
               ...widget.opciones.map((opcion) {
                 final bool selected = _isSelected(opcion.value);
                 return ChoiceChip(
+                  padding: const EdgeInsets.all(8),
+                  avatar: null,
                   label: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -216,14 +232,30 @@ class _PillQuestionWidgetState extends State<PillQuestionWidget> {
                   selected: selected,
                   onSelected: (_) => _toggleOpcion(opcion.value),
                   shape: const StadiumBorder(),
+                  showCheckmark: false, // Desactivar el checkmark explícitamente
+                  selectedColor: const Color.fromARGB(255, 76, 94, 175), // Color cuando está seleccionada
+                  backgroundColor: Colors.grey[200], // Color cuando no está seleccionada
+                  labelStyle: TextStyle(
+                    color: selected ? Colors.white : Colors.black87,
+                    fontWeight: selected ? FontWeight.bold : FontWeight.normal,
+                  ),
                 );
               }),
               if (widget.allowCustomOption)
                 ChoiceChip(
+                  padding: const EdgeInsets.all(8),
+                  avatar: null,
                   label: Text(widget.customOptionLabel),
                   selected: _isSelected(widget.customOptionLabel),
                   onSelected: (_) => _toggleCustomOption(),
                   shape: const StadiumBorder(),
+                  showCheckmark: false, // Desactivar el checkmark explícitamente
+                  selectedColor: const Color.fromARGB(255, 76, 94, 175), // Color cuando está seleccionada
+                  backgroundColor: Colors.grey[200], // Color cuando no está seleccionada
+                  labelStyle: TextStyle(
+                    color: _isSelected(widget.customOptionLabel) ? Colors.white : Colors.black87,
+                    fontWeight: _isSelected(widget.customOptionLabel) ? FontWeight.bold : FontWeight.normal,
+                  ),
                 ),
             ],
           ),
