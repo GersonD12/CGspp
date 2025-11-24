@@ -103,7 +103,7 @@ class RespuestasStatsWidget extends ConsumerWidget {
     return {
       'total': respuestas.length,
       'texto': respuestas.where((r) => r.respuestaTexto != null).length,
-      'imagen': respuestas.where((r) => r.respuestaImagen != null).length,
+      'imagen': respuestas.where((r) => r.respuestaImagenes != null && r.respuestaImagenes!.isNotEmpty).length,
       'opciones': respuestas.where((r) => r.respuestaOpciones != null).length,
     };
   }

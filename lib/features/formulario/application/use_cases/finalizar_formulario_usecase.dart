@@ -47,32 +47,46 @@ class FinalizarFormularioUseCase {
     final nuevasRespuestas = <String, RespuestaDTO>{};
 
     for (final respuesta in respuestasState.todasLasRespuestas) {
-      String? imagenUrl = respuesta.respuestaImagen;
-
-      // Si la imagen es una ruta local (no URL), subirla
-      if (imagenUrl != null &&
-          !imagenUrl.startsWith('http://') &&
-          !imagenUrl.startsWith('https://')) {
-        try {
-          log('Subiendo imagen local: $imagenUrl');
-          final archivo = File(imagenUrl);
-          if (await archivo.exists()) {
-            imagenUrl = await _storageService.uploadFile(archivo);
-            log('Imagen subida exitosamente: $imagenUrl');
-          } else {
-            log('Archivo no existe: $imagenUrl');
-            imagenUrl = null;
+      // Manejar imágenes si existen
+      if (respuesta.respuestaImagenes != null && respuesta.respuestaImagenes!.isNotEmpty) {
+        final List<String> imagenesSubidas = [];
+        
+        for (final imagenPath in respuesta.respuestaImagenes!) {
+          String? imagenUrl = imagenPath;
+          
+          // Si la imagen es una ruta local (no URL), subirla
+          if (imagenPath.isNotEmpty &&
+              !imagenPath.startsWith('http://') &&
+              !imagenPath.startsWith('https://')) {
+            try {
+              log('Subiendo imagen local: $imagenPath');
+              final archivo = File(imagenPath);
+              if (await archivo.exists()) {
+                imagenUrl = await _storageService.uploadFile(archivo);
+                log('Imagen subida exitosamente: $imagenUrl');
+              } else {
+                log('Archivo no existe: $imagenPath');
+                imagenUrl = null;
+              }
+            } catch (e) {
+              log('Error al subir imagen $imagenPath: $e');
+              imagenUrl = null;
+            }
           }
-        } catch (e) {
-          log('Error al subir imagen $imagenUrl: $e');
-          imagenUrl = null;
+          
+          if (imagenUrl != null && imagenUrl.isNotEmpty) {
+            imagenesSubidas.add(imagenUrl);
+          }
         }
+        
+        // Actualizar la respuesta con las URLs subidas
+        nuevasRespuestas[respuesta.preguntaId] = respuesta.copyWith(
+          respuestaImagenes: imagenesSubidas,
+        );
+      } else {
+        // Si no hay imágenes, mantener la respuesta tal cual
+        nuevasRespuestas[respuesta.preguntaId] = respuesta;
       }
-
-      // Actualizar la respuesta con la nueva URL (o mantener la que ya era URL)
-      nuevasRespuestas[respuesta.preguntaId] = respuesta.copyWith(
-        respuestaImagen: imagenUrl,
-      );
     }
 
     return respuestasState.copyWith(respuestas: nuevasRespuestas);

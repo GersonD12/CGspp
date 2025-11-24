@@ -12,6 +12,7 @@ class PreguntaDTO {
   final String customOptionLabel;
   final int? maxNumber; // Límite superior para preguntas de tipo número
   final int? minNumber; // Límite inferior para preguntas de tipo número
+  final int? cantidadImagenes; // Cantidad de imágenes permitidas para preguntas de tipo imagen
 
   PreguntaDTO({
     required this.id,
@@ -25,6 +26,7 @@ class PreguntaDTO {
     required this.customOptionLabel,
     this.maxNumber,
     this.minNumber,
+    this.cantidadImagenes,
   });
 
   factory PreguntaDTO.fromMap(String id, String grupoId, Map<String, dynamic> map) {
@@ -44,6 +46,7 @@ class PreguntaDTO {
       encabezado: map['encabezado'] as String? ?? '',
       maxNumber: map['maxNumber'] != null ? (map['maxNumber'] as num).toInt() : null,
       minNumber: map['minNumber'] != null ? (map['minNumber'] as num).toInt() : null,
+      cantidadImagenes: map['cantidad_imagenes'] != null ? (map['cantidad_imagenes'] as num).toInt() : null,
     );
   }
 }

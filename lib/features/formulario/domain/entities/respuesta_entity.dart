@@ -7,7 +7,7 @@ class RespuestaEntity {
   final String tipoPregunta;
   final String descripcionPregunta;
   final String? respuestaTexto;
-  final String? respuestaImagen;
+  final List<String>? respuestaImagenes;
   final List<String>? respuestaOpciones;
   final DateTime createdAt;
   final DateTime updatedAt;
@@ -17,7 +17,7 @@ class RespuestaEntity {
     required this.tipoPregunta,
     required this.descripcionPregunta,
     this.respuestaTexto,
-    this.respuestaImagen,
+    this.respuestaImagenes,
     this.respuestaOpciones,
     required this.createdAt,
     required this.updatedAt,
@@ -29,7 +29,7 @@ class RespuestaEntity {
     String? tipoPregunta,
     String? descripcionPregunta,
     String? respuestaTexto,
-    String? respuestaImagen,
+    List<String>? respuestaImagenes,
     List<String>? respuestaOpciones,
     DateTime? createdAt,
     DateTime? updatedAt,
@@ -39,7 +39,7 @@ class RespuestaEntity {
       tipoPregunta: tipoPregunta ?? this.tipoPregunta,
       descripcionPregunta: descripcionPregunta ?? this.descripcionPregunta,
       respuestaTexto: respuestaTexto ?? this.respuestaTexto,
-      respuestaImagen: respuestaImagen ?? this.respuestaImagen,
+      respuestaImagenes: respuestaImagenes ?? this.respuestaImagenes,
       respuestaOpciones: respuestaOpciones ?? this.respuestaOpciones,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
@@ -49,7 +49,7 @@ class RespuestaEntity {
   /// Verifica si la respuesta está completa
   bool get estaCompleta {
     if (tipoPregunta == 'texto') return respuestaTexto != null && respuestaTexto!.isNotEmpty;
-    if (tipoPregunta == 'imagen') return respuestaImagen != null && respuestaImagen!.isNotEmpty;
+    if (tipoPregunta == 'imagen') return respuestaImagenes != null && respuestaImagenes!.isNotEmpty;
     if (tipoPregunta == 'radio' || tipoPregunta == 'multiple') {
       return respuestaOpciones != null && respuestaOpciones!.isNotEmpty;
     }
@@ -59,7 +59,9 @@ class RespuestaEntity {
   /// Obtiene el valor de la respuesta como string
   String get valorRespHata {
     if (respuestaTexto != null) return respuestaTexto!;
-    if (respuestaImagen != null) return respuestaImagen!;
+    if (respuestaImagenes != null && respuestaImagenes!.isNotEmpty) {
+      return respuestaImagenes!.join(', ');
+    }
     if (respuestaOpciones != null && respuestaOpciones!.isNotEmpty) {
       return respuestaOpciones!.join(', ');
     }

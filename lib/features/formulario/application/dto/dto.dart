@@ -7,4 +7,5 @@
 
 export 'pregunta_dto.dart';
 export 'respuesta_dto.dart';
+export 'seccion_dto.dart';
 

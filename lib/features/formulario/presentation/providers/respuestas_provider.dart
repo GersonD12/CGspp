@@ -13,7 +13,7 @@ class RespuestasNotifier extends StateNotifier<RespuestasState> {
     String tipoPregunta,
     String descripcionPregunta, {
     String? respuestaTexto,
-    String? respuestaImagen,
+    List<String>? respuestaImagenes,
     List<String>? respuestaOpciones,
   }) {
     final ahora = DateTime.now();
@@ -23,7 +23,7 @@ class RespuestasNotifier extends StateNotifier<RespuestasState> {
       tipoPregunta: tipoPregunta,
       descripcionPregunta: descripcionPregunta,
       respuestaTexto: respuestaTexto,
-      respuestaImagen: respuestaImagen,
+      respuestaImagenes: respuestaImagenes,
       respuestaOpciones: respuestaOpciones,
       createdAt: ahora,
       updatedAt: ahora,
@@ -51,12 +51,12 @@ class RespuestasNotifier extends StateNotifier<RespuestasState> {
     }
   }
 
-  /// Actualizar solo la imagen de una respuesta
-  void actualizarRespuestaImagen(String preguntaId, String rutaImagen) {
+  /// Actualizar imágenes de una respuesta (puede ser una o múltiples)
+  void actualizarRespuestaImagenes(String preguntaId, List<String> rutasImagenes) {
     final respuestaExistente = state.respuestas[preguntaId];
     if (respuestaExistente != null) {
       final respuestaActualizada = respuestaExistente.copyWith(
-        respuestaImagen: rutaImagen,
+        respuestaImagenes: rutasImagenes,
         updatedAt: DateTime.now(),
       );
 

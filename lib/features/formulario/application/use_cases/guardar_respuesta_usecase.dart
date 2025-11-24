@@ -53,13 +53,13 @@ class GuardarRespuestaUseCase {
     }
   }
 
-  /// Guardar respuesta de imagen
-  void guardarRespuestaImagen(
+  /// Guardar respuesta de imagen (una o múltiples imágenes)
+  void guardarRespuestaImagenes(
     String preguntaId,
     String grupoId,
     String tipoPregunta,
     String descripcionPregunta,
-    String? imageUrl,
+    List<String> imageUrls,
   ) {
     final respuestasNotifier = ref.read(respuestasProvider.notifier);
     final respuestaExistente = ref
@@ -68,7 +68,7 @@ class GuardarRespuestaUseCase {
 
     if (respuestaExistente != null) {
       // Actualizar manteniendo otros valores
-      respuestasNotifier.actualizarRespuestaImagen(preguntaId, imageUrl ?? '');
+      respuestasNotifier.actualizarRespuestaImagenes(preguntaId, imageUrls);
     } else {
       // Crear nueva respuesta
       respuestasNotifier.agregarRespuesta(
@@ -76,7 +76,7 @@ class GuardarRespuestaUseCase {
         grupoId,
         tipoPregunta,
         descripcionPregunta,
-        respuestaImagen: imageUrl,
+        respuestaImagenes: imageUrls,
       );
     }
   }
@@ -84,6 +84,7 @@ class GuardarRespuestaUseCase {
   /// Guardar respuesta de número
   void guardarRespuestaNumero(
     String preguntaId,
+    String grupoId,
     String tipoPregunta,
     String descripcionPregunta,
     String numero,
@@ -100,6 +101,7 @@ class GuardarRespuestaUseCase {
       // Crear nueva respuesta
       respuestasNotifier.agregarRespuesta(
         preguntaId,
+        grupoId,
         tipoPregunta,
         descripcionPregunta,
         respuestaTexto: numero,

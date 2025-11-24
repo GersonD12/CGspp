@@ -10,7 +10,7 @@ class RespuestaDTO {
   final String tipoPregunta;
   final String descripcionPregunta;
   final String? respuestaTexto;
-  final String? respuestaImagen;
+  final List<String>? respuestaImagenes; // Array de imágenes (puede tener 1 o más elementos)
   final List<String>? respuestaOpciones;
   final DateTime createdAt;
   final DateTime updatedAt;
@@ -21,7 +21,7 @@ class RespuestaDTO {
     required this.tipoPregunta,
     required this.descripcionPregunta,
     this.respuestaTexto,
-    this.respuestaImagen,
+    this.respuestaImagenes,
     this.respuestaOpciones,
     required this.createdAt,
     required this.updatedAt,
@@ -29,17 +29,23 @@ class RespuestaDTO {
 
   /// Convertir a Map para serialización
   Map<String, dynamic> toMap() {
-    return {
+    final map = <String, dynamic>{
       'preguntaId': preguntaId,
       'grupoId': grupoId,
       'tipoPregunta': tipoPregunta,
       'descripcionPregunta': descripcionPregunta,
       'respuestaTexto': respuestaTexto,
-      'respuestaImagen': respuestaImagen,
       'respuestaOpciones': respuestaOpciones,
       'createdAt': Timestamp.fromDate(createdAt),
       'updatedAt': Timestamp.fromDate(updatedAt),
     };
+    
+    // Guardar imágenes en respuestaImagenes (array)
+    if (respuestaImagenes != null && respuestaImagenes!.isNotEmpty) {
+      map['respuestaImagenes'] = respuestaImagenes;
+    }
+    
+    return map;
   }
 
   /// Crear desde Map
@@ -71,13 +77,26 @@ class RespuestaDTO {
       updatedAt = DateTime.now();
     }
 
+    // Manejar compatibilidad: si hay respuestaImagenes, usarla; si no, usar respuestaImagen (formato antiguo)
+    List<String>? imagenes;
+    
+    if (map['respuestaImagenes'] != null) {
+      imagenes = List<String>.from(map['respuestaImagenes'] as List<dynamic>);
+    } else if (map['respuestaImagen'] != null) {
+      // Compatibilidad con formato antiguo: convertir imagen única a lista
+      final imagenUnica = map['respuestaImagen'] as String?;
+      if (imagenUnica != null && imagenUnica.isNotEmpty) {
+        imagenes = [imagenUnica];
+      }
+    }
+    
     return RespuestaDTO(
       preguntaId: map['preguntaId'] as String,
       grupoId: map['grupoId'] as String? ?? '', // Compatibilidad con datos antiguos
       tipoPregunta: map['tipoPregunta'] as String,
       descripcionPregunta: map['descripcionPregunta'] as String,
       respuestaTexto: map['respuestaTexto'] as String?,
-      respuestaImagen: map['respuestaImagen'] as String?,
+      respuestaImagenes: imagenes, // Array de imágenes
       respuestaOpciones: map['respuestaOpciones'] != null
           ? List<String>.from(map['respuestaOpciones'] as List<dynamic>)
           : null,
@@ -93,7 +112,7 @@ class RespuestaDTO {
     String? tipoPregunta,
     String? descripcionPregunta,
     String? respuestaTexto,
-    String? respuestaImagen,
+    List<String>? respuestaImagenes,
     List<String>? respuestaOpciones,
     DateTime? createdAt,
     DateTime? updatedAt,
@@ -104,7 +123,7 @@ class RespuestaDTO {
       tipoPregunta: tipoPregunta ?? this.tipoPregunta,
       descripcionPregunta: descripcionPregunta ?? this.descripcionPregunta,
       respuestaTexto: respuestaTexto ?? this.respuestaTexto,
-      respuestaImagen: respuestaImagen ?? this.respuestaImagen,
+      respuestaImagenes: respuestaImagenes ?? this.respuestaImagenes,
       respuestaOpciones: respuestaOpciones ?? this.respuestaOpciones,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
