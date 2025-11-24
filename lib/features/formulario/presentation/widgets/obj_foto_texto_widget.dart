@@ -11,6 +11,7 @@ bool _isUrlObjFotoTexto(String? path) {
 class ObjFotoTexto extends StatefulWidget {
   final String? imagenInicialPath;
   final String titulo;
+  final String? emoji; // Emoji para mostrar junto al título
   final String? textoPlaceholder;
   final String? textoInicial;
   final Function(String)? onTextoChanged;
@@ -28,6 +29,7 @@ class ObjFotoTexto extends StatefulWidget {
     super.key,
     this.imagenInicialPath,
     required this.titulo,
+    this.emoji,
     this.textoPlaceholder,
     this.textoInicial,
     this.onTextoChanged,
@@ -307,24 +309,38 @@ class _ObjFotoTextoState extends State<ObjFotoTexto> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Título
-        Text(
-          widget.titulo,
-          style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: Colors.black87,
-          ),
-        ),
-        if (widget.esObligatorio)
-          const Text(
-            ' *',
-            style: TextStyle(
-              color: Colors.red,
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
+        // Título con emoji
+        Row(
+          children: [
+            if (widget.emoji != null && widget.emoji!.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(right: 8.0),
+                child: Text(
+                  widget.emoji!,
+                  style: const TextStyle(fontSize: 24),
+                ),
+              ),
+            Expanded(
+              child: Text(
+                widget.titulo,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+              ),
             ),
-          ),
+            if (widget.esObligatorio)
+              const Text(
+                ' *',
+                style: TextStyle(
+                  color: Colors.red,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+          ],
+        ),
         const SizedBox(height: 16),
 
         // Contenido con posición configurable

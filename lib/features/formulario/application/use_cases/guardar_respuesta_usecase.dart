@@ -1,4 +1,5 @@
 import 'package:calet/features/formulario/presentation/providers/respuestas_provider.dart';
+import 'package:calet/features/formulario/application/dto/respuesta_dto.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// Use case para guardar una respuesta
@@ -7,21 +8,42 @@ class GuardarRespuestaUseCase {
 
   GuardarRespuestaUseCase(this.ref);
 
-  /// Guardar respuesta para pregunta de radio/múltiple
+  /// Guardar respuesta para pregunta de radio/múltiple (una o múltiples opciones)
   void guardarRespuestaRadio(
     String preguntaId,
     String grupoId,
     String tipoPregunta,
     String descripcionPregunta,
-    String respuesta,
+    String encabezadoPregunta,
+    String? emojiPregunta,
+    List<String> valoresSeleccionados, // Valores seleccionados
+    Map<String, String>? opcionesConEmoji, // Mapa de value -> emoji (opcional)
+    Map<String, String>? opcionesConText, // Mapa de value -> text (opcional)
   ) {
     final respuestasNotifier = ref.read(respuestasProvider.notifier);
+    
+    // Convertir a OpcionSeleccionadaDTO si hay información adicional disponible
+    List<OpcionSeleccionadaDTO>? opcionesCompletas;
+    if (valoresSeleccionados.isNotEmpty && 
+        (opcionesConEmoji != null || opcionesConText != null)) {
+      opcionesCompletas = valoresSeleccionados.map((valor) {
+        return OpcionSeleccionadaDTO(
+          text: opcionesConText?[valor] ?? valor,
+          value: valor,
+          emoji: opcionesConEmoji?[valor] ?? '',
+        );
+      }).toList();
+    }
+    
     respuestasNotifier.agregarRespuesta(
       preguntaId,
       grupoId,
       tipoPregunta,
       descripcionPregunta,
-      respuestaOpciones: [respuesta],
+      encabezadoPregunta: encabezadoPregunta,
+      emojiPregunta: emojiPregunta,
+      respuestaOpciones: valoresSeleccionados.isNotEmpty ? valoresSeleccionados : null,
+      respuestaOpcionesCompletas: opcionesCompletas,
     );
   }
 
@@ -31,6 +53,8 @@ class GuardarRespuestaUseCase {
     String grupoId,
     String tipoPregunta,
     String descripcionPregunta,
+    String encabezadoPregunta,
+    String? emojiPregunta,
     String texto,
   ) {
     final respuestasNotifier = ref.read(respuestasProvider.notifier);
@@ -48,6 +72,8 @@ class GuardarRespuestaUseCase {
         grupoId,
         tipoPregunta,
         descripcionPregunta,
+        encabezadoPregunta: encabezadoPregunta,
+        emojiPregunta: emojiPregunta,
         respuestaTexto: texto,
       );
     }
@@ -59,6 +85,8 @@ class GuardarRespuestaUseCase {
     String grupoId,
     String tipoPregunta,
     String descripcionPregunta,
+    String encabezadoPregunta,
+    String? emojiPregunta,
     List<String> imageUrls,
   ) {
     final respuestasNotifier = ref.read(respuestasProvider.notifier);
@@ -76,6 +104,8 @@ class GuardarRespuestaUseCase {
         grupoId,
         tipoPregunta,
         descripcionPregunta,
+        encabezadoPregunta: encabezadoPregunta,
+        emojiPregunta: emojiPregunta,
         respuestaImagenes: imageUrls,
       );
     }
@@ -87,6 +117,8 @@ class GuardarRespuestaUseCase {
     String grupoId,
     String tipoPregunta,
     String descripcionPregunta,
+    String encabezadoPregunta,
+    String? emojiPregunta,
     String numero,
   ) {
     final respuestasNotifier = ref.read(respuestasProvider.notifier);
@@ -104,6 +136,8 @@ class GuardarRespuestaUseCase {
         grupoId,
         tipoPregunta,
         descripcionPregunta,
+        encabezadoPregunta: encabezadoPregunta,
+        emojiPregunta: emojiPregunta,
         respuestaTexto: numero,
       );
     }

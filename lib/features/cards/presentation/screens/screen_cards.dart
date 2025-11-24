@@ -4,7 +4,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:calet/features/cards/presentation/widgets/cards.dart';
 import 'dart:developer' show log;
 import 'package:calet/features/cards/presentation/widgets/modal_perfiles.dart';
-import 'package:calet/features/cards/presentation/widgets/pildora.dart';
 
 class ScreenCards extends StatefulWidget {
   const ScreenCards({super.key});
@@ -100,20 +99,30 @@ class _ScreenCardsState extends State<ScreenCards> {
                         final answerData = answers[key] as Map<String, dynamic>;
                         final question =
                             answerData['descripcionPregunta'] as String?;
+                        final questionEmoji =
+                            answerData['emojiPregunta'] as String?; // Emoji de la pregunta (si está disponible)
                         final optionsAnswer =
                             answerData['respuestaOpciones'] as List<dynamic>?;
                         final textAnswer =
                             answerData['respuestaTexto'] as String?;
+                        // Manejar respuestaImagenes (array) y respuestaImagen (compatibilidad hacia atrás)
+                        final respuestaImagenes =
+                            answerData['respuestaImagenes'] as List<dynamic>?;
                         final respuestaImagen =
                             answerData['respuestaImagen'] as String?;
 
                         String? displayAnswer;
-                        String? linkImage;
+                        List<String>? linkImages;
 
-                        // Asignar la imagen si existe
-                        if (respuestaImagen != null &&
-                            respuestaImagen.isNotEmpty) {
-                          linkImage = respuestaImagen;
+                        // Asignar las imágenes si existen (priorizar respuestaImagenes)
+                        if (respuestaImagenes != null && respuestaImagenes.isNotEmpty) {
+                          linkImages = respuestaImagenes
+                              .where((img) => img != null && img.toString().isNotEmpty)
+                              .map((img) => img.toString())
+                              .toList();
+                        } else if (respuestaImagen != null && respuestaImagen.isNotEmpty) {
+                          // Compatibilidad con formato antiguo
+                          linkImages = [respuestaImagen];
                         }
 
                         // Asignar la respuesta de texto o de opciones
@@ -125,7 +134,10 @@ class _ScreenCardsState extends State<ScreenCards> {
                         }
                         //Si la respuesta es null no se muestra nada xD
                         if (question != null &&
-                            (displayAnswer != null || linkImage != null)) {
+                            (displayAnswer != null || (linkImages != null && linkImages.isNotEmpty))) {
+                          final emoji = (questionEmoji != null && questionEmoji.isNotEmpty) 
+                              ? questionEmoji 
+                              : null;
                           contentWidgets.add(
                             Padding(
                               padding: const EdgeInsets.symmetric(
@@ -134,13 +146,28 @@ class _ScreenCardsState extends State<ScreenCards> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
-                                  Text(
-                                    question,
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 16,
-                                    ),
-                                    textAlign: TextAlign.center,
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      if (emoji != null)
+                                        Padding(
+                                          padding: const EdgeInsets.only(right: 8.0),
+                                          child: Text(
+                                            emoji,
+                                            style: const TextStyle(fontSize: 20),
+                                          ),
+                                        ),
+                                      Flexible(
+                                        child: Text(
+                                          question,
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 16,
+                                          ),
+                                          textAlign: TextAlign.center,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                   const SizedBox(height: 4),
                                   if (displayAnswer != null)
@@ -148,34 +175,37 @@ class _ScreenCardsState extends State<ScreenCards> {
                                       displayAnswer,
                                       style: const TextStyle(fontSize: 14),
                                     ),
-                                  if (linkImage != null)
-                                    Image.network(
-                                      linkImage,
-                                      loadingBuilder:
-                                          (
-                                            BuildContext context,
-                                            Widget child,
-                                            ImageChunkEvent? loadingProgress,
-                                          ) {
-                                            if (loadingProgress == null) {
-                                              return child; // La imagen ya se cargó
-                                            }
-                                            return const Center(
-                                              child:
-                                                  CircularProgressIndicator(), // Círculo de carga
-                                            );
-                                          },
-                                      errorBuilder:
-                                          (context, error, stackTrace) =>
-                                              const SizedBox(
-                                                height: 100,
-                                                width: double.infinity,
-                                                child: Icon(
-                                                  Icons.image_not_supported,
-                                                ),
-                                              ), // Widget en caso de error
-                                    ),
-                                  if (linkImage == null &&
+                                  if (linkImages != null && linkImages.isNotEmpty)
+                                    ...linkImages.map((linkImage) => Padding(
+                                      padding: const EdgeInsets.only(top: 8.0),
+                                      child: Image.network(
+                                        linkImage,
+                                        loadingBuilder:
+                                            (
+                                              BuildContext context,
+                                              Widget child,
+                                              ImageChunkEvent? loadingProgress,
+                                            ) {
+                                              if (loadingProgress == null) {
+                                                return child; // La imagen ya se cargó
+                                              }
+                                              return const Center(
+                                                child:
+                                                    CircularProgressIndicator(), // Círculo de carga
+                                              );
+                                            },
+                                        errorBuilder:
+                                            (context, error, stackTrace) =>
+                                                const SizedBox(
+                                                  height: 100,
+                                                  width: double.infinity,
+                                                  child: Icon(
+                                                    Icons.image_not_supported,
+                                                  ),
+                                                ), // Widget en caso de error
+                                      ),
+                                    )),
+                                  if ((linkImages == null || linkImages.isEmpty) &&
                                       (textAnswer == null ||
                                           textAnswer.isEmpty) &&
                                       (optionsAnswer == null ||

@@ -22,6 +22,7 @@ class ImagePickerWidget extends StatefulWidget {
   final String? imagenInicialPath;
   final List<String>? imagenesIniciales; // Lista de imágenes iniciales
   final String titulo;
+  final String? emoji; // Emoji para mostrar junto al título
   final Function(String?)? onFotoChanged; // Recibe ruta local del archivo (una imagen)
   final Function(List<String>)? onFotosChanged; // Recibe lista de rutas locales (múltiples imágenes)
   final bool esObligatorio;
@@ -35,6 +36,7 @@ class ImagePickerWidget extends StatefulWidget {
     this.imagenInicialPath,
     this.imagenesIniciales,
     required this.titulo,
+    this.emoji,
     this.onFotoChanged,
     this.onFotosChanged,
     this.esObligatorio = false,
@@ -77,13 +79,27 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
     return Column(
       children: [
         const SizedBox(height: 4),
-        Text(
-          widget.titulo,
-          style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: Colors.black,
-          ),
+        Row(
+          children: [
+            if (widget.emoji != null && widget.emoji!.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(right: 8.0),
+                child: Text(
+                  widget.emoji!,
+                  style: const TextStyle(fontSize: 24),
+                ),
+              ),
+            Expanded(
+              child: Text(
+                widget.titulo,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                ),
+              ),
+            ),
+          ],
         ),
         if (widget.textoPlaceholder != null && widget.textoPlaceholder!.isNotEmpty)
           Padding(

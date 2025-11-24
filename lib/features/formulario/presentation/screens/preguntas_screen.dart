@@ -44,62 +44,111 @@ class _PreguntasScreenState extends ConsumerState<PreguntasScreen> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     _controller = RespuestasController(ref);
-    if (!_respuestasCargadas) {
-      _loadRespuestasGuardadas();
-      _respuestasCargadas = true;
-    }
+    // Las respuestas se cargarán después de que las preguntas estén listas
+    // Ver _fetchPreguntasFromFirestore para el momento exacto
   }
 
   Future<void> _fetchPreguntasFromFirestore() async {
     try {
-
-      
-      // Obtener todos los documentos de la colección 'questions' (grupos/secciones)
-      final QuerySnapshot gruposSnapshot = await FirebaseFirestore.instance
-          .collection('questions')
-          .get();
-
       // Lista para almacenar todas las preguntas de todos los grupos
       List<PreguntaDTO> todasLasPreguntas = [];
       Map<String, SeccionDTO> seccionesTemp = {};
 
-      // Para cada documento (grupo), obtener su información y subcolección 'questions'
-      final List<Future<void>> futures = gruposSnapshot.docs.map((grupoDoc) async {
-        try {
-          // Cargar información de la sección (titulo, descripcion, orden)
-          final seccionData = grupoDoc.data() as Map<String, dynamic>;
-          final seccionDTO = SeccionDTO.fromMap(
-            grupoDoc.id,
-            seccionData,
-          );
-          seccionesTemp[grupoDoc.id] = seccionDTO;
+      // Intentar obtener el documento 'questions' que contiene todas las secciones
+      final questionsDoc = await FirebaseFirestore.instance
+          .collection('questions')
+          .doc('questions')
+          .get();
+
+      if (questionsDoc.exists) {
+        // Nuevo formato: documento único con estructura anidada
+        final questionsData = questionsDoc.data();
+        if (questionsData != null && questionsData.containsKey('questions')) {
+          final sectionsMap = questionsData['questions'] as Map<String, dynamic>;
           
-          // Obtener la subcolección 'questions' de este grupo
-          final QuerySnapshot preguntasSnapshot = await grupoDoc.reference
-              .collection('questions')
-              .get();
-
-          // Mapear las preguntas de esta subcolección a DTOs
-          final preguntasDelGrupo = preguntasSnapshot.docs.map((preguntaDoc) {
-            final preguntaData = preguntaDoc.data() as Map<String, dynamic>;
-            final pregunta = PreguntaDTO.fromMap(
-              preguntaDoc.id,
-              grupoDoc.id, // Pasar el ID del grupo
-              preguntaData,
-            );
+          // Procesar cada sección
+          for (final sectionEntry in sectionsMap.entries) {
+            final sectionId = sectionEntry.key;
+            final sectionData = sectionEntry.value as Map<String, dynamic>;
             
-            return pregunta;
-          }).toList();
-
-          // Agregar las preguntas de este grupo a la lista total
-          todasLasPreguntas.addAll(preguntasDelGrupo);
-        } catch (e) {
-          // Si hay un error al obtener las preguntas de un grupo, continuar con los demás
+            // Crear SeccionDTO
+            final seccionDTO = SeccionDTO.fromMap(sectionId, sectionData);
+            seccionesTemp[sectionId] = seccionDTO;
+            
+            // Obtener las preguntas de la subcolección
+            final subcollections = sectionData['_subcollections'] as Map<String, dynamic>?;
+            if (subcollections != null) {
+              final questionsSubcollection = subcollections['questions'] as Map<String, dynamic>?;
+              if (questionsSubcollection != null) {
+                // Procesar cada pregunta
+                for (final questionEntry in questionsSubcollection.entries) {
+                  final questionId = questionEntry.key;
+                  final questionData = questionEntry.value as Map<String, dynamic>;
+                  
+                  // Solo procesar preguntas activas (estado == true)
+                  final estado = questionData['estado'] as bool? ?? true;
+                  if (!estado) continue;
+                  
+                  final pregunta = PreguntaDTO.fromMap(
+                    questionId,
+                    sectionId,
+                    questionData,
+                  );
+                  todasLasPreguntas.add(pregunta);
+                }
+              }
+            }
+          }
         }
-      }).toList();
+      } else {
+        // Formato antiguo: subcolecciones de Firestore
+        final QuerySnapshot gruposSnapshot = await FirebaseFirestore.instance
+            .collection('questions')
+            .get();
 
-      // Esperar a que todas las consultas se completen
-      await Future.wait(futures);
+        // Para cada documento (grupo), obtener su información y subcolección 'questions'
+        final List<Future<void>> futures = gruposSnapshot.docs.map((grupoDoc) async {
+          try {
+            // Cargar información de la sección (titulo, descripcion, orden)
+            final seccionData = grupoDoc.data() as Map<String, dynamic>;
+            final seccionDTO = SeccionDTO.fromMap(
+              grupoDoc.id,
+              seccionData,
+            );
+            seccionesTemp[grupoDoc.id] = seccionDTO;
+            
+            // Obtener la subcolección 'questions' de este grupo
+            final QuerySnapshot preguntasSnapshot = await grupoDoc.reference
+                .collection('questions')
+                .get();
+
+            // Mapear las preguntas de esta subcolección a DTOs
+            final preguntasDelGrupo = preguntasSnapshot.docs.map((preguntaDoc) {
+              final preguntaData = preguntaDoc.data() as Map<String, dynamic>;
+              
+              // Solo procesar preguntas activas (estado == true)
+              final estado = preguntaData['estado'] as bool? ?? true;
+              if (!estado) return null;
+              
+              final pregunta = PreguntaDTO.fromMap(
+                preguntaDoc.id,
+                grupoDoc.id, // Pasar el ID del grupo
+                preguntaData,
+              );
+              
+              return pregunta;
+            }).where((p) => p != null).cast<PreguntaDTO>().toList();
+
+            // Agregar las preguntas de este grupo a la lista total
+            todasLasPreguntas.addAll(preguntasDelGrupo);
+          } catch (e) {
+            // Si hay un error al obtener las preguntas de un grupo, continuar con los demás
+          }
+        }).toList();
+
+        // Esperar a que todas las consultas se completen
+        await Future.wait(futures);
+      }
 
       // Ordenar secciones por el campo orden
       final seccionesOrdenadas = seccionesTemp.values.toList()
@@ -108,14 +157,14 @@ class _PreguntasScreenState extends ConsumerState<PreguntasScreen> {
       _ordenSecciones = seccionesOrdenadas.map((s) => s.id).toList();
       _secciones = seccionesTemp;
 
-      // Ordenar preguntas según el orden de las secciones
+      // Ordenar preguntas según el orden de las secciones y luego por orden dentro de cada sección
       final preguntasOrdenadas = <PreguntaDTO>[];
       for (final grupoId in _ordenSecciones) {
         final preguntasDelGrupo = todasLasPreguntas
             .where((p) => p.grupoId == grupoId)
-            .toList();
+            .toList()
+          ..sort((a, b) => a.orden.compareTo(b.orden));
         preguntasOrdenadas.addAll(preguntasDelGrupo);
-        
       }
 
       // Asignar todas las preguntas ordenadas a la lista del estado
@@ -138,6 +187,13 @@ class _PreguntasScreenState extends ConsumerState<PreguntasScreen> {
           _mostrarPantallaInicial = true;
         }
       });
+
+      // Cargar respuestas guardadas después de que las preguntas estén cargadas
+      // Esto asegura que solo se carguen respuestas de preguntas activas
+      if (!_respuestasCargadas) {
+        await _loadRespuestasGuardadas();
+        _respuestasCargadas = true;
+      }
     } catch (e) {
       setState(() {
         _isLoading = false;
@@ -147,6 +203,7 @@ class _PreguntasScreenState extends ConsumerState<PreguntasScreen> {
   }
 
   /// Carga las respuestas guardadas del usuario desde Firestore
+  /// Solo carga respuestas de preguntas que están activas (estado == true)
   Future<void> _loadRespuestasGuardadas() async {
     try {
       final user = ref.read(currentUserProvider);
@@ -154,24 +211,37 @@ class _PreguntasScreenState extends ConsumerState<PreguntasScreen> {
         return;
       }
 
+      // Esperar a que las preguntas estén cargadas para poder filtrar
+      if (_preguntas.isEmpty) {
+        return;
+      }
+
+      // Crear un Set con los IDs de las preguntas activas para filtrado rápido
+      final preguntasActivasIds = _preguntas.map((p) => p.id).toSet();
       
       final repository = getIt<RespuestasRepository>();
       final respuestasState = await repository.downloadRespuestas(user.id);
 
       if (respuestasState != null && respuestasState.totalRespuestas > 0) {
         
-        // Cargar las respuestas en el provider
+        // Cargar solo las respuestas de preguntas que están activas
         final notifier = ref.read(respuestasProvider.notifier);
         for (final respuesta in respuestasState.todasLasRespuestas) {
-          notifier.agregarRespuesta(
-            respuesta.preguntaId,
-            respuesta.grupoId,
-            respuesta.tipoPregunta,
-            respuesta.descripcionPregunta,
-            respuestaTexto: respuesta.respuestaTexto,
-            respuestaImagenes: respuesta.respuestaImagenes,
-            respuestaOpciones: respuesta.respuestaOpciones,
-          );
+          // Solo cargar si la pregunta sigue activa
+          if (preguntasActivasIds.contains(respuesta.preguntaId)) {
+            notifier.agregarRespuesta(
+              respuesta.preguntaId,
+              respuesta.grupoId,
+              respuesta.tipoPregunta,
+              respuesta.descripcionPregunta,
+              encabezadoPregunta: respuesta.encabezadoPregunta,
+              emojiPregunta: respuesta.emojiPregunta,
+              respuestaTexto: respuesta.respuestaTexto,
+              respuestaImagenes: respuesta.respuestaImagenes,
+              respuestaOpciones: respuesta.respuestaOpciones,
+              respuestaOpcionesCompletas: respuesta.respuestaOpcionesCompletas,
+            );
+          }
         }
         
       }
@@ -378,16 +448,20 @@ class _PreguntasScreenState extends ConsumerState<PreguntasScreen> {
             grupoId: grupoId,
             tipoPregunta: '',
             descripcionPregunta: '',
+            encabezadoPregunta: '',
             createdAt: ahora,
             updatedAt: ahora,
           ),
         );
 
-    // For radio buttons
-    final String? respuestaOpcionActual =
-        (respuestaGuardadaObjeto.respuestaOpciones?.isNotEmpty ?? false)
-        ? respuestaGuardadaObjeto.respuestaOpciones!.first
-        : null;
+    // For radio/multiple buttons - ahora soporta múltiples selecciones
+    // Priorizar respuestaOpcionesCompletas si está disponible, sino usar respuestaOpciones
+    final List<String>? respuestasOpcionesActuales = 
+        respuestaGuardadaObjeto.respuestaOpcionesCompletas != null
+            ? respuestaGuardadaObjeto.respuestaOpcionesCompletas!
+                .map((op) => op.value)
+                .toList()
+            : respuestaGuardadaObjeto.respuestaOpciones;
 
     // For text input
     final String? respuestaTextoActual = respuestaGuardadaObjeto.respuestaTexto;
@@ -402,17 +476,34 @@ class _PreguntasScreenState extends ConsumerState<PreguntasScreen> {
       case 'multiple':
         return PillQuestionWidget(
           pregunta: preguntaActual.descripcion,
+          emojiPregunta: preguntaActual.emoji.isNotEmpty ? preguntaActual.emoji : null,
           opciones: preguntaActual.opciones,
           allowCustomOption: preguntaActual.allowCustomOption,
           customOptionLabel: preguntaActual.customOptionLabel,
-          respuestaActual: respuestaOpcionActual,
-          onRespuestaChanged: (respuesta) {
+          respuestasActuales: respuestasOpcionesActuales,
+          maxOpcionesSeleccionables: preguntaActual.maxOpcionesSeleccionables,
+          onRespuestasChanged: (respuestas) {
+            // Crear mapas de value -> emoji y value -> text para las opciones
+            final Map<String, String> opcionesConEmoji = {};
+            final Map<String, String> opcionesConText = {};
+            
+            for (final opcion in preguntaActual.opciones) {
+              if (opcion.emoji.isNotEmpty) {
+                opcionesConEmoji[opcion.value] = opcion.emoji;
+              }
+              opcionesConText[opcion.value] = opcion.text;
+            }
+            
             _controller.guardarRespuestaUseCase.guardarRespuestaRadio(
               preguntaId,
               grupoId,
               preguntaActual.tipo,
               preguntaActual.descripcion,
-              respuesta,
+              preguntaActual.encabezado,
+              preguntaActual.emoji.isNotEmpty ? preguntaActual.emoji : null,
+              respuestas,
+              opcionesConEmoji.isNotEmpty ? opcionesConEmoji : null,
+              opcionesConText.isNotEmpty ? opcionesConText : null,
             );
           },
         );
@@ -421,6 +512,7 @@ class _PreguntasScreenState extends ConsumerState<PreguntasScreen> {
         return ObjFotoTexto(
           key: ValueKey(preguntaId), // Añadir Key única
           titulo: preguntaActual.descripcion,
+          emoji: preguntaActual.emoji.isNotEmpty ? preguntaActual.emoji : null,
           textoPlaceholder: preguntaActual.encabezado,
           textoInicial: respuestaTextoActual, // Pass the initial text here
           imagenInicialPath: respuestaImagenesActuales?.isNotEmpty == true ? respuestaImagenesActuales!.first : null,
@@ -432,6 +524,8 @@ class _PreguntasScreenState extends ConsumerState<PreguntasScreen> {
               grupoId,
               preguntaActual.tipo,
               preguntaActual.descripcion,
+              preguntaActual.encabezado,
+              preguntaActual.emoji.isNotEmpty ? preguntaActual.emoji : null,
               imageUrl != null ? [imageUrl] : [], // Ruta local del archivo (se subirá al finalizar)
             );
           },
@@ -441,6 +535,8 @@ class _PreguntasScreenState extends ConsumerState<PreguntasScreen> {
               grupoId,
               preguntaActual.tipo,
               preguntaActual.descripcion,
+              preguntaActual.encabezado,
+              preguntaActual.emoji.isNotEmpty ? preguntaActual.emoji : null,
               texto,
             );
           },
@@ -450,6 +546,7 @@ class _PreguntasScreenState extends ConsumerState<PreguntasScreen> {
         return ObjFotoTexto(
           key: ValueKey(preguntaId), // Añadir Key única
           titulo: preguntaActual.descripcion,
+          emoji: preguntaActual.emoji.isNotEmpty ? preguntaActual.emoji : null,
           textoPlaceholder: preguntaActual.encabezado,
           textoInicial: respuestaTextoActual,
           mostrarImagen: false,
@@ -459,6 +556,8 @@ class _PreguntasScreenState extends ConsumerState<PreguntasScreen> {
               grupoId,
               preguntaActual.tipo,
               preguntaActual.descripcion,
+              preguntaActual.encabezado,
+              preguntaActual.emoji.isNotEmpty ? preguntaActual.emoji : null,
               texto,
             );
           },
@@ -468,6 +567,7 @@ class _PreguntasScreenState extends ConsumerState<PreguntasScreen> {
         return ObjNumero(
           key: ValueKey(preguntaId), // Añadir Key única
           titulo: preguntaActual.descripcion,
+          emoji: preguntaActual.emoji.isNotEmpty ? preguntaActual.emoji : null,
           textoPlaceholder: preguntaActual.encabezado,
           maxNumber: preguntaActual.maxNumber,
           minNumber: preguntaActual.minNumber,
@@ -478,6 +578,8 @@ class _PreguntasScreenState extends ConsumerState<PreguntasScreen> {
               grupoId,
               preguntaActual.tipo,
               preguntaActual.descripcion,
+              preguntaActual.encabezado,
+              preguntaActual.emoji.isNotEmpty ? preguntaActual.emoji : null,
               numero,
             );
           },
@@ -489,6 +591,7 @@ class _PreguntasScreenState extends ConsumerState<PreguntasScreen> {
           imgSize: 200,
           key: ValueKey(preguntaId), // Añadir Key única
           titulo: preguntaActual.descripcion,
+          emoji: preguntaActual.emoji.isNotEmpty ? preguntaActual.emoji : null,
           textoPlaceholder: preguntaActual.encabezado,
           imagenInicialPath: cantidadImagenes == 1 && respuestaImagenesActuales?.isNotEmpty == true 
               ? respuestaImagenesActuales!.first 
@@ -502,6 +605,8 @@ class _PreguntasScreenState extends ConsumerState<PreguntasScreen> {
                     grupoId,
                     preguntaActual.tipo,
                     preguntaActual.descripcion,
+                    preguntaActual.encabezado,
+                    preguntaActual.emoji.isNotEmpty ? preguntaActual.emoji : null,
                     imageUrl != null ? [imageUrl] : [], // Ruta local del archivo (se subirá al finalizar)
                   );
                 }
@@ -513,6 +618,8 @@ class _PreguntasScreenState extends ConsumerState<PreguntasScreen> {
                     grupoId,
                     preguntaActual.tipo,
                     preguntaActual.descripcion,
+                    preguntaActual.encabezado,
+                    preguntaActual.emoji.isNotEmpty ? preguntaActual.emoji : null,
                     imageUrls, // Rutas locales de los archivos (se subirán al finalizar)
                   );
                 }
@@ -526,7 +633,7 @@ class _PreguntasScreenState extends ConsumerState<PreguntasScreen> {
             const SizedBox(height: 10),
             Text('Descripción: ${preguntaActual.descripcion}'),
             const SizedBox(height: 10),
-            Text('Opciones: ${preguntaActual.opciones}'),
+            Text('Opciones: ${preguntaActual.opcionesStrings}'),
           ],
         );
     }

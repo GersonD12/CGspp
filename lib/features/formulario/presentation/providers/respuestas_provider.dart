@@ -12,9 +12,12 @@ class RespuestasNotifier extends StateNotifier<RespuestasState> {
     String grupoId,
     String tipoPregunta,
     String descripcionPregunta, {
+    String encabezadoPregunta = '',
+    String? emojiPregunta,
     String? respuestaTexto,
     List<String>? respuestaImagenes,
     List<String>? respuestaOpciones,
+    List<OpcionSeleccionadaDTO>? respuestaOpcionesCompletas,
   }) {
     final ahora = DateTime.now();
     final nuevaRespuesta = RespuestaDTO(
@@ -22,9 +25,14 @@ class RespuestasNotifier extends StateNotifier<RespuestasState> {
       grupoId: grupoId,
       tipoPregunta: tipoPregunta,
       descripcionPregunta: descripcionPregunta,
+      encabezadoPregunta: encabezadoPregunta.isNotEmpty 
+          ? encabezadoPregunta 
+          : descripcionPregunta, // Fallback a descripcion si no hay encabezado
+      emojiPregunta: emojiPregunta,
       respuestaTexto: respuestaTexto,
       respuestaImagenes: respuestaImagenes,
       respuestaOpciones: respuestaOpciones,
+      respuestaOpcionesCompletas: respuestaOpcionesCompletas,
       createdAt: ahora,
       updatedAt: ahora,
     );

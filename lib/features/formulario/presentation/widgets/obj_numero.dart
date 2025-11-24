@@ -9,6 +9,7 @@ class ObjNumero extends StatelessWidget {
   /// El texto que se muestra como etiqueta flotante sobre el campo de texto.
   final String textoPlaceholder;
   final String titulo;
+  final String? emoji; // Emoji para mostrar junto al título
 
   /// El número máximo permitido.
   final int? maxNumber;
@@ -23,6 +24,7 @@ class ObjNumero extends StatelessWidget {
     this.controller,
     required this.textoPlaceholder,
     required this.titulo,
+    this.emoji,
     this.maxNumber,
     this.minNumber,
     this.onChanged,
@@ -32,7 +34,21 @@ class ObjNumero extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Text(titulo),
+        Row(
+          children: [
+            if (emoji != null && emoji!.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(right: 8.0),
+                child: Text(
+                  emoji!,
+                  style: const TextStyle(fontSize: 24),
+                ),
+              ),
+            Expanded(
+              child: Text(titulo),
+            ),
+          ],
+        ),
         TextFormField(
           controller: controller,
           onChanged: onChanged,
