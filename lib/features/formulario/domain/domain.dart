@@ -7,4 +7,5 @@
 
 export 'entities/entities.dart';
 export 'repositories/respuestas_repository.dart';
+export 'repositories/preguntas_repository.dart';
 

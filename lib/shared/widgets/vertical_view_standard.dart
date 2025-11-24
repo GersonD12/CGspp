@@ -113,39 +113,48 @@ class VerticalViewStandardScrollable extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: bodyBgColor,
-      body: CustomScrollView(
-        slivers: <Widget>[
-          SliverAppBar(
-            title: Text(
-              title,
-              style: TextStyle(color: textColor, fontWeight: FontWeight.bold),
+      body: Container(
+        color: bodyBgColor,
+        child: CustomScrollView(
+          physics: physics,
+          slivers: <Widget>[
+            SliverAppBar(
+              title: Text(
+                title,
+                style: TextStyle(color: textColor, fontWeight: FontWeight.bold),
+              ),
+              centerTitle: centerTitle,
+              backgroundColor: headerBgColor,
+              foregroundColor: textColor,
+              elevation: 0,
+              scrolledUnderElevation: 0, // Mantiene el color fijo al hacer scroll
+              floating: appBarFloats, // Sube la AppBar cuando se desplaza
+              snap: appBarFloats, // La AppBar se muestra/oculta completamente
+              pinned: !appBarFloats, // Fija la AppBar si no flota
+              leading: showBackButton
+                  ? (leading ??
+                        IconButton(
+                          icon: Icon(Icons.arrow_back, color: textColor),
+                          onPressed:
+                              onBackPressed ?? () => Navigator.of(context).pop(),
+                        ))
+                  : null,
+              automaticallyImplyLeading: false, // We handle leading manually
+              actions: actions,
             ),
-            centerTitle: true,
-            backgroundColor: headerBgColor,
-            foregroundColor: textColor,
-            elevation: 0,
-            scrolledUnderElevation: 0, // Mantiene el color fijo al hacer scroll
-            floating: appBarFloats, // Sube la AppBar cuando se desplaza
-            snap: appBarFloats, // La AppBar se muestra/oculta completamente
-            pinned: !appBarFloats, // Fija la AppBar si no flota
-            leading: showBackButton
-                ? (leading ??
-                      IconButton(
-                        icon: Icon(Icons.arrow_back, color: textColor),
-                        onPressed:
-                            onBackPressed ?? () => Navigator.of(context).pop(),
-                      ))
-                : null,
-            automaticallyImplyLeading: false, // We handle leading manually
-            actions: actions,
-          ),
 
-          // 2. CONTENIDO DE LA LISTA (SLIVER)
-          SliverPadding(
-            padding: const EdgeInsets.all(16.0),
-            sliver: SliverList(delegate: SliverChildListDelegate([child])),
-          ),
-        ],
+            // 2. CONTENIDO DE LA LISTA (SLIVER)
+            SliverToBoxAdapter(
+              child: Container(
+                color: bodyBgColor,
+                child: Padding(
+                  padding: padding ?? const EdgeInsets.all(16.0),
+                  child: child,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

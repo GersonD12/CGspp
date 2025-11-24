@@ -1,6 +1,7 @@
 import 'package:calet/features/formulario/presentation/providers/respuestas_state.dart';
 import 'package:calet/features/formulario/application/use_cases/use_cases.dart';
 import 'package:calet/features/formulario/domain/repositories/respuestas_repository.dart';
+import 'package:calet/features/formulario/domain/repositories/preguntas_repository.dart';
 import 'package:calet/core/providers/session_provider.dart';
 import 'package:calet/core/di/injection.dart';
 import 'package:flutter/material.dart';
@@ -108,5 +109,11 @@ class RespuestasController {
   /// Obtiene el use case para guardar respuestas
   GuardarRespuestaUseCase get guardarRespuestaUseCase =>
       GuardarRespuestaUseCase(ref);
+
+  /// Obtiene el use case para obtener preguntas
+  ObtenerPreguntasUseCase get obtenerPreguntasUseCase {
+    final repository = getIt<PreguntasRepository>();
+    return ObtenerPreguntasUseCase(repository);
+  }
 }
 

@@ -6,4 +6,5 @@
 // ```
 
 export 'respuestas_repository_impl.dart';
+export 'preguntas_repository_impl.dart';
 
