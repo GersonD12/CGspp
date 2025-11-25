@@ -18,8 +18,11 @@ class _ProfileScreenState extends ProtectedScreenState<ProfileScreen> {
     return VerticalViewStandardScrollable(
       title: 'Mi Perfil',
       appBarFloats: true,
-      headerColor: Colors.indigo,
-      foregroundColor: Colors.white,
+      headerColor: const Color.fromARGB(255, 248, 226, 185),
+      foregroundColor: Colors.black,
+      backgroundColor: const Color.fromARGB(255, 248, 226, 185),
+      showBackButton: false,
+      hasFloatingNavBar: true, // Agregado para evitar solapamiento
       actions: [
         IconButton(
           icon: const Icon(Icons.edit),

@@ -84,7 +84,8 @@ class VerticalViewStandardScrollable extends StatelessWidget {
   final Widget? leading;
   final EdgeInsets? padding;
   final bool centerTitle;
-  final ScrollPhysics? physics;
+  final ScrollPhysics? physics; // Restaurado
+  final bool hasFloatingNavBar; // Nuevo parámetro
 
   const VerticalViewStandardScrollable({
     super.key,
@@ -94,14 +95,15 @@ class VerticalViewStandardScrollable extends StatelessWidget {
     this.separationHeight = 16.0,
     this.headerColor,
     this.foregroundColor,
-    this.backgroundColor, //agregado para tener un color de fondo personalizado
+    this.backgroundColor,
     this.showBackButton = true,
     this.onBackPressed,
     this.leading,
     this.padding,
     this.centerTitle = true,
-    this.physics,
+    this.physics, // Restaurado
     this.appBarFloats = false,
+    this.hasFloatingNavBar = false, // Por defecto desactivado
   });
 
   @override
@@ -110,6 +112,12 @@ class VerticalViewStandardScrollable extends StatelessWidget {
     final headerBgColor = headerColor ?? theme.primaryColor;
     final textColor = foregroundColor ?? theme.primaryColor;
     final bodyBgColor = backgroundColor ?? theme.scaffoldBackgroundColor;
+
+    // Calcular el padding final
+    final basePadding = padding ?? const EdgeInsets.all(16.0);
+    final finalPadding = hasFloatingNavBar
+        ? basePadding.add(const EdgeInsets.only(bottom: 100.0)) // Espacio extra
+        : basePadding;
 
     return Scaffold(
       backgroundColor: bodyBgColor,
@@ -127,19 +135,20 @@ class VerticalViewStandardScrollable extends StatelessWidget {
               backgroundColor: headerBgColor,
               foregroundColor: textColor,
               elevation: 0,
-              scrolledUnderElevation: 0, // Mantiene el color fijo al hacer scroll
-              floating: appBarFloats, // Sube la AppBar cuando se desplaza
-              snap: appBarFloats, // La AppBar se muestra/oculta completamente
-              pinned: !appBarFloats, // Fija la AppBar si no flota
+              scrolledUnderElevation: 0,
+              floating: appBarFloats,
+              snap: appBarFloats,
+              pinned: !appBarFloats,
               leading: showBackButton
                   ? (leading ??
                         IconButton(
                           icon: Icon(Icons.arrow_back, color: textColor),
                           onPressed:
-                              onBackPressed ?? () => Navigator.of(context).pop(),
+                              onBackPressed ??
+                              () => Navigator.of(context).pop(),
                         ))
                   : null,
-              automaticallyImplyLeading: false, // We handle leading manually
+              automaticallyImplyLeading: false,
               actions: actions,
             ),
 
@@ -147,10 +156,7 @@ class VerticalViewStandardScrollable extends StatelessWidget {
             SliverToBoxAdapter(
               child: Container(
                 color: bodyBgColor,
-                child: Padding(
-                  padding: padding ?? const EdgeInsets.all(16.0),
-                  child: child,
-                ),
+                child: Padding(padding: finalPadding, child: child),
               ),
             ),
           ],

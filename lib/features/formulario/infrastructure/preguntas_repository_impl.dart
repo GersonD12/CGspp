@@ -11,7 +11,7 @@ class PreguntasRepositoryImpl implements PreguntasRepository {
   /// Permite inyectar una instancia personalizada de [FirebaseFirestore] para testeo o mocks.
   /// Si no se proporciona, se usa [FirebaseFirestore.instance] por defecto.
   PreguntasRepositoryImpl({FirebaseFirestore? firestore})
-      : _firestore = firestore ?? FirebaseFirestore.instance;
+    : _firestore = firestore ?? FirebaseFirestore.instance;
 
   @override
   /// Obtiene todas las preguntas activas agrupadas por sección
@@ -31,30 +31,33 @@ class PreguntasRepositoryImpl implements PreguntasRepository {
       final questionsData = questionsDoc.data();
       if (questionsData != null && questionsData.containsKey('questions')) {
         final sectionsMap = questionsData['questions'] as Map<String, dynamic>;
-        
+
         // Procesar cada sección
         for (final sectionEntry in sectionsMap.entries) {
           final sectionId = sectionEntry.key;
           final sectionData = sectionEntry.value as Map<String, dynamic>;
-          
+
           // Crear SeccionDTO
           final seccionDTO = SeccionDTO.fromMap(sectionId, sectionData);
           seccionesTemp[sectionId] = seccionDTO;
-          
+
           // Obtener las preguntas de la subcolección
-          final subcollections = sectionData['_subcollections'] as Map<String, dynamic>?;
+          final subcollections =
+              sectionData['_subcollections'] as Map<String, dynamic>?;
           if (subcollections != null) {
-            final questionsSubcollection = subcollections['questions'] as Map<String, dynamic>?;
+            final questionsSubcollection =
+                subcollections['questions'] as Map<String, dynamic>?;
             if (questionsSubcollection != null) {
               // Procesar cada pregunta
               for (final questionEntry in questionsSubcollection.entries) {
                 final questionId = questionEntry.key;
-                final questionData = questionEntry.value as Map<String, dynamic>;
-                
+                final questionData =
+                    questionEntry.value as Map<String, dynamic>;
+
                 // Solo procesar preguntas activas (estado == true)
                 final estado = questionData['estado'] as bool? ?? true;
                 if (!estado) continue;
-                
+
                 final pregunta = PreguntaDTO.fromMap(
                   questionId,
                   sectionId,
@@ -70,40 +73,45 @@ class PreguntasRepositoryImpl implements PreguntasRepository {
       // Formato antiguo: subcolecciones de Firestore
       final QuerySnapshot gruposSnapshot = await _firestore
           .collection('questions')
+          .orderBy('orden', descending: false)
           .get();
 
       // Para cada documento (grupo), obtener su información y subcolección 'questions'
-      final List<Future<void>> futures = gruposSnapshot.docs.map((grupoDoc) async {
+      final List<Future<void>> futures = gruposSnapshot.docs.map((
+        grupoDoc,
+      ) async {
         try {
           // Cargar información de la sección (titulo, descripcion, orden)
           final seccionData = grupoDoc.data() as Map<String, dynamic>;
-          final seccionDTO = SeccionDTO.fromMap(
-            grupoDoc.id,
-            seccionData,
-          );
+          final seccionDTO = SeccionDTO.fromMap(grupoDoc.id, seccionData);
           seccionesTemp[grupoDoc.id] = seccionDTO;
-          
+
           // Obtener la subcolección 'questions' de este grupo
           final QuerySnapshot preguntasSnapshot = await grupoDoc.reference
               .collection('questions')
+              .orderBy('orden', descending: false)
               .get();
 
           // Mapear las preguntas de esta subcolección a DTOs
-          final preguntasDelGrupo = preguntasSnapshot.docs.map((preguntaDoc) {
-            final preguntaData = preguntaDoc.data() as Map<String, dynamic>;
-            
-            // Solo procesar preguntas activas (estado == true)
-            final estado = preguntaData['estado'] as bool? ?? true;
-            if (!estado) return null;
-            
-            final pregunta = PreguntaDTO.fromMap(
-              preguntaDoc.id,
-              grupoDoc.id, // Pasar el ID del grupo
-              preguntaData,
-            );
-            
-            return pregunta;
-          }).where((p) => p != null).cast<PreguntaDTO>().toList();
+          final preguntasDelGrupo = preguntasSnapshot.docs
+              .map((preguntaDoc) {
+                final preguntaData = preguntaDoc.data() as Map<String, dynamic>;
+
+                // Solo procesar preguntas activas (estado == true)
+                final estado = preguntaData['estado'] as bool? ?? true;
+                if (!estado) return null;
+
+                final pregunta = PreguntaDTO.fromMap(
+                  preguntaDoc.id,
+                  grupoDoc.id, // Pasar el ID del grupo
+                  preguntaData,
+                );
+
+                return pregunta;
+              })
+              .where((p) => p != null)
+              .cast<PreguntaDTO>()
+              .toList();
 
           // Agregar las preguntas de este grupo a la lista total
           todasLasPreguntas.addAll(preguntasDelGrupo);
@@ -116,10 +124,6 @@ class PreguntasRepositoryImpl implements PreguntasRepository {
       await Future.wait(futures);
     }
 
-    return {
-      'preguntas': todasLasPreguntas,
-      'secciones': seccionesTemp,
-    };
+    return {'preguntas': todasLasPreguntas, 'secciones': seccionesTemp};
   }
 }
-

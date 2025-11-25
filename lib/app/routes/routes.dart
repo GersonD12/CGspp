@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:calet/features/auth/presentation/screens.dart';
 import 'package:calet/features/formulario/presentation/screens/formulario_screen.dart';
 import 'package:calet/features/cards/presentation/screens/screen_cards.dart';
+import 'package:calet/features/cards/presentation/screens/pagina_usuario.dart';
 import 'package:calet/features/profile/presentation/screens/profile_screen.dart';
 
 // Sistema de rutas híbrido:
@@ -13,6 +14,7 @@ final routes = <String, WidgetBuilder>{
   '/formulario': (context) => const FormularioScreen(),
   '/home': (context) => const HomeScreen(),
   '/cards': (context) => const ScreenCards(),
+  '/user_detail': (context) => const UserDetailScreen(),
   // '/settings': (context) => const SettingsScreen(),
   // '/dashboard': (context) => const DashboardScreen(),
   // '/details': (context) => const DetailsScreen(),
@@ -35,4 +37,5 @@ class AppRoutes {
   // Rutas de autenticación (manejadas automáticamente)
   static const String login = '/'; // Solo para referencia
   static const String home = '/home'; // Solo para referencia
+  static const String userDetail = '/user_detail';
 }

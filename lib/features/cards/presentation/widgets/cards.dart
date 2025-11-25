@@ -11,6 +11,7 @@ class Cards extends StatelessWidget {
   final Color textColor;
   final double textSize;
   final VoidCallback onTapAction;
+  final Color borderColor;
   const Cards({
     Key? key,
     required this.squareColor,
@@ -21,7 +22,8 @@ class Cards extends StatelessWidget {
     this.shadowColor = Colors.black26,
     this.textColor = Colors.white,
     this.textSize = 16.0,
-    required this.onTapAction, // El callback de la acción
+    required this.onTapAction,
+    required this.borderColor, // El callback de la acción
   }) : super(key: key);
 
   @override
@@ -36,11 +38,12 @@ class Cards extends StatelessWidget {
         decoration: BoxDecoration(
           color: squareColor, // 6. Color
           borderRadius: BorderRadius.circular(borderRadius),
+          border: Border.all(color: borderColor, width: 2.0),
           boxShadow: [
             BoxShadow(
               color: shadowColor,
-              blurRadius: 5.0,
-              offset: const Offset(0, 3),
+              blurRadius: 0.0,
+              offset: const Offset(5, 6),
             ),
           ],
         ),
