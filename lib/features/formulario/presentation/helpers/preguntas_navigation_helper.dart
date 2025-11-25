@@ -78,5 +78,15 @@ class PreguntasNavigationHelper {
     }
     return ordenSecciones[indice + 1];
   }
+
+  /// Verifica si estamos en la última pregunta de una sección
+  static bool esUltimaPreguntaDeSeccion({
+    required PreguntaDTO preguntaActual,
+    required Map<String, List<PreguntaDTO>> preguntasPorGrupo,
+  }) {
+    final preguntasSeccionActual = preguntasPorGrupo[preguntaActual.grupoId] ?? [];
+    return preguntasSeccionActual.isNotEmpty && 
+        preguntaActual.id == preguntasSeccionActual.last.id;
+  }
 }
 

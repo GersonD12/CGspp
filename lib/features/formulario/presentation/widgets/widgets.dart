@@ -11,6 +11,8 @@ export 'image_picker_widget.dart';
 export 'modal_helper.dart';
 export 'obj_foto_texto_widget.dart';
 export 'pregunta_widget_factory.dart';
+export 'preguntas_multiple_group_widget.dart';
+export 'preguntas_navigation_buttons.dart';
 export 'progress_widget.dart';
 export 'pill_question_widget.dart';
 export 'respuestas_indicator.dart';

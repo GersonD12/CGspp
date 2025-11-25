@@ -62,12 +62,12 @@ class SeccionIntermediaWidget extends StatelessWidget {
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 50),
-                // Botones de navegación
+                // Botones de navegación - siempre mostrar ambos botones
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    // Botón retroceder (solo si no es la pantalla inicial y es retroceso)
-                    if (esRetroceso && !mostrarPantallaInicial && onRetroceder != null)
+                    // Botón retroceder (siempre mostrar si hay callback)
+                    if (onRetroceder != null)
                       Padding(
                         padding: const EdgeInsets.only(right: 20.0),
                         child: BotonSiguiente(
@@ -82,7 +82,7 @@ class SeccionIntermediaWidget extends StatelessWidget {
                           height: 60,
                         ),
                       ),
-                    // Botón continuar
+                    // Botón continuar (siempre mostrar)
                     BotonSiguiente(
                       texto: 'Continuar',
                       onPressed: onContinuar,
@@ -91,7 +91,7 @@ class SeccionIntermediaWidget extends StatelessWidget {
                       elevation: 5.0,
                       textColor: Colors.black,
                       fontSize: 18,
-                      width: 200,
+                      width: onRetroceder != null ? 150 : 200,
                       height: 60,
                     ),
                   ],

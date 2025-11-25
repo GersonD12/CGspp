@@ -30,6 +30,7 @@ class PreguntasProgressHelper {
   }
 
   /// Genera el título de la pantalla con información de progreso
+  /// Ahora usa bloques/páginas en lugar de preguntas individuales
   static String generarTitulo({
     required int contador,
     required int totalPreguntas,
@@ -37,12 +38,11 @@ class PreguntasProgressHelper {
     required int totalPreguntasSeccion,
     required SeccionDTO? seccionActual,
   }) {
-    if (contador >= totalPreguntas - 1) {
-      return '¡Formulario completado!';
-    } else if (totalPreguntasSeccion > 0 && seccionActual != null) {
-      return '${seccionActual.titulo} - Pregunta ${indiceEnSeccion + 1} de $totalPreguntasSeccion';
+    // Mostrar el título de la sección con el progreso de páginas/bloques
+    if (totalPreguntasSeccion > 0 && seccionActual != null) {
+      return '${seccionActual.titulo} - Página ${indiceEnSeccion + 1} de $totalPreguntasSeccion';
     } else {
-      return 'Pregunta ${contador + 1} de $totalPreguntas';
+      return 'Página ${contador + 1} de $totalPreguntas';
     }
   }
 
