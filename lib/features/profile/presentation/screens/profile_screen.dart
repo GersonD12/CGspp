@@ -1,5 +1,6 @@
 import 'package:calet/shared/widgets/protected_screen_state.dart';
 import 'package:calet/shared/widgets/vertical_view_standard.dart';
+import 'package:calet/shared/widgets/widgets.dart';
 import 'package:calet/features/auth/infrastructure/google_auth_service.dart';
 import 'package:calet/core/domain/entities/entities.dart';
 import 'package:calet/features/profile/presentation/widgets/profile_header.dart';
@@ -18,12 +19,13 @@ class _ProfileScreenState extends ProtectedScreenState<ProfileScreen> {
     return VerticalViewStandardScrollable(
       title: 'Mi Perfil',
       appBarFloats: true,
-      headerColor: const Color.fromARGB(255, 248, 226, 185),
-      foregroundColor: Colors.black,
-      backgroundColor: const Color.fromARGB(255, 248, 226, 185),
+      headerColor: Theme.of(context).appBarTheme.backgroundColor,
+      foregroundColor: Theme.of(context).appBarTheme.foregroundColor,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       showBackButton: false,
       hasFloatingNavBar: true, // Agregado para evitar solapamiento
       actions: [
+        const ThemeToggleButton(), // Botón para cambiar tema
         IconButton(
           icon: const Icon(Icons.edit),
           onPressed: () {
@@ -93,12 +95,14 @@ class _ProfileScreenState extends ProtectedScreenState<ProfileScreen> {
               icon: Icons.email,
               label: 'Email',
               value: user.email ?? 'No disponible',
+              valueColor: Theme.of(context).colorScheme.onSurface,
             ),
             const Divider(),
             _buildInfoRow(
               icon: Icons.person,
               label: 'Nombre',
               value: user.displayName ?? 'No disponible',
+              valueColor: Theme.of(context).colorScheme.onSurface,
             ),
             if (user.phoneNumber != null) ...[
               const Divider(),
@@ -106,6 +110,7 @@ class _ProfileScreenState extends ProtectedScreenState<ProfileScreen> {
                 icon: Icons.phone,
                 label: 'Teléfono',
                 value: user.phoneNumber!,
+                valueColor: Theme.of(context).colorScheme.onSurface,
               ),
             ],
             const Divider(),

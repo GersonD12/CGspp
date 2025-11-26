@@ -36,7 +36,7 @@ class PreguntasNavigationButtons extends StatelessWidget {
         children: [
           // Botón Atrás
           puedeRetroceder
-              ? BotonSiguiente(
+              ? Boton(
                   onPressed: onAtras,
                   icon: Icons.arrow_back_ios_outlined,
                   texto: 'Atrás',
@@ -48,7 +48,7 @@ class PreguntasNavigationButtons extends StatelessWidget {
                 )
               : const SizedBox(width: 120),
           // Botón Siguiente/Finalizar
-          BotonSiguiente(
+          Boton(
             texto: esUltimaPregunta ? 'Ver respuestas' : 'Siguiente',
             onPressed: esUltimaPregunta
                 ? onFinalizar
@@ -70,4 +70,3 @@ class PreguntasNavigationButtons extends StatelessWidget {
     );
   }
 }
-

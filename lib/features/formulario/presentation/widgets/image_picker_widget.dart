@@ -1,5 +1,5 @@
 import 'dart:io';
-import 'package:calet/features/formulario/presentation/widgets/boton_siguiente_widget.dart';
+import 'package:calet/shared/widgets/boton_widget.dart';
 import 'package:calet/features/formulario/presentation/widgets/modal_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -23,11 +23,14 @@ class ImagePickerWidget extends StatefulWidget {
   final List<String>? imagenesIniciales; // Lista de imágenes iniciales
   final String titulo;
   final String? emoji; // Emoji para mostrar junto al título
-  final Function(String?)? onFotoChanged; // Recibe ruta local del archivo (una imagen)
-  final Function(List<String>)? onFotosChanged; // Recibe lista de rutas locales (múltiples imágenes)
+  final Function(String?)?
+  onFotoChanged; // Recibe ruta local del archivo (una imagen)
+  final Function(List<String>)?
+  onFotosChanged; // Recibe lista de rutas locales (múltiples imágenes)
   final bool esObligatorio;
   final String? textoPlaceholder;
-  final int cantidadImagenes; // Cantidad máxima de imágenes permitidas (default: 1)
+  final int
+  cantidadImagenes; // Cantidad máxima de imágenes permitidas (default: 1)
 
   const ImagePickerWidget({
     super.key,
@@ -57,9 +60,11 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
   void initState() {
     super.initState();
     // Cargar imágenes iniciales
-    if (widget.imagenesIniciales != null && widget.imagenesIniciales!.isNotEmpty) {
+    if (widget.imagenesIniciales != null &&
+        widget.imagenesIniciales!.isNotEmpty) {
       _imagenesCargadas = List<String>.from(widget.imagenesIniciales!);
-    } else if (widget.imagenInicialPath != null && widget.imagenInicialPath!.isNotEmpty) {
+    } else if (widget.imagenInicialPath != null &&
+        widget.imagenInicialPath!.isNotEmpty) {
       _imagenesCargadas = [widget.imagenInicialPath!];
     }
   }
@@ -72,10 +77,11 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
       ..._imagenesCargadas,
       ..._imagenesSeleccionadas.map((x) => x.path),
     ];
-    
-    final imagenDisplayPath = widget.imagenInicialPath ?? _imagenSeleccionada?.path;
+
+    final imagenDisplayPath =
+        widget.imagenInicialPath ?? _imagenSeleccionada?.path;
     final isNetworkImage = _isUrl(imagenDisplayPath);
-    
+
     return Column(
       children: [
         const SizedBox(height: 4),
@@ -101,15 +107,13 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
             ),
           ],
         ),
-        if (widget.textoPlaceholder != null && widget.textoPlaceholder!.isNotEmpty)
+        if (widget.textoPlaceholder != null &&
+            widget.textoPlaceholder!.isNotEmpty)
           Padding(
             padding: const EdgeInsets.only(top: 5),
             child: Text(
               widget.textoPlaceholder!,
-              style: const TextStyle(
-                fontSize: 14,
-                color: Colors.grey,
-              ),
+              style: const TextStyle(fontSize: 14, color: Colors.grey),
             ),
           ),
         const SizedBox(height: 5),
@@ -119,7 +123,7 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
         else
           _buildSingleImage(imagenDisplayPath, isNetworkImage),
         const SizedBox(height: 16),
-        BotonSiguiente(
+        Boton(
           onPressed: todasLasImagenes.length >= widget.cantidadImagenes
               ? null // Deshabilitar si ya se alcanzó el límite
               : () {
@@ -154,11 +158,7 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
         border: Border.all(color: Colors.grey),
         borderRadius: BorderRadius.circular(8),
         boxShadow: const [
-          BoxShadow(
-            color: Colors.black12,
-            blurRadius: 4,
-            offset: Offset(2, 2),
-          ),
+          BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(2, 2)),
         ],
       ),
       child: imagenDisplayPath == null
@@ -245,10 +245,7 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
                                   return const Icon(Icons.broken_image);
                                 },
                               )
-                            : Image.file(
-                                File(imagenPath),
-                                fit: BoxFit.cover,
-                              ),
+                            : Image.file(File(imagenPath), fit: BoxFit.cover),
                       ),
                     ),
                     Positioned(
@@ -294,11 +291,13 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
       ..._imagenesCargadas,
       ..._imagenesSeleccionadas.map((x) => x.path),
     ];
-    
+
     if (_permiteMultiplesImagenes) {
       widget.onFotosChanged?.call(todasLasImagenes);
     } else {
-      widget.onFotoChanged?.call(todasLasImagenes.isNotEmpty ? todasLasImagenes.first : null);
+      widget.onFotoChanged?.call(
+        todasLasImagenes.isNotEmpty ? todasLasImagenes.first : null,
+      );
     }
   }
 
@@ -308,7 +307,7 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
       ..._imagenesSeleccionadas.map((x) => x.path),
     ];
     final puedeAgregarMas = todasLasImagenes.length < widget.cantidadImagenes;
-    
+
     return StatefulBuilder(
       builder: (BuildContext context, StateSetter modalSetState) {
         return Column(
@@ -409,4 +408,3 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
     );
   }
 }
-

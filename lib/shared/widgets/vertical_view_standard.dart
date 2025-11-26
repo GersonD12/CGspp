@@ -13,6 +13,7 @@ class VerticalViewStandard extends StatelessWidget {
   final Widget? leading;
   final EdgeInsets? padding;
   final bool centerTitle;
+  final bool showAppBar;
 
   const VerticalViewStandard({
     super.key,
@@ -27,6 +28,7 @@ class VerticalViewStandard extends StatelessWidget {
     this.leading,
     this.padding,
     this.centerTitle = true,
+    this.showAppBar = true,
   });
 
   @override
@@ -36,31 +38,34 @@ class VerticalViewStandard extends StatelessWidget {
     final textColor = foregroundColor ?? theme.primaryColor;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          title,
-          style: TextStyle(color: textColor, fontWeight: FontWeight.bold),
-        ),
-        centerTitle: centerTitle,
-        backgroundColor: headerBgColor,
-        foregroundColor: textColor,
-        elevation: 0,
-        automaticallyImplyLeading: showBackButton,
-        leading: showBackButton
-            ? (leading ??
-                  IconButton(
-                    icon: Icon(Icons.arrow_back, color: textColor),
-                    onPressed:
-                        onBackPressed ?? () => Navigator.of(context).pop(),
-                  ))
-            : null,
-        actions: actions,
-      ),
+      appBar: showAppBar
+          ? AppBar(
+              title: Text(
+                title,
+                style: TextStyle(color: textColor, fontWeight: FontWeight.bold),
+              ),
+              centerTitle: centerTitle,
+              backgroundColor: headerBgColor,
+              foregroundColor: textColor,
+              elevation: 0,
+              automaticallyImplyLeading: showBackButton,
+              leading: showBackButton
+                  ? (leading ??
+                        IconButton(
+                          icon: Icon(Icons.arrow_back, color: textColor),
+                          onPressed:
+                              onBackPressed ??
+                              () => Navigator.of(context).pop(),
+                        ))
+                  : null,
+              actions: actions,
+            )
+          : null,
       body: Container(
         padding: padding ?? const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            SizedBox(height: separationHeight),
+            if (showAppBar) SizedBox(height: separationHeight),
             Expanded(child: child),
           ],
         ),
@@ -86,6 +91,7 @@ class VerticalViewStandardScrollable extends StatelessWidget {
   final bool centerTitle;
   final ScrollPhysics? physics; // Restaurado
   final bool hasFloatingNavBar; // Nuevo parámetro
+  final bool showAppBar;
 
   const VerticalViewStandardScrollable({
     super.key,
@@ -104,6 +110,7 @@ class VerticalViewStandardScrollable extends StatelessWidget {
     this.physics, // Restaurado
     this.appBarFloats = false,
     this.hasFloatingNavBar = false, // Por defecto desactivado
+    this.showAppBar = true,
   });
 
   @override
@@ -126,31 +133,35 @@ class VerticalViewStandardScrollable extends StatelessWidget {
         child: CustomScrollView(
           physics: physics,
           slivers: <Widget>[
-            SliverAppBar(
-              title: Text(
-                title,
-                style: TextStyle(color: textColor, fontWeight: FontWeight.bold),
+            if (showAppBar)
+              SliverAppBar(
+                title: Text(
+                  title,
+                  style: TextStyle(
+                    color: textColor,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                centerTitle: centerTitle,
+                backgroundColor: headerBgColor,
+                foregroundColor: textColor,
+                elevation: 0,
+                scrolledUnderElevation: 0,
+                floating: appBarFloats,
+                snap: appBarFloats,
+                pinned: !appBarFloats,
+                leading: showBackButton
+                    ? (leading ??
+                          IconButton(
+                            icon: Icon(Icons.arrow_back, color: textColor),
+                            onPressed:
+                                onBackPressed ??
+                                () => Navigator.of(context).pop(),
+                          ))
+                    : null,
+                automaticallyImplyLeading: false,
+                actions: actions,
               ),
-              centerTitle: centerTitle,
-              backgroundColor: headerBgColor,
-              foregroundColor: textColor,
-              elevation: 0,
-              scrolledUnderElevation: 0,
-              floating: appBarFloats,
-              snap: appBarFloats,
-              pinned: !appBarFloats,
-              leading: showBackButton
-                  ? (leading ??
-                        IconButton(
-                          icon: Icon(Icons.arrow_back, color: textColor),
-                          onPressed:
-                              onBackPressed ??
-                              () => Navigator.of(context).pop(),
-                        ))
-                  : null,
-              automaticallyImplyLeading: false,
-              actions: actions,
-            ),
 
             // 2. CONTENIDO DE LA LISTA (SLIVER)
             SliverToBoxAdapter(

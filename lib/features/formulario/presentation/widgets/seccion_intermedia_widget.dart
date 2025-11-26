@@ -70,7 +70,7 @@ class SeccionIntermediaWidget extends StatelessWidget {
                     if (onRetroceder != null)
                       Padding(
                         padding: const EdgeInsets.only(right: 20.0),
-                        child: BotonSiguiente(
+                        child: Boton(
                           texto: 'Atrás',
                           onPressed: onRetroceder!,
                           color: const Color.fromARGB(255, 248, 226, 185),
@@ -83,7 +83,7 @@ class SeccionIntermediaWidget extends StatelessWidget {
                         ),
                       ),
                     // Botón continuar (siempre mostrar)
-                    BotonSiguiente(
+                    Boton(
                       texto: 'Continuar',
                       onPressed: onContinuar,
                       color: const Color.fromARGB(255, 248, 226, 185),
@@ -105,4 +105,3 @@ class SeccionIntermediaWidget extends StatelessWidget {
     );
   }
 }
-

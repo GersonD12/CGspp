@@ -1,7 +1,11 @@
+import 'package:calet/features/cards/presentation/widgets/barra_flotante.dart';
+import 'package:calet/features/cards/presentation/widgets/mostrar_imagen.dart';
 import 'package:calet/features/cards/presentation/widgets/pildora.dart';
+import 'package:calet/shared/widgets/boton_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:calet/shared/widgets/vertical_view_standard.dart';
 import 'package:calet/features/cards/domain/models/user_card.dart';
+import 'package:calet/core/theme/app_theme_extension.dart';
 
 class UserDetailScreen extends StatelessWidget {
   const UserDetailScreen({super.key});
@@ -20,6 +24,26 @@ class UserDetailScreen extends StatelessWidget {
           final bNum = int.tryParse(b.split('_').last) ?? 0;
           return aNum.compareTo(bNum);
         });
+
+      // 👇 AÑADIR AL INICIO
+      contentWidgets.add(
+        MostrarImagen(
+          squareHeight: 400,
+          squareWidth: double.infinity,
+          linkImage: '', // Sin foto en UserCard, muestra placeholder
+          squareColor: Theme.of(
+            context,
+          ).extension<AppThemeExtension>()!.buttonColor,
+          shadowColor: Theme.of(
+            context,
+          ).extension<AppThemeExtension>()!.shadowColor,
+          borderColor: Theme.of(
+            context,
+          ).extension<AppThemeExtension>()!.buttonColor,
+          onTapAction: () {},
+          textColor: Theme.of(context).colorScheme.onSurface,
+        ),
+      );
 
       for (var key in sortedKeys) {
         final answerData = answers[key] as Map<String, dynamic>;
@@ -44,8 +68,7 @@ class UserDetailScreen extends StatelessWidget {
         }
 
         //Si la respuesta es null no se muestra nada xD
-        if (question != null &&
-            (displayAnswers.isNotEmpty || linkImage != null)) {
+        if (question != null && (displayAnswers.isNotEmpty)) {
           contentWidgets.add(
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 8.0),
@@ -54,10 +77,7 @@ class UserDetailScreen extends StatelessWidget {
                 children: [
                   Text(
                     question,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 4),
@@ -70,56 +90,18 @@ class UserDetailScreen extends StatelessWidget {
                           .map(
                             (answer) => Pildora(
                               text: answer,
-                              color: const Color.fromARGB(94, 255, 255, 255),
-                              textColor: Colors.black,
-                              borderColor: const Color.fromARGB(
-                                255,
-                                77,
-                                77,
-                                77,
-                              ),
+                              color: Theme.of(
+                                context,
+                              ).extension<AppThemeExtension>()!.buttonColor,
+                              textColor: Theme.of(
+                                context,
+                              ).colorScheme.onSurface,
+                              borderColor: Theme.of(
+                                context,
+                              ).extension<AppThemeExtension>()!.buttonColor,
                             ),
                           )
                           .toList(),
-                    ),
-                  if (linkImage != null)
-                    Image.network(
-                      linkImage,
-                      loadingBuilder:
-                          (
-                            BuildContext context,
-                            Widget child,
-                            ImageChunkEvent? loadingProgress,
-                          ) {
-                            if (loadingProgress == null) {
-                              return child; // La imagen ya se cargó
-                            }
-                            return const Center(
-                              child:
-                                  CircularProgressIndicator(), // Círculo de carga
-                            );
-                          },
-                      errorBuilder: (context, error, stackTrace) =>
-                          const SizedBox(
-                            height: 100,
-                            width: double.infinity,
-                            child: Icon(Icons.image_not_supported),
-                          ), // Widget en caso de error
-                    ),
-                  if (linkImage == null &&
-                      (textAnswer == null || textAnswer.isEmpty) &&
-                      (optionsAnswer == null || optionsAnswer.isEmpty))
-                    Container(
-                      height: 100,
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        color: Colors.grey[200],
-                        borderRadius: BorderRadius.circular(8.0),
-                      ),
-                      child: const Icon(
-                        Icons.image_outlined,
-                        color: Colors.grey,
-                      ),
                     ),
                 ],
               ),
@@ -127,6 +109,61 @@ class UserDetailScreen extends StatelessWidget {
           );
         }
       }
+
+      // 👇 AÑADIR AL FINAL
+      contentWidgets.add(
+        MostrarImagen(
+          squareHeight: 350,
+          squareWidth: double.infinity,
+          linkImage: '', // Sin imagen al final, solo muestra el placeholder
+          squareColor: Theme.of(
+            context,
+          ).extension<AppThemeExtension>()!.buttonColor,
+          shadowColor: Theme.of(
+            context,
+          ).extension<AppThemeExtension>()!.shadowColor,
+          borderColor: Theme.of(
+            context,
+          ).extension<AppThemeExtension>()!.buttonColor,
+          onTapAction: () {},
+          textColor: Theme.of(context).colorScheme.onSurface,
+        ),
+      );
+      contentWidgets.add(const SizedBox(height: 15));
+      contentWidgets.add(
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Boton(
+              texto: 'Responder',
+              icon: Icons.arrow_forward,
+              onPressed: () {},
+              color: Theme.of(
+                context,
+              ).extension<AppThemeExtension>()!.buttonColor,
+              textColor: Theme.of(context).colorScheme.onSurface,
+              elevation: 2,
+              shadowColor: Theme.of(
+                context,
+              ).extension<AppThemeExtension>()!.shadowColor,
+            ),
+            const SizedBox(width: 15),
+            Boton(
+              texto: 'Compartir',
+              icon: Icons.share,
+              onPressed: () {},
+              color: Theme.of(
+                context,
+              ).extension<AppThemeExtension>()!.buttonColor,
+              textColor: Theme.of(context).colorScheme.onSurface,
+              shadowColor: Theme.of(
+                context,
+              ).extension<AppThemeExtension>()!.shadowColor,
+              elevation: 2,
+            ),
+          ],
+        ),
+      );
     }
 
     if (contentWidgets.isEmpty) {
@@ -135,17 +172,42 @@ class UserDetailScreen extends StatelessWidget {
       );
     }
 
-    return VerticalViewStandardScrollable(
-      title: user.displayName,
-      appBarFloats: true,
-      headerColor: const Color.fromARGB(255, 248, 226, 185),
-      backgroundColor: const Color.fromARGB(255, 248, 226, 185),
-      foregroundColor: const Color.fromARGB(255, 0, 0, 0),
-      centerTitle: true,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: contentWidgets,
-      ),
+    return Stack(
+      children: [
+        VerticalViewStandardScrollable(
+          title: 'Pais',
+          appBarFloats: true,
+          headerColor: Theme.of(context).appBarTheme.backgroundColor,
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+          foregroundColor: Theme.of(context).appBarTheme.foregroundColor,
+          centerTitle: true,
+          hasFloatingNavBar: true, // Añadir espacio extra al final
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: contentWidgets,
+          ),
+        ),
+        Positioned(
+          left: 20,
+          right: 20,
+          bottom: 20,
+          child: BarraFlotante(
+            text: user.displayName,
+            onTap: () {},
+            backgroundColor: Theme.of(
+              context,
+            ).extension<AppThemeExtension>()!.barColor,
+            borderColor: Theme.of(
+              context,
+            ).extension<AppThemeExtension>()!.barBorder.withOpacity(0.2),
+            textStyle: TextStyle(
+              color: Theme.of(context).colorScheme.onSurface,
+              fontWeight: FontWeight.bold,
+              fontSize: 20,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

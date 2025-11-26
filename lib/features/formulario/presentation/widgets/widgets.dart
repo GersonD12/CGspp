@@ -1,11 +1,11 @@
 // Barrel file para widgets del feature formulario
-// 
+//
 // Simplifica las importaciones de widgets:
 // ```dart
 // import 'package:calet/features/formulario/presentation/widgets/widgets.dart';
 // ```
 
-export 'boton_siguiente_widget.dart';
+export '../../../../shared/widgets/boton_widget.dart';
 export 'cuadrado_widget.dart';
 export 'image_picker_widget.dart';
 export 'modal_helper.dart';
@@ -19,4 +19,3 @@ export 'respuestas_indicator.dart';
 export 'respuestas_progress_widget.dart';
 export 'respuestas_stats_widget.dart';
 export 'seccion_intermedia_widget.dart';
-

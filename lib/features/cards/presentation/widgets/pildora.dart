@@ -21,9 +21,16 @@ class Pildora extends StatelessWidget {
       decoration: BoxDecoration(
         color: color,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: borderColor),
+        boxShadow: [
+          BoxShadow(
+            color: const Color.fromARGB(66, 179, 179, 179),
+            blurRadius: 0,
+            offset: const Offset(3, 4),
+          ),
+        ],
+        border: Border.all(color: borderColor, width: 2),
       ),
-      child: Text(text, style: TextStyle(color: textColor, fontSize: 14)),
+      child: Text(text, style: TextStyle(color: textColor, fontSize: 15)),
     );
   }
 }

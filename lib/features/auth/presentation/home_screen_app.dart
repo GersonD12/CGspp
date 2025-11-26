@@ -1,10 +1,12 @@
 import 'package:calet/features/auth/presentation/home_screen.dart';
+import 'package:calet/features/cards/presentation/widgets/barra_flotante.dart';
 import 'package:calet/features/formulario/presentation/screens/formulario_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:calet/features/cards/presentation/screens/screen_cards.dart';
 import 'package:calet/features/profile/presentation/screens/profile_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:calet/shared/widgets/vertical_view_standard.dart';
+import 'package:calet/core/theme/app_theme_extension.dart';
 
 class HomeScreenApp extends ConsumerStatefulWidget {
   const HomeScreenApp({super.key});
@@ -35,6 +37,7 @@ class _HomeScreenAppState extends ConsumerState<HomeScreenApp> {
     return VerticalViewStandard(
       title: 'Inicio',
       showBackButton: false,
+      showAppBar: false,
       padding: EdgeInsets.zero,
       separationHeight: 0,
       child: Stack(
@@ -46,23 +49,18 @@ class _HomeScreenAppState extends ConsumerState<HomeScreenApp> {
             left: 0,
             right: 0,
             bottom: 0,
-            child: Container(
-              margin: const EdgeInsets.only(left: 20, right: 20, bottom: 20),
-              decoration: BoxDecoration(
-                color: Colors.transparent,
-                borderRadius: BorderRadius.circular(80),
-                border: Border.all(
-                  color: const Color.fromARGB(
-                    124,
-                    206,
-                    206,
-                    206,
-                  ).withOpacity(0.2),
-                  width: 3,
-                ),
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(80),
+            child: Padding(
+              padding: const EdgeInsets.only(left: 20, right: 20, bottom: 20),
+              child: BarraFlotante(
+                text: '', // No se usa texto aquí
+                backgroundColor: Theme.of(
+                  context,
+                ).extension<AppThemeExtension>()!.barColor,
+                borderColor: Theme.of(
+                  context,
+                ).extension<AppThemeExtension>()!.barBorder.withOpacity(0.2),
+                radius: 80,
+                isFullyRound: false, // Usamos radio específico
                 child: BottomNavigationBar(
                   items: const <BottomNavigationBarItem>[
                     BottomNavigationBarItem(
@@ -104,9 +102,13 @@ class _HomeScreenAppState extends ConsumerState<HomeScreenApp> {
                   showSelectedLabels: true,
                   selectedFontSize: 12.0,
                   unselectedFontSize: 0.0, // Force icon to center vertically
-                  backgroundColor: const Color.fromARGB(225, 255, 255, 255),
-                  selectedItemColor: const Color.fromARGB(255, 6, 80, 141),
-                  unselectedItemColor: Colors.black,
+                  backgroundColor: Theme.of(
+                    context,
+                  ).extension<AppThemeExtension>()!.barColor.withOpacity(0.7),
+                  selectedItemColor: Theme.of(context).colorScheme.onSurface,
+                  unselectedItemColor: Theme.of(
+                    context,
+                  ).extension<AppThemeExtension>()!.barBorder.withOpacity(0.5),
                   onTap: _onItemTapped,
                 ),
               ),
