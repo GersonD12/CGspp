@@ -48,11 +48,13 @@ class UserDetailScreen extends StatelessWidget {
       for (var key in sortedKeys) {
         final answerData = answers[key] as Map<String, dynamic>;
         final question = answerData['descripcionPregunta'] as String?;
+        final emojiPregunta = answerData['emojiPregunta'] as String?;
         final optionsAnswer = answerData['respuestaOpciones'] as List<dynamic>?;
         final textAnswer = answerData['respuestaTexto'] as String?;
         final respuestaImagen = answerData['respuestaImagen'] as String?;
 
-        List<String> displayAnswers = [];
+        List<String> multipleAnswers = [];
+        String singleAnswer = '';
         String? linkImage;
 
         // Asignar la imagen si existe
@@ -62,47 +64,68 @@ class UserDetailScreen extends StatelessWidget {
 
         // Asignar la respuesta de texto o de opciones
         if (optionsAnswer != null && optionsAnswer.isNotEmpty) {
-          displayAnswers = optionsAnswer.map((e) => e.toString()).toList();
+          multipleAnswers = optionsAnswer.map((e) => e.toString()).toList();
         } else if (textAnswer != null && textAnswer.isNotEmpty) {
-          displayAnswers = [textAnswer];
+          singleAnswer = textAnswer;
         }
 
-        //Si la respuesta es null no se muestra nada xD
-        if (question != null && (displayAnswers.isNotEmpty)) {
+        // Mostrar preguntas con respuestas múltiples (con píldoras)
+        if (question != null && multipleAnswers.isNotEmpty) {
           contentWidgets.add(
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 8.0),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    question,
+                    '${emojiPregunta ?? ''} $question',
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17),
-                    textAlign: TextAlign.center,
+                    textAlign: TextAlign.start,
                   ),
-                  const SizedBox(height: 4),
-                  if (displayAnswers.isNotEmpty)
-                    Wrap(
-                      spacing: 8.0,
-                      runSpacing: 4.0,
-                      alignment: WrapAlignment.center,
-                      children: displayAnswers
-                          .map(
-                            (answer) => Pildora(
-                              text: answer,
-                              color: Theme.of(
-                                context,
-                              ).extension<AppThemeExtension>()!.buttonColor,
-                              textColor: Theme.of(
-                                context,
-                              ).colorScheme.onSurface,
-                              borderColor: Theme.of(
-                                context,
-                              ).extension<AppThemeExtension>()!.buttonColor,
-                            ),
-                          )
-                          .toList(),
-                    ),
+                  const SizedBox(height: 10),
+                  Wrap(
+                    spacing: 8.0,
+                    runSpacing: 4.0,
+                    alignment: WrapAlignment.start,
+                    children: multipleAnswers
+                        .map(
+                          (multipleAnswer) => Pildora(
+                            text: multipleAnswer,
+                            color: Theme.of(
+                              context,
+                            ).extension<AppThemeExtension>()!.buttonColor,
+                            textColor: Theme.of(context).colorScheme.onSurface,
+                            borderColor: Theme.of(
+                              context,
+                            ).extension<AppThemeExtension>()!.buttonColor,
+                          ),
+                        )
+                        .toList(),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+        // Mostrar preguntas de solo texto (sin píldoras)
+        else if (question != null && singleAnswer.isNotEmpty) {
+          contentWidgets.add(
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '${emojiPregunta ?? ''} $question ',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17),
+                    textAlign: TextAlign.start,
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    singleAnswer,
+                    style: TextStyle(fontSize: 15),
+                    textAlign: TextAlign.start,
+                  ),
                 ],
               ),
             ),
@@ -183,7 +206,7 @@ class UserDetailScreen extends StatelessWidget {
           centerTitle: true,
           hasFloatingNavBar: true, // Añadir espacio extra al final
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: contentWidgets,
           ),
         ),

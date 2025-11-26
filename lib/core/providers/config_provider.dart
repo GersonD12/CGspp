@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import 'package:calet/core/theme/app_colors.dart';
 import 'package:calet/core/theme/app_theme_extension.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AppConfig {
   final Brightness brightness;
@@ -20,7 +21,9 @@ class AppConfig {
 
 /// Provider de configuración de la aplicación
 class ConfigNotifier extends StateNotifier<AppConfig> {
-  ConfigNotifier() : super(_lightConfig);
+  ConfigNotifier() : super(_lightConfig) {
+    _loadSavedTheme();
+  }
 
   static final AppConfig _lightConfig = AppConfig(
     brightness: Brightness.light,
@@ -183,12 +186,40 @@ class ConfigNotifier extends StateNotifier<AppConfig> {
     );
   }
 
+  /// Cargar el tema guardado desde SharedPreferences
+  Future<void> _loadSavedTheme() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final isDark = prefs.getBool('isDarkTheme') ?? false;
+      if (isDark) {
+        state = _darkConfig;
+      } else {
+        state = _lightConfig;
+      }
+    } catch (e) {
+      // Si hay error al cargar, usar tema claro por defecto
+      state = _lightConfig;
+    }
+  }
+
+  /// Guardar el tema actual en SharedPreferences
+  Future<void> _saveTheme(bool isDark) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('isDarkTheme', isDark);
+    } catch (e) {
+      // Silenciar errores de guardado para no interrumpir la experiencia del usuario
+    }
+  }
+
   /// Cambiar entre tema claro y oscuro
   void toggleTheme() {
     if (state.brightness == Brightness.light) {
       state = _darkConfig;
+      _saveTheme(true);
     } else {
       state = _lightConfig;
+      _saveTheme(false);
     }
   }
 
@@ -196,8 +227,10 @@ class ConfigNotifier extends StateNotifier<AppConfig> {
   void setTheme(Brightness brightness) {
     if (brightness == Brightness.light) {
       state = _lightConfig;
+      _saveTheme(false);
     } else {
       state = _darkConfig;
+      _saveTheme(true);
     }
   }
 }

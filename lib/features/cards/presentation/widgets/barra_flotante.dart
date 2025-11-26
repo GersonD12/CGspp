@@ -9,6 +9,7 @@ class BarraFlotante extends StatelessWidget {
   final double radius; // Si no es totalmente redondo, ¿cuánto radio?
   final VoidCallback? onTap; // Función al presionar
   final TextStyle? textStyle; // Opcional: para cambiar color/tamaño de letra
+  final double trasparency;
 
   final Widget? child; // Nuevo parámetro opcional
 
@@ -22,6 +23,7 @@ class BarraFlotante extends StatelessWidget {
     this.radius = 10.0, // Radio por defecto si no es píldora
     this.onTap,
     this.textStyle,
+    this.trasparency = 2.0,
   }) : super(key: key);
 
   @override
@@ -68,7 +70,7 @@ class BarraFlotante extends StatelessWidget {
         borderRadius: BorderRadius.circular(effectiveRadius),
         // Efecto de lente sutil
         child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 2.0, sigmaY: 2.0),
+          filter: ImageFilter.blur(sigmaX: trasparency, sigmaY: trasparency),
           child: content,
         ),
       ),

@@ -2,11 +2,13 @@ class UserCard {
   final String id;
   final String displayName;
   final Map<String, dynamic> answers;
+  final String emojiPregunta;
 
   UserCard({
     required this.id,
     required this.displayName,
     required this.answers,
+    required this.emojiPregunta,
   });
 
   factory UserCard.fromMap(String id, Map<String, dynamic> data) {
@@ -52,6 +54,11 @@ class UserCard {
       }
     }
 
-    return UserCard(id: id, displayName: finalDisplayName, answers: answers);
+    return UserCard(
+      id: id,
+      displayName: finalDisplayName,
+      answers: answers,
+      emojiPregunta: '',
+    );
   }
 }
