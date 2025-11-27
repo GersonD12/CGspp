@@ -41,10 +41,7 @@ class UserDetailScreen extends StatelessWidget {
           ).extension<AppThemeExtension>()!.buttonColor,
           shadowColor: Theme.of(
             context,
-          ).extension<AppThemeExtension>()!.shadowColor,
-          borderColor: Theme.of(
-            context,
-          ).extension<AppThemeExtension>()!.barBorder,
+          ).extension<AppThemeExtension>()!.shadowColor.withOpacity(0.2),
           onTapAction: () {},
           textColor: Theme.of(context).colorScheme.onSurface,
         ),
@@ -84,7 +81,6 @@ class UserDetailScreen extends StatelessWidget {
                 linkImage: linkImage,
                 squareColor: Colors.transparent,
                 shadowColor: Colors.transparent,
-                borderColor: Colors.transparent,
                 onTapAction: () {},
                 textColor: Theme.of(context).colorScheme.onSurface,
               ),
@@ -176,10 +172,7 @@ class UserDetailScreen extends StatelessWidget {
           ).extension<AppThemeExtension>()!.buttonColor,
           shadowColor: Theme.of(
             context,
-          ).extension<AppThemeExtension>()!.shadowColor,
-          borderColor: Theme.of(
-            context,
-          ).extension<AppThemeExtension>()!.barBorder,
+          ).extension<AppThemeExtension>()!.shadowColor.withOpacity(0.2),
           onTapAction: () {},
           textColor: Theme.of(context).colorScheme.onSurface,
         ),
@@ -199,7 +192,7 @@ class UserDetailScreen extends StatelessWidget {
               textColor: Theme.of(context).colorScheme.onSurface,
               shadowColor: Theme.of(
                 context,
-              ).extension<AppThemeExtension>()!.shadowColor,
+              ).extension<AppThemeExtension>()!.shadowColor.withOpacity(0.2),
               elevation: 2,
             ),
             const SizedBox(width: 15),
@@ -214,7 +207,7 @@ class UserDetailScreen extends StatelessWidget {
               elevation: 2,
               shadowColor: Theme.of(
                 context,
-              ).extension<AppThemeExtension>()!.shadowColor,
+              ).extension<AppThemeExtension>()!.shadowColor.withOpacity(0.2),
             ),
           ],
         ),

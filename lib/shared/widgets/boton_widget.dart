@@ -32,17 +32,15 @@ class Boton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Configurar sombra personalizada si se proporciona shadowColor
-    final List<BoxShadow> customShadow = shadowColor != null
-        ? [
-            BoxShadow(
-              color: shadowColor!,
-              blurRadius: 0,
-              spreadRadius: 1,
-              offset: Offset(width! * 0.02, height! * 0.08),
-            ),
-          ]
-        : [];
+    // Configurar sombra personalizada; si no se provee shadowColor, usar un gris tenue por defecto
+    final List<BoxShadow> customShadow = [
+      BoxShadow(
+        color: shadowColor ?? Colors.black45,
+        blurRadius: 0,
+        spreadRadius: 0,
+        offset: Offset(width! * 0.01, height! * 0.08),
+      ),
+    ];
 
     return Container(
       width: width,

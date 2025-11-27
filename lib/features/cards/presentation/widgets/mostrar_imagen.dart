@@ -12,7 +12,6 @@ class MostrarImagen extends StatefulWidget {
   final Color textColor;
   final double textSize;
   final VoidCallback onTapAction;
-  final Color borderColor;
   const MostrarImagen({
     Key? key,
     this.squareColor = Colors.white,
@@ -25,12 +24,6 @@ class MostrarImagen extends StatefulWidget {
     this.textColor = Colors.black,
     this.textSize = 16.0,
     required this.onTapAction,
-    this.borderColor = const Color.fromARGB(
-      0,
-      0,
-      0,
-      0,
-    ), // El callback de la acción
   }) : super(key: key);
 
   @override
@@ -51,7 +44,6 @@ class _MostrarImagenState extends State<MostrarImagen> {
         decoration: BoxDecoration(
           color: widget.squareColor, // 6. Color
           borderRadius: BorderRadius.circular(widget.borderRadius),
-          border: Border.all(color: widget.borderColor, width: 2.0),
           boxShadow: [
             BoxShadow(
               color: widget.shadowColor,
