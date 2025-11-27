@@ -53,7 +53,7 @@ class _HomeScreenAppState extends ConsumerState<HomeScreenApp> {
               padding: const EdgeInsets.only(left: 20, right: 20, bottom: 20),
               child: BarraFlotante(
                 text: '', // No se usa texto aquí
-                trasparency: 0.99,
+                trasparency: 1.0,
                 backgroundColor: Theme.of(
                   context,
                 ).extension<AppThemeExtension>()!.barColor,

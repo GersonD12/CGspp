@@ -59,10 +59,10 @@ class BarraFlotante extends StatelessWidget {
         // Sombra sólida desplazada
         boxShadow: [
           BoxShadow(
-            color: backgroundColor.withOpacity(0.5),
-            blurRadius: 0,
-            spreadRadius: 0.5,
-            offset: const Offset(2.6, 2.6), // Ajustado a 3,3 como en home
+            color: backgroundColor.withOpacity(0.2),
+            blurRadius: 2,
+            spreadRadius: 0,
+            offset: const Offset(3, 4), // Ajustado a 3,3 como en home
           ),
         ],
       ),
