@@ -51,10 +51,5 @@ class AppColors {
   static const Color buttonColorDark = Color.fromRGBO(139, 111, 71, 1);
   //aca se pueden añadir mas colores personalizados, aca el tema oscuro y luego en config_provaider
   static const Color shadowColorDark = Color.fromARGB(55, 194, 194, 194);
-  static const Color barBorderDark = Color.fromARGB(
-    57,
-    168,
-    106,
-    0,
-  ); // Gris con transparencia
+  static const Color barBorderDark = Color.fromRGBO(139, 111, 71, 1);
 }

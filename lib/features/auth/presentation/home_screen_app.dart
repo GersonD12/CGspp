@@ -59,7 +59,7 @@ class _HomeScreenAppState extends ConsumerState<HomeScreenApp> {
                 ).extension<AppThemeExtension>()!.barColor,
                 borderColor: Theme.of(
                   context,
-                ).extension<AppThemeExtension>()!.barBorder.withOpacity(0.2),
+                ).extension<AppThemeExtension>()!.barBorder.withOpacity(0.4),
                 radius: 80,
                 isFullyRound: false, // Usamos radio específico
                 child: BottomNavigationBar(
@@ -109,7 +109,7 @@ class _HomeScreenAppState extends ConsumerState<HomeScreenApp> {
                   selectedItemColor: Theme.of(context).colorScheme.onSurface,
                   unselectedItemColor: Theme.of(
                     context,
-                  ).extension<AppThemeExtension>()!.barBorder.withOpacity(0.5),
+                  ).extension<AppThemeExtension>()!.barBorder,
                   onTap: _onItemTapped,
                 ),
               ),
