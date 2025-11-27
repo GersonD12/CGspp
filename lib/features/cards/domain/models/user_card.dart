@@ -3,12 +3,14 @@ class UserCard {
   final String displayName;
   final Map<String, dynamic> answers;
   final String emojiPregunta;
+  final Map<String, List<String>> groupImages;
 
   UserCard({
     required this.id,
     required this.displayName,
     required this.answers,
     required this.emojiPregunta,
+    this.groupImages = const {},
   });
 
   factory UserCard.fromMap(String id, Map<String, dynamic> data) {
@@ -16,14 +18,50 @@ class UserCard {
 
     final formResponses = data['form_responses'] as Map<String, dynamic>?;
     final Map<String, dynamic> answers = {};
+    final Map<String, List<String>> groupImages = {};
 
     if (formResponses != null) {
       if (formResponses.containsKey('grupos')) {
         final grupos = formResponses['grupos'] as Map<String, dynamic>?;
         if (grupos != null) {
-          grupos.forEach((key, value) {
-            if (value is Map<String, dynamic>) {
-              answers.addAll(value);
+          grupos.forEach((groupName, groupData) {
+            if (groupData is Map<String, dynamic>) {
+              answers.addAll(groupData);
+
+              // Extract images for this group
+              List<String> collectedImages = [];
+              groupData.forEach((key, value) {
+                if (value is Map<String, dynamic>) {
+                  // Check for 'respuestaImagen' (comma separated string)
+                  if (value.containsKey('respuestaImagen')) {
+                    final img = value['respuestaImagen'];
+                    if (img is String && img.isNotEmpty) {
+                      collectedImages.addAll(
+                        img
+                            .split(',')
+                            .map((url) => url.trim())
+                            .where((url) => url.isNotEmpty)
+                            .toList(),
+                      );
+                    }
+                  }
+                  // Check for 'respuestaImagenes' (list) - just in case
+                  if (value.containsKey('respuestaImagenes')) {
+                    final imgs = value['respuestaImagenes'];
+                    if (imgs is List) {
+                      collectedImages.addAll(
+                        imgs
+                            .map((e) => e.toString().trim())
+                            .where((url) => url.isNotEmpty),
+                      );
+                    }
+                  }
+                }
+              });
+
+              if (collectedImages.isNotEmpty) {
+                groupImages[groupName] = collectedImages;
+              }
             }
           });
         }
@@ -59,6 +97,7 @@ class UserCard {
       displayName: finalDisplayName,
       answers: answers,
       emojiPregunta: '',
+      groupImages: groupImages,
     );
   }
 }

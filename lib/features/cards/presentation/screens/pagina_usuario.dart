@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:calet/shared/widgets/vertical_view_standard.dart';
 import 'package:calet/features/cards/domain/models/user_card.dart';
 import 'package:calet/core/theme/app_theme_extension.dart';
+import 'dart:developer' show log;
 
 class UserDetailScreen extends StatelessWidget {
   const UserDetailScreen({super.key});
@@ -25,12 +26,16 @@ class UserDetailScreen extends StatelessWidget {
           return aNum.compareTo(bNum);
         });
 
+      log(user.groupImages['questionsPerfil'].toString());
+
       // 👇 AÑADIR AL INICIO
       contentWidgets.add(
         MostrarImagen(
           squareHeight: 400,
           squareWidth: double.infinity,
-          linkImage: '', // Sin foto en UserCard, muestra placeholder
+          linkImage:
+              user.groupImages['questionsPerfil'] ??
+              [], // Muestra imágenes de questionsPerfil
           squareColor: Theme.of(
             context,
           ).extension<AppThemeExtension>()!.buttonColor,
@@ -39,13 +44,16 @@ class UserDetailScreen extends StatelessWidget {
           ).extension<AppThemeExtension>()!.shadowColor,
           borderColor: Theme.of(
             context,
-          ).extension<AppThemeExtension>()!.buttonColor,
+          ).extension<AppThemeExtension>()!.barBorder,
           onTapAction: () {},
           textColor: Theme.of(context).colorScheme.onSurface,
         ),
       );
 
       for (var key in sortedKeys) {
+        // Evitar errores si el valor no es un Mapa
+        if (answers[key] is! Map<String, dynamic>) continue;
+
         final answerData = answers[key] as Map<String, dynamic>;
         final question = answerData['descripcionPregunta'] as String?;
         final emojiPregunta = answerData['emojiPregunta'] as String?;
@@ -55,11 +63,33 @@ class UserDetailScreen extends StatelessWidget {
 
         List<String> multipleAnswers = [];
         String singleAnswer = '';
-        String? linkImage;
+        List<String> linkImage = [];
 
         // Asignar la imagen si existe
         if (respuestaImagen != null && respuestaImagen.isNotEmpty) {
-          linkImage = respuestaImagen;
+          linkImage = respuestaImagen
+              .split(',')
+              .map((url) => url.trim())
+              .where((url) => url.isNotEmpty)
+              .toList();
+        }
+
+        if (linkImage.isNotEmpty) {
+          contentWidgets.add(
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8.0),
+              child: MostrarImagen(
+                squareHeight: 250,
+                squareWidth: double.infinity,
+                linkImage: linkImage,
+                squareColor: Colors.transparent,
+                shadowColor: Colors.transparent,
+                borderColor: Colors.transparent,
+                onTapAction: () {},
+                textColor: Theme.of(context).colorScheme.onSurface,
+              ),
+            ),
+          );
         }
 
         // Asignar la respuesta de texto o de opciones
@@ -138,7 +168,9 @@ class UserDetailScreen extends StatelessWidget {
         MostrarImagen(
           squareHeight: 350,
           squareWidth: double.infinity,
-          linkImage: '', // Sin imagen al final, solo muestra el placeholder
+          linkImage:
+              user.groupImages['ceCDytDoV0g01BHegzHA'] ??
+              [], // Sin imagen al final, solo muestra el placeholder
           squareColor: Theme.of(
             context,
           ).extension<AppThemeExtension>()!.buttonColor,
@@ -147,7 +179,7 @@ class UserDetailScreen extends StatelessWidget {
           ).extension<AppThemeExtension>()!.shadowColor,
           borderColor: Theme.of(
             context,
-          ).extension<AppThemeExtension>()!.buttonColor,
+          ).extension<AppThemeExtension>()!.barBorder,
           onTapAction: () {},
           textColor: Theme.of(context).colorScheme.onSurface,
         ),
@@ -158,31 +190,31 @@ class UserDetailScreen extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Boton(
-              texto: 'Responder',
-              icon: Icons.arrow_forward,
+              texto: 'Rechazar',
+              icon: Icons.clear_rounded,
               onPressed: () {},
               color: Theme.of(
                 context,
               ).extension<AppThemeExtension>()!.buttonColor,
               textColor: Theme.of(context).colorScheme.onSurface,
-              elevation: 2,
               shadowColor: Theme.of(
                 context,
               ).extension<AppThemeExtension>()!.shadowColor,
+              elevation: 2,
             ),
             const SizedBox(width: 15),
             Boton(
-              texto: 'Compartir',
-              icon: Icons.share,
+              texto: 'Responder',
+              icon: Icons.border_color_rounded,
               onPressed: () {},
               color: Theme.of(
                 context,
               ).extension<AppThemeExtension>()!.buttonColor,
               textColor: Theme.of(context).colorScheme.onSurface,
+              elevation: 2,
               shadowColor: Theme.of(
                 context,
               ).extension<AppThemeExtension>()!.shadowColor,
-              elevation: 2,
             ),
           ],
         ),
