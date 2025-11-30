@@ -514,7 +514,41 @@ class _PreguntasScreenState extends ConsumerState<PreguntasScreen> {
     }
 
     if (seccionAMostrar == null) {
-      return const SizedBox.shrink();
+      // En lugar de retornar SizedBox.shrink(), mostrar un mensaje útil
+      return Scaffold(
+        backgroundColor: const Color.fromARGB(255, 248, 226, 185),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(
+                  Icons.info_outline,
+                  size: 64,
+                  color: Color.fromARGB(255, 76, 94, 175),
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'Cargando sección...',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
+                const CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    Color.fromARGB(255, 76, 94, 175),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
     }
 
     return SeccionIntermediaWidget(
@@ -542,8 +576,74 @@ class _PreguntasScreenState extends ConsumerState<PreguntasScreen> {
       );
     }
 
+    // Mostrar error si hay alguno
+    if (_error.isNotEmpty) {
+      return Scaffold(
+        backgroundColor: const Color.fromARGB(255, 248, 226, 185),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(
+                  Icons.error_outline,
+                  size: 64,
+                  color: Colors.red,
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'Error al cargar el formulario',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  _error,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    color: Colors.black87,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 24),
+                ElevatedButton(
+                  onPressed: () {
+                    setState(() {
+                      _isLoading = true;
+                      _error = '';
+                    });
+                    _fetchPreguntasFromFirestore();
+                  },
+                  child: const Text('Reintentar'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
     if (_mostrandoPantallaIntermedia || _mostrarPantallaInicial) {
-      return _buildPantallaIntermedia();
+      final pantallaIntermedia = _buildPantallaIntermedia();
+      // Si la pantalla intermedia retorna SizedBox.shrink(), mostrar loading
+      if (pantallaIntermedia is SizedBox && pantallaIntermedia.width == 0 && pantallaIntermedia.height == 0) {
+        return Scaffold(
+          backgroundColor: const Color.fromARGB(255, 248, 226, 185),
+          body: const Center(
+            child: CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(
+                Color.fromARGB(255, 76, 94, 175),
+              ),
+            ),
+          ),
+        );
+      }
+      return pantallaIntermedia;
     }
 
     final respuestasState = ref.watch(respuestasProvider);

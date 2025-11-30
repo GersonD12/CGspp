@@ -2,6 +2,7 @@ import 'package:calet/features/formulario/presentation/providers/respuestas_stat
 import 'package:calet/features/formulario/application/use_cases/use_cases.dart';
 import 'package:calet/features/formulario/domain/repositories/respuestas_repository.dart';
 import 'package:calet/features/formulario/domain/repositories/preguntas_repository.dart';
+import 'package:calet/features/formulario/infrastructure/preguntas_repository_impl.dart';
 import 'package:calet/core/providers/session_provider.dart';
 import 'package:calet/core/di/injection.dart';
 import 'package:flutter/material.dart';
@@ -112,6 +113,13 @@ class RespuestasController {
 
   /// Obtiene el use case para obtener preguntas
   ObtenerPreguntasUseCase get obtenerPreguntasUseCase {
+    // Verificar primero si está registrado, si no, registrarlo como fallback
+    if (!getIt.isRegistered<PreguntasRepository>()) {
+      getIt.registerLazySingleton<PreguntasRepository>(
+        () => PreguntasRepositoryImpl(),
+      );
+    }
+    
     final repository = getIt<PreguntasRepository>();
     return ObtenerPreguntasUseCase(repository);
   }

@@ -90,12 +90,29 @@ class ConfigNotifier extends StateNotifier<AppConfig> {
         surface: AppColors.lightBackground,
         onSurface: AppColors.lightText,
         surfaceContainerHighest: AppColors.cardColorLight, // Para cards
-        outline:
-            AppColors.unselectedItemColorLight, // Para items no seleccionados
+        outline: Colors.transparent, // Sin bordes por defecto
+        outlineVariant: Colors.transparent, // Sin bordes variantes
       ),
 
       // IconTheme
       iconTheme: const IconThemeData(color: AppColors.lightText),
+
+      // Card Theme - Sin bordes por defecto
+      cardTheme: const CardThemeData(
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(12)),
+        ),
+      ),
+
+      // Input Decoration Theme - Sin bordes por defecto
+      inputDecorationTheme: const InputDecorationTheme(
+        border: InputBorder.none,
+        enabledBorder: InputBorder.none,
+        focusedBorder: InputBorder.none,
+        errorBorder: InputBorder.none,
+        disabledBorder: InputBorder.none,
+      ),
 
       // Extensión de colores personalizados
       //añadir los nuevos colores personalizados
@@ -167,11 +184,29 @@ class ConfigNotifier extends StateNotifier<AppConfig> {
         surface: AppColors.darkBackground,
         onSurface: AppColors.darkText,
         surfaceContainerHighest: AppColors.cardColorDark, // 👈 Versión DARK
-        outline: AppColors.unselectedItemColorDark, // 👈 Versión DARK
+        outline: Colors.transparent, // Sin bordes por defecto
+        outlineVariant: Colors.transparent, // Sin bordes variantes
       ),
 
       // IconTheme
       iconTheme: const IconThemeData(color: AppColors.darkText),
+
+      // Card Theme - Sin bordes por defecto
+      cardTheme: const CardThemeData(
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(12)),
+        ),
+      ),
+
+      // Input Decoration Theme - Sin bordes por defecto
+      inputDecorationTheme: const InputDecorationTheme(
+        border: InputBorder.none,
+        enabledBorder: InputBorder.none,
+        focusedBorder: InputBorder.none,
+        errorBorder: InputBorder.none,
+        disabledBorder: InputBorder.none,
+      ),
 
       // Extensión de colores personalizados
       //añadir tambien aqui
