@@ -47,14 +47,15 @@ class PreguntasProgressHelper {
   }
 
   /// Verifica si una pregunta ha sido respondida
+  /// NUEVO FORMATO: Usa idpregunta para matching
   static bool isPreguntaRespondida({
-    required String preguntaId,
+    required String idpregunta,
     required RespuestasState respuestasState,
   }) {
     final respuesta = respuestasState.todasLasRespuestas.firstWhere(
-      (r) => r.preguntaId == preguntaId,
+      (r) => r.idpregunta == idpregunta,
       orElse: () => RespuestaDTO(
-        preguntaId: '',
+        idpregunta: '',
         grupoId: '',
         tipoPregunta: '',
         descripcionPregunta: '',

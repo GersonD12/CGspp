@@ -37,6 +37,7 @@ class OpcionDTO {
 
 class PreguntaDTO {
   final String id; // ID del documento en Firestore
+  final String idpregunta; // ID único de la pregunta para matching con respuestas
   final String grupoId; // ID del grupo/sección al que pertenece
   final DateTime createdAt;
   final DateTime updatedAt;
@@ -55,9 +56,12 @@ class PreguntaDTO {
   final String iconType; // Tipo de icono (material, etc.)
   final bool estado; // Estado activo/inactivo de la pregunta
   final int? maxOpcionesSeleccionables; // Máximo de opciones seleccionables
+  final DateTime? fechaInicial; // Fecha mínima permitida para preguntas de tipo fecha
+  final DateTime? fechaFinal; // Fecha máxima permitida para preguntas de tipo fecha
 
   PreguntaDTO({
     required this.id,
+    required this.idpregunta,
     required this.grupoId,
     required this.createdAt,
     required this.updatedAt,
@@ -76,6 +80,8 @@ class PreguntaDTO {
     this.iconType = 'material',
     this.estado = true,
     this.maxOpcionesSeleccionables,
+    this.fechaInicial,
+    this.fechaFinal,
   });
 
   /// Convierte fecha desde formato {_seconds, _nanoseconds}
@@ -113,6 +119,7 @@ class PreguntaDTO {
 
     return PreguntaDTO(
       id: id,
+      idpregunta: map['idpregunta'] as String? ?? id, // Usar idpregunta si existe, sino usar id como fallback
       grupoId: grupoId,
       createdAt: _parseDate(map['createdAt']),
       updatedAt: _parseDate(map['updatedAt']),
@@ -133,6 +140,8 @@ class PreguntaDTO {
       maxOpcionesSeleccionables: map['maxOpcionesSeleccionables'] != null 
           ? (map['maxOpcionesSeleccionables'] as num).toInt() 
           : null,
+      fechaInicial: map['fechaInicial'] != null ? _parseDate(map['fechaInicial']) : null,
+      fechaFinal: map['fechaFinal'] != null ? _parseDate(map['fechaFinal']) : null,
     );
   }
 

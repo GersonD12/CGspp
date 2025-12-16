@@ -10,6 +10,9 @@ class PreguntasMultipleGroupWidget extends StatelessWidget {
   final Function(String preguntaId, String grupoId, String tipo, String descripcion, String encabezado, String? emoji, String? texto) onTextoChanged;
   final Function(String preguntaId, String grupoId, String tipo, String descripcion, String encabezado, String? emoji, String? numero) onNumeroChanged;
   final Function(String preguntaId, String grupoId, String tipo, String descripcion, String encabezado, String? emoji, List<String> imagenes) onImagenChanged;
+  final Function(String preguntaId, String grupoId, String tipo, String descripcion, String encabezado, String? emoji, String telefono) onTelefonoChanged;
+  final Function(String preguntaId, String grupoId, String tipo, String descripcion, String encabezado, String? emoji, String codigoPais) onPaisChanged;
+  final Function(String preguntaId, String grupoId, String tipo, String descripcion, String encabezado, String? emoji, String fecha) onFechaChanged;
 
   const PreguntasMultipleGroupWidget({
     super.key,
@@ -19,6 +22,9 @@ class PreguntasMultipleGroupWidget extends StatelessWidget {
     required this.onTextoChanged,
     required this.onNumeroChanged,
     required this.onImagenChanged,
+    required this.onTelefonoChanged,
+    required this.onPaisChanged,
+    required this.onFechaChanged,
   });
 
   @override
@@ -29,7 +35,7 @@ class PreguntasMultipleGroupWidget extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         mainAxisSize: MainAxisSize.min,
         children: preguntas.map((pregunta) {
-          final respuestaGuardada = respuestasGuardadas[pregunta.id];
+          final respuestaGuardada = respuestasGuardadas[pregunta.idpregunta];
           
           return Padding(
             padding: const EdgeInsets.only(bottom: 24.0),
@@ -40,6 +46,9 @@ class PreguntasMultipleGroupWidget extends StatelessWidget {
               onTextoChanged: onTextoChanged,
               onNumeroChanged: onNumeroChanged,
               onImagenChanged: onImagenChanged,
+              onTelefonoChanged: onTelefonoChanged,
+              onPaisChanged: onPaisChanged,
+              onFechaChanged: onFechaChanged,
             ),
           );
         }).toList(),

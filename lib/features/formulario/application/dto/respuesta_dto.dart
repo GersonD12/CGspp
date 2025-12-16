@@ -42,26 +42,31 @@ class OpcionSeleccionadaDTO {
 /// 
 /// Este modelo se usa para la transferencia de datos entre las capas
 /// data y presentation. No contiene lógica de negocio específica.
+/// 
+/// IMPORTANTE: Ahora usa idpregunta como clave principal para matching eficiente.
+/// Las respuestas solo almacenan idpregunta y valores (values) de opciones seleccionadas.
 class RespuestaDTO {
-  final String preguntaId;
+  final String idpregunta; // ID único de la pregunta (clave principal para matching)
+  final String? preguntaId; // ID del documento Firestore (compatibilidad hacia atrás)
   final String grupoId; // ID del grupo/sección al que pertenece la pregunta
-  final String tipoPregunta;
-  final String descripcionPregunta;
-  final String encabezadoPregunta; // Encabezado de la pregunta (para mostrar en perfil)
-  final String? emojiPregunta; // Emoji de la pregunta (para mostrar en perfil)
+  final String? tipoPregunta; // Ya no necesario, se obtiene de la pregunta cacheada
+  final String? descripcionPregunta; // Ya no necesario, se obtiene de la pregunta cacheada
+  final String? encabezadoPregunta; // Ya no necesario, se obtiene de la pregunta cacheada
+  final String? emojiPregunta; // Ya no necesario, se obtiene de la pregunta cacheada
   final String? respuestaTexto;
   final List<String>? respuestaImagenes; // Array de imágenes (puede tener 1 o más elementos)
-  final List<String>? respuestaOpciones; // Compatibilidad: valores simples (deprecated)
-  final List<OpcionSeleccionadaDTO>? respuestaOpcionesCompletas; // Nuevo: opciones con emoji y text
+  final List<String>? respuestaOpciones; // Valores (values) de opciones seleccionadas para búsquedas eficientes
+  final List<OpcionSeleccionadaDTO>? respuestaOpcionesCompletas; // Deprecated: ya no se guarda, solo values
   final DateTime createdAt;
   final DateTime updatedAt;
 
   const RespuestaDTO({
-    required this.preguntaId,
+    required this.idpregunta,
+    this.preguntaId,
     required this.grupoId,
-    required this.tipoPregunta,
-    required this.descripcionPregunta,
-    required this.encabezadoPregunta,
+    this.tipoPregunta,
+    this.descripcionPregunta,
+    this.encabezadoPregunta,
     this.emojiPregunta,
     this.respuestaTexto,
     this.respuestaImagenes,
@@ -72,21 +77,23 @@ class RespuestaDTO {
   });
 
   /// Convertir a Map para serialización
+  /// NUEVO FORMATO: Solo guarda idpregunta y valores (values) de opciones seleccionadas
   Map<String, dynamic> toMap() {
     final map = <String, dynamic>{
-      'preguntaId': preguntaId,
+      'idpregunta': idpregunta, // Clave principal para matching
       'grupoId': grupoId,
-      'tipoPregunta': tipoPregunta,
-      'descripcionPregunta': descripcionPregunta,
-      'encabezadoPregunta': encabezadoPregunta,
-      'respuestaTexto': respuestaTexto,
       'createdAt': Timestamp.fromDate(createdAt),
       'updatedAt': Timestamp.fromDate(updatedAt),
     };
     
-    // Guardar emoji si está disponible
-    if (emojiPregunta != null && emojiPregunta!.isNotEmpty) {
-      map['emojiPregunta'] = emojiPregunta;
+    // Guardar preguntaId solo para compatibilidad hacia atrás
+    if (preguntaId != null) {
+      map['preguntaId'] = preguntaId;
+    }
+    
+    // Guardar respuesta de texto
+    if (respuestaTexto != null && respuestaTexto!.isNotEmpty) {
+      map['respuestaTexto'] = respuestaTexto;
     }
     
     // Guardar imágenes en respuestaImagenes (array)
@@ -94,18 +101,14 @@ class RespuestaDTO {
       map['respuestaImagenes'] = respuestaImagenes;
     }
     
-    // Priorizar respuestaOpcionesCompletas sobre respuestaOpciones (formato antiguo)
-    if (respuestaOpcionesCompletas != null && respuestaOpcionesCompletas!.isNotEmpty) {
-      map['respuestaOpcionesCompletas'] = respuestaOpcionesCompletas!
-          .map((opcion) => opcion.toMap())
-          .toList();
-      // También guardar valores simples para compatibilidad
+    // Guardar solo los valores (values) de las opciones seleccionadas para búsquedas eficientes
+    if (respuestaOpciones != null && respuestaOpciones!.isNotEmpty) {
+      map['respuestaOpciones'] = respuestaOpciones; // Solo valores, no texto ni emoji
+    } else if (respuestaOpcionesCompletas != null && respuestaOpcionesCompletas!.isNotEmpty) {
+      // Extraer solo los valores de respuestaOpcionesCompletas
       map['respuestaOpciones'] = respuestaOpcionesCompletas!
           .map((opcion) => opcion.value)
           .toList();
-    } else if (respuestaOpciones != null && respuestaOpciones!.isNotEmpty) {
-      // Compatibilidad con formato antiguo
-      map['respuestaOpciones'] = respuestaOpciones;
     }
     
     return map;
@@ -153,17 +156,23 @@ class RespuestaDTO {
       }
     }
     
+    // Leer idpregunta (nuevo formato) o preguntaId (formato antiguo)
+    final idpreguntaValue = map['idpregunta'] as String? ?? map['preguntaId'] as String?;
+    if (idpreguntaValue == null) {
+      throw Exception('RespuestaDTO.fromMap: Se requiere idpregunta o preguntaId');
+    }
+    
     return RespuestaDTO(
-      preguntaId: map['preguntaId'] as String,
+      idpregunta: idpreguntaValue,
+      preguntaId: map['preguntaId'] as String?, // Compatibilidad hacia atrás
       grupoId: map['grupoId'] as String? ?? '', // Compatibilidad con datos antiguos
-      tipoPregunta: map['tipoPregunta'] as String,
-      descripcionPregunta: map['descripcionPregunta'] as String,
-      encabezadoPregunta: map['encabezadoPregunta'] as String? ?? 
-                         map['descripcionPregunta'] as String, // Compatibilidad: usar descripcion si no hay encabezado
-      emojiPregunta: map['emojiPregunta'] as String?,
+      tipoPregunta: map['tipoPregunta'] as String?, // Ya no necesario en nuevo formato
+      descripcionPregunta: map['descripcionPregunta'] as String?, // Ya no necesario en nuevo formato
+      encabezadoPregunta: map['encabezadoPregunta'] as String?, // Ya no necesario en nuevo formato
+      emojiPregunta: map['emojiPregunta'] as String?, // Ya no necesario en nuevo formato
       respuestaTexto: map['respuestaTexto'] as String?,
       respuestaImagenes: imagenes, // Array de imágenes
-      // Leer respuestaOpcionesCompletas (nuevo formato) o respuestaOpciones (formato antiguo)
+      // Leer respuestaOpcionesCompletas (formato antiguo) o respuestaOpciones (nuevo formato con solo values)
       respuestaOpcionesCompletas: map['respuestaOpcionesCompletas'] != null
           ? (map['respuestaOpcionesCompletas'] as List<dynamic>)
               .map((opcion) => OpcionSeleccionadaDTO.fromMap(opcion as Map<String, dynamic>))
@@ -179,6 +188,7 @@ class RespuestaDTO {
 
   /// Crear copia con cambios
   RespuestaDTO copyWith({
+    String? idpregunta,
     String? preguntaId,
     String? grupoId,
     String? tipoPregunta,
@@ -193,6 +203,7 @@ class RespuestaDTO {
     DateTime? updatedAt,
   }) {
     return RespuestaDTO(
+      idpregunta: idpregunta ?? this.idpregunta,
       preguntaId: preguntaId ?? this.preguntaId,
       grupoId: grupoId ?? this.grupoId,
       tipoPregunta: tipoPregunta ?? this.tipoPregunta,

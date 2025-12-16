@@ -15,14 +15,14 @@ class RespuestasState {
     this.error,
   });
 
-  /// Obtener respuesta por ID de pregunta
-  RespuestaDTO? getRespuesta(String preguntaId) {
-    return respuestas[preguntaId];
+  /// Obtener respuesta por idpregunta
+  RespuestaDTO? getRespuesta(String idpregunta) {
+    return respuestas[idpregunta];
   }
 
   /// Verificar si hay respuesta para una pregunta
-  bool tieneRespuesta(String preguntaId) {
-    return respuestas.containsKey(preguntaId);
+  bool tieneRespuesta(String idpregunta) {
+    return respuestas.containsKey(idpregunta);
   }
 
   /// Obtener todas las respuestas como lista

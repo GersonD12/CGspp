@@ -80,12 +80,12 @@ class FinalizarFormularioUseCase {
         }
         
         // Actualizar la respuesta con las URLs subidas
-        nuevasRespuestas[respuesta.preguntaId] = respuesta.copyWith(
+        nuevasRespuestas[respuesta.idpregunta] = respuesta.copyWith(
           respuestaImagenes: imagenesSubidas,
         );
       } else {
         // Si no hay imágenes, mantener la respuesta tal cual
-        nuevasRespuestas[respuesta.preguntaId] = respuesta;
+        nuevasRespuestas[respuesta.idpregunta] = respuesta;
       }
     }
 

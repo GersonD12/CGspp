@@ -130,7 +130,7 @@ class _PreguntasScreenState extends ConsumerState<PreguntasScreen> {
   Future<void> _loadRespuestasGuardadas() async {
     if (_preguntas.isEmpty) return;
 
-    final preguntasActivasIds = _preguntas.map((p) => p.id).toSet();
+    final preguntasActivasIds = _preguntas.map((p) => p.idpregunta).toSet(); // Usar idpregunta
     final useCase = CargarRespuestasGuardadasUseCase(ref: ref);
     await useCase.execute(preguntasActivasIds: preguntasActivasIds);
   }
@@ -240,7 +240,7 @@ class _PreguntasScreenState extends ConsumerState<PreguntasScreen> {
 
       final Map<String, RespuestaDTO> respuestasMap = {};
       for (final respuesta in respuestasDeSeccion) {
-        respuestasMap[respuesta.preguntaId] = respuesta;
+        respuestasMap[respuesta.idpregunta] = respuesta; // Usar idpregunta como clave
       }
       final seccionState = RespuestasState(respuestas: respuestasMap);
 
@@ -278,7 +278,7 @@ class _PreguntasScreenState extends ConsumerState<PreguntasScreen> {
     // Verificar si es el último bloque de la sección actual
     bool esUltimoBloqueSeccion = true;
     for (int i = contador + 1; i < _preguntasAgrupadas.length; i++) {
-      final bloque = _preguntasAgrupadas[i];
+      final bloque = _preguntasAgrupadas[i];  
       if (bloque.isNotEmpty && bloque.first.grupoId == grupoIdActual) {
         esUltimoBloqueSeccion = false;
         break;
@@ -353,8 +353,14 @@ class _PreguntasScreenState extends ConsumerState<PreguntasScreen> {
     Map<String, String>? opcionesConEmoji,
     Map<String, String>? opcionesConText,
   ) {
+    // Buscar la pregunta para obtener su idpregunta
+    final pregunta = _preguntas.firstWhere(
+      (p) => p.id == preguntaId,
+      orElse: () => _preguntas.firstWhere((p) => p.idpregunta == preguntaId),
+    );
+    
     _controller?.guardarRespuestaUseCase.guardarRespuestaRadio(
-      preguntaId,
+      pregunta.idpregunta, // Usar idpregunta en lugar de preguntaId
       grupoId,
       tipo,
       descripcion,
@@ -363,6 +369,7 @@ class _PreguntasScreenState extends ConsumerState<PreguntasScreen> {
       respuestas,
       opcionesConEmoji,
       opcionesConText,
+      pregunta.id, // Compatibilidad hacia atrás (parámetro posicional)
     );
   }
 
@@ -375,14 +382,21 @@ class _PreguntasScreenState extends ConsumerState<PreguntasScreen> {
     String? emoji,
     String? texto,
   ) {
+    // Buscar la pregunta para obtener su idpregunta
+    final pregunta = _preguntas.firstWhere(
+      (p) => p.id == preguntaId,
+      orElse: () => _preguntas.firstWhere((p) => p.idpregunta == preguntaId),
+    );
+    
     _controller?.guardarRespuestaUseCase.guardarRespuestaTexto(
-      preguntaId,
+      pregunta.idpregunta, // Usar idpregunta en lugar de preguntaId
       grupoId,
       tipo,
       descripcion,
       encabezado,
       emoji,
       texto ?? '',
+      pregunta.id, // Compatibilidad hacia atrás (parámetro posicional)
     );
   }
 
@@ -395,14 +409,21 @@ class _PreguntasScreenState extends ConsumerState<PreguntasScreen> {
     String? emoji,
     String? numero,
   ) {
+    // Buscar la pregunta para obtener su idpregunta
+    final pregunta = _preguntas.firstWhere(
+      (p) => p.id == preguntaId,
+      orElse: () => _preguntas.firstWhere((p) => p.idpregunta == preguntaId),
+    );
+    
     _controller?.guardarRespuestaUseCase.guardarRespuestaNumero(
-      preguntaId,
+      pregunta.idpregunta, // Usar idpregunta en lugar de preguntaId
       grupoId,
       tipo,
       descripcion,
       encabezado,
       emoji,
       numero ?? '',
+      pregunta.id, // Compatibilidad hacia atrás (parámetro posicional)
     );
   }
 
@@ -415,14 +436,102 @@ class _PreguntasScreenState extends ConsumerState<PreguntasScreen> {
     String? emoji,
     List<String> imagenes,
   ) {
+    // Buscar la pregunta para obtener su idpregunta
+    final pregunta = _preguntas.firstWhere(
+      (p) => p.id == preguntaId,
+      orElse: () => _preguntas.firstWhere((p) => p.idpregunta == preguntaId),
+    );
+    
     _controller?.guardarRespuestaUseCase.guardarRespuestaImagenes(
-      preguntaId,
+      pregunta.idpregunta, // Usar idpregunta en lugar de preguntaId
       grupoId,
       tipo,
       descripcion,
       encabezado,
       emoji,
       imagenes,
+      pregunta.id, // Compatibilidad hacia atrás (parámetro posicional)
+    );
+  }
+
+  void _onTelefonoChanged(
+    String preguntaId,
+    String grupoId,
+    String tipo,
+    String descripcion,
+    String encabezado,
+    String? emoji,
+    String telefono,
+  ) {
+    // Buscar la pregunta para obtener su idpregunta
+    final pregunta = _preguntas.firstWhere(
+      (p) => p.id == preguntaId,
+      orElse: () => _preguntas.firstWhere((p) => p.idpregunta == preguntaId),
+    );
+    
+    _controller?.guardarRespuestaUseCase.guardarRespuestaTelefono(
+      pregunta.idpregunta, // Usar idpregunta en lugar de preguntaId
+      grupoId,
+      tipo,
+      descripcion,
+      encabezado,
+      emoji,
+      telefono, // Número completo con código de país
+      pregunta.id, // Compatibilidad hacia atrás (parámetro posicional)
+    );
+  }
+
+  void _onPaisChanged(
+    String preguntaId,
+    String grupoId,
+    String tipo,
+    String descripcion,
+    String encabezado,
+    String? emoji,
+    String codigoPais,
+  ) {
+    // Buscar la pregunta para obtener su idpregunta
+    final pregunta = _preguntas.firstWhere(
+      (p) => p.id == preguntaId,
+      orElse: () => _preguntas.firstWhere((p) => p.idpregunta == preguntaId),
+    );
+    
+    _controller?.guardarRespuestaUseCase.guardarRespuestaPais(
+      pregunta.idpregunta, // Usar idpregunta en lugar de preguntaId
+      grupoId,
+      tipo,
+      descripcion,
+      encabezado,
+      emoji,
+      codigoPais, // Código ISO 3166-1 alpha-2 (ej: "US", "MX", "ES")
+      pregunta.id, // Compatibilidad hacia atrás (parámetro posicional)
+    );
+  }
+
+  void _onFechaChanged(
+    String preguntaId,
+    String grupoId,
+    String tipo,
+    String descripcion,
+    String encabezado,
+    String? emoji,
+    String fecha,
+  ) {
+    // Buscar la pregunta para obtener su idpregunta
+    final pregunta = _preguntas.firstWhere(
+      (p) => p.id == preguntaId,
+      orElse: () => _preguntas.firstWhere((p) => p.idpregunta == preguntaId),
+    );
+    
+    _controller?.guardarRespuestaUseCase.guardarRespuestaFecha(
+      pregunta.idpregunta, // Usar idpregunta en lugar de preguntaId
+      grupoId,
+      tipo,
+      descripcion,
+      encabezado,
+      emoji,
+      fecha, // Fecha en formato ISO 8601 (YYYY-MM-DD)
+      pregunta.id, // Compatibilidad hacia atrás (parámetro posicional)
     );
   }
 
@@ -445,7 +554,7 @@ class _PreguntasScreenState extends ConsumerState<PreguntasScreen> {
 
     final respuestasState = ref.watch(respuestasProvider);
     final respuestasMap = {
-      for (final r in respuestasState.todasLasRespuestas) r.preguntaId: r,
+      for (final r in respuestasState.todasLasRespuestas) r.idpregunta: r,
     };
 
     // Si hay múltiples preguntas, usar el widget de grupo
@@ -457,12 +566,15 @@ class _PreguntasScreenState extends ConsumerState<PreguntasScreen> {
         onTextoChanged: _onTextoChanged,
         onNumeroChanged: _onNumeroChanged,
         onImagenChanged: _onImagenChanged,
+        onTelefonoChanged: _onTelefonoChanged,
+        onPaisChanged: _onPaisChanged,
+        onFechaChanged: _onFechaChanged,
       );
     }
 
     // Una sola pregunta
     final pregunta = bloqueActual.first;
-    final respuestaGuardada = respuestasMap[pregunta.id];
+    final respuestaGuardada = respuestasMap[pregunta.idpregunta];
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -473,6 +585,9 @@ class _PreguntasScreenState extends ConsumerState<PreguntasScreen> {
         onTextoChanged: _onTextoChanged,
         onNumeroChanged: _onNumeroChanged,
         onImagenChanged: _onImagenChanged,
+        onTelefonoChanged: _onTelefonoChanged,
+        onPaisChanged: _onPaisChanged,
+        onFechaChanged: _onFechaChanged,
       ),
     );
   }
@@ -656,7 +771,7 @@ class _PreguntasScreenState extends ConsumerState<PreguntasScreen> {
         // Si hay múltiples preguntas en el bloque, verificar que todas estén respondidas
         isCurrentQuestionAnswered = bloqueActual.every((pregunta) {
           return PreguntasProgressHelper.isPreguntaRespondida(
-            preguntaId: pregunta.id,
+            idpregunta: pregunta.idpregunta, // Usar idpregunta
             respuestasState: respuestasState,
           );
         });
@@ -664,7 +779,7 @@ class _PreguntasScreenState extends ConsumerState<PreguntasScreen> {
         // Solo una pregunta en el bloque
         isCurrentQuestionAnswered =
             PreguntasProgressHelper.isPreguntaRespondida(
-              preguntaId: bloqueActual.first.id,
+              idpregunta: bloqueActual.first.idpregunta, // Usar idpregunta
               respuestasState: respuestasState,
             );
       }

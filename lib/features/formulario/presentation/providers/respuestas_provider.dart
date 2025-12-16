@@ -7,45 +7,50 @@ class RespuestasNotifier extends StateNotifier<RespuestasState> {
   RespuestasNotifier() : super(const RespuestasState());
 
   /// Agregar o actualizar una respuesta
+  /// NUEVO FORMATO: Usa idpregunta como clave principal
   void agregarRespuesta(
-    String preguntaId,
+    String idpregunta, // Cambiado de preguntaId a idpregunta
     String grupoId,
-    String tipoPregunta,
-    String descripcionPregunta, {
+    String? tipoPregunta, // Ya no necesario, opcional para compatibilidad
+    String? descripcionPregunta, // Ya no necesario, opcional para compatibilidad
+    {
     String encabezadoPregunta = '',
     String? emojiPregunta,
     String? respuestaTexto,
     List<String>? respuestaImagenes,
-    List<String>? respuestaOpciones,
-    List<OpcionSeleccionadaDTO>? respuestaOpcionesCompletas,
+    List<String>? respuestaOpciones, // Solo valores (values) de opciones seleccionadas
+    List<OpcionSeleccionadaDTO>? respuestaOpcionesCompletas, // Deprecated
+    String? preguntaId, // Compatibilidad hacia atrás
   }) {
     final ahora = DateTime.now();
     final nuevaRespuesta = RespuestaDTO(
-      preguntaId: preguntaId,
+      idpregunta: idpregunta,
+      preguntaId: preguntaId, // Compatibilidad hacia atrás
       grupoId: grupoId,
-      tipoPregunta: tipoPregunta,
-      descripcionPregunta: descripcionPregunta,
+      tipoPregunta: tipoPregunta, // Ya no necesario en nuevo formato
+      descripcionPregunta: descripcionPregunta, // Ya no necesario en nuevo formato
       encabezadoPregunta: encabezadoPregunta.isNotEmpty 
           ? encabezadoPregunta 
-          : descripcionPregunta, // Fallback a descripcion si no hay encabezado
-      emojiPregunta: emojiPregunta,
+          : descripcionPregunta ?? '', // Fallback a descripcion si no hay encabezado
+      emojiPregunta: emojiPregunta, // Ya no necesario en nuevo formato
       respuestaTexto: respuestaTexto,
       respuestaImagenes: respuestaImagenes,
-      respuestaOpciones: respuestaOpciones,
-      respuestaOpcionesCompletas: respuestaOpcionesCompletas,
+      respuestaOpciones: respuestaOpciones, // Solo valores para búsquedas eficientes
+      respuestaOpcionesCompletas: respuestaOpcionesCompletas, // Deprecated
       createdAt: ahora,
       updatedAt: ahora,
     );
 
     final nuevasRespuestas = Map<String, RespuestaDTO>.from(state.respuestas);
-    nuevasRespuestas[preguntaId] = nuevaRespuesta;
+    nuevasRespuestas[idpregunta] = nuevaRespuesta; // Usar idpregunta como clave
 
     state = state.copyWith(respuestas: nuevasRespuestas, error: null);
   }
 
   /// Actualizar solo el texto de una respuesta
-  void actualizarRespuestaTexto(String preguntaId, String texto) {
-    final respuestaExistente = state.respuestas[preguntaId];
+  /// NUEVO FORMATO: Usa idpregunta como clave
+  void actualizarRespuestaTexto(String idpregunta, String texto) {
+    final respuestaExistente = state.respuestas[idpregunta];
     if (respuestaExistente != null) {
       final respuestaActualizada = respuestaExistente.copyWith(
         respuestaTexto: texto,
@@ -53,15 +58,16 @@ class RespuestasNotifier extends StateNotifier<RespuestasState> {
       );
 
       final nuevasRespuestas = Map<String, RespuestaDTO>.from(state.respuestas);
-      nuevasRespuestas[preguntaId] = respuestaActualizada;
+      nuevasRespuestas[idpregunta] = respuestaActualizada;
 
       state = state.copyWith(respuestas: nuevasRespuestas);
     }
   }
 
   /// Actualizar imágenes de una respuesta (puede ser una o múltiples)
-  void actualizarRespuestaImagenes(String preguntaId, List<String> rutasImagenes) {
-    final respuestaExistente = state.respuestas[preguntaId];
+  /// NUEVO FORMATO: Usa idpregunta como clave
+  void actualizarRespuestaImagenes(String idpregunta, List<String> rutasImagenes) {
+    final respuestaExistente = state.respuestas[idpregunta];
     if (respuestaExistente != null) {
       final respuestaActualizada = respuestaExistente.copyWith(
         respuestaImagenes: rutasImagenes,
@@ -69,32 +75,34 @@ class RespuestasNotifier extends StateNotifier<RespuestasState> {
       );
 
       final nuevasRespuestas = Map<String, RespuestaDTO>.from(state.respuestas);
-      nuevasRespuestas[preguntaId] = respuestaActualizada;
+      nuevasRespuestas[idpregunta] = respuestaActualizada;
 
       state = state.copyWith(respuestas: nuevasRespuestas);
     }
   }
 
-  /// Actualizar solo las opciones de una respuesta
-  void actualizarRespuestaOpciones(String preguntaId, List<String> opciones) {
-    final respuestaExistente = state.respuestas[preguntaId];
+  /// Actualizar solo las opciones de una respuesta (solo valores)
+  /// NUEVO FORMATO: Usa idpregunta como clave y solo guarda valores
+  void actualizarRespuestaOpciones(String idpregunta, List<String> opciones) {
+    final respuestaExistente = state.respuestas[idpregunta];
     if (respuestaExistente != null) {
       final respuestaActualizada = respuestaExistente.copyWith(
-        respuestaOpciones: opciones,
+        respuestaOpciones: opciones, // Solo valores para búsquedas eficientes
         updatedAt: DateTime.now(),
       );
 
       final nuevasRespuestas = Map<String, RespuestaDTO>.from(state.respuestas);
-      nuevasRespuestas[preguntaId] = respuestaActualizada;
+      nuevasRespuestas[idpregunta] = respuestaActualizada;
 
       state = state.copyWith(respuestas: nuevasRespuestas);
     }
   }
 
   /// Eliminar una respuesta
-  void eliminarRespuesta(String preguntaId) {
+  /// NUEVO FORMATO: Usa idpregunta como clave
+  void eliminarRespuesta(String idpregunta) {
     final nuevasRespuestas = Map<String, RespuestaDTO>.from(state.respuestas);
-    nuevasRespuestas.remove(preguntaId);
+    nuevasRespuestas.remove(idpregunta);
 
     state = state.copyWith(respuestas: nuevasRespuestas);
   }
@@ -126,13 +134,13 @@ final respuestasProvider =
   return RespuestasNotifier();
 });
 
-/// Provider para obtener una respuesta específica
+/// Provider para obtener una respuesta específica por idpregunta
 final respuestaProvider = Provider.family<RespuestaDTO?, String>((
   ref,
-  preguntaId,
+  idpregunta,
 ) {
   final respuestasState = ref.watch(respuestasProvider);
-  return respuestasState.getRespuesta(preguntaId);
+  return respuestasState.getRespuesta(idpregunta);
 });
 
 /// Provider para verificar si hay respuestas

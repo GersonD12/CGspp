@@ -1,0 +1,8 @@
+{
+  "@@locale": "es",
+  "appTitle": "Calet",
+  "@appTitle": {
+    "description": "Título de la aplicación"
+  }
+}
+

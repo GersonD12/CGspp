@@ -36,19 +36,20 @@ class CargarRespuestasGuardadasUseCase {
         // Cargar solo las respuestas de preguntas que están activas
         final notifier = ref.read(respuestasProvider.notifier);
         for (final respuesta in respuestasState.todasLasRespuestas) {
-          // Solo cargar si la pregunta sigue activa
-          if (preguntasActivasIds.contains(respuesta.preguntaId)) {
+          // Solo cargar si la pregunta sigue activa (usar idpregunta)
+          if (preguntasActivasIds.contains(respuesta.idpregunta)) {
             notifier.agregarRespuesta(
-              respuesta.preguntaId,
+              respuesta.idpregunta,
               respuesta.grupoId,
               respuesta.tipoPregunta,
               respuesta.descripcionPregunta,
-              encabezadoPregunta: respuesta.encabezadoPregunta,
+              encabezadoPregunta: respuesta.encabezadoPregunta ?? '',
               emojiPregunta: respuesta.emojiPregunta,
               respuestaTexto: respuesta.respuestaTexto,
               respuestaImagenes: respuesta.respuestaImagenes,
               respuestaOpciones: respuesta.respuestaOpciones,
               respuestaOpcionesCompletas: respuesta.respuestaOpcionesCompletas,
+              preguntaId: respuesta.preguntaId, // Compatibilidad hacia atrás
             );
           }
         }

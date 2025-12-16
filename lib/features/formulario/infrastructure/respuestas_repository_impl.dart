@@ -16,6 +16,7 @@ class RespuestasRepositoryImpl implements RespuestasRepository {
 
   @override
   /// Sube las respuestas a Firestore agrupadas por grupoId
+  /// NUEVO FORMATO: Usa idpregunta como clave para matching eficiente
   Future<void> uploadRespuestas(
     String userId,
     RespuestasState respuestasState,
@@ -33,12 +34,13 @@ class RespuestasRepositoryImpl implements RespuestasRepository {
         gruposMap[grupoId] = {};
       }
       
-      // Agregar la respuesta al grupo correspondiente
-      gruposMap[grupoId]![respuesta.preguntaId] = respuesta.toMap();
+      // Agregar la respuesta al grupo correspondiente usando idpregunta como clave
+      // Estructura: {grupoId: {idpregunta: respuesta}}
+      gruposMap[grupoId]![respuesta.idpregunta] = respuesta.toMap();
     }
 
     // Crear el mapa final que se subirá a Firestore
-    // Estructura: form_responses -> grupos -> {grupoId: {preguntaId: respuesta}}
+    // Estructura: form_responses -> grupos -> {grupoId: {idpregunta: respuesta}}
     final respuestasMap = {
       'form_responses': {
         'grupos': gruposMap,
@@ -83,11 +85,12 @@ class RespuestasRepositoryImpl implements RespuestasRepository {
           grupos.forEach((grupoId, grupoData) {
             if (grupoData is Map<String, dynamic>) {
               // Iterar sobre las respuestas del grupo
-              grupoData.forEach((preguntaId, answerData) {
+              // La clave puede ser idpregunta (nuevo formato) o preguntaId (formato antiguo)
+              grupoData.forEach((idpreguntaOrPreguntaId, answerData) {
                 try {
-                  
                   final respuestaDTO = RespuestaDTO.fromMap(answerData as Map<String, dynamic>);
-                  respuestasMap[preguntaId] = respuestaDTO;
+                  // Usar idpregunta como clave en el mapa de respuestas
+                  respuestasMap[respuestaDTO.idpregunta] = respuestaDTO;
                 } catch (e) {
                   // Ignorar respuestas con formato inválido
                 }
@@ -101,10 +104,11 @@ class RespuestasRepositoryImpl implements RespuestasRepository {
         final answers = formResponses['answers'] as Map<String, dynamic>?;
         
         if (answers != null && answers.isNotEmpty) {
-          answers.forEach((preguntaId, answerData) {
+          answers.forEach((preguntaIdOrIdpregunta, answerData) {
             try {
               final respuestaDTO = RespuestaDTO.fromMap(answerData as Map<String, dynamic>);
-              respuestasMap[preguntaId] = respuestaDTO;
+              // Usar idpregunta como clave en el mapa de respuestas
+              respuestasMap[respuestaDTO.idpregunta] = respuestaDTO;
             } catch (e) {
               // Ignorar respuestas con formato inválido
             }

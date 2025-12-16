@@ -5,6 +5,7 @@ import 'package:calet/features/auth/presentation/google_login_screen.dart';
 import 'package:calet/features/auth/presentation/home_screen_app.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 
 class App extends ConsumerWidget {
   const App({super.key});
@@ -19,6 +20,17 @@ class App extends ConsumerWidget {
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         theme: config.theme,
+        // Configurar localizaciones para soportar español y otros idiomas
+        localizationsDelegates: const [
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: const [
+          Locale('es', 'ES'), // Español
+          Locale('en', 'US'), // Inglés
+        ],
+        locale: const Locale('es', 'ES'), // Idioma por defecto: español
         // Rutas para navegación manual
         routes: routes,
         // Navegación automática para autenticación

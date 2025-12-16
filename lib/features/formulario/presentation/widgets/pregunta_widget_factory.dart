@@ -1,7 +1,10 @@
 import 'package:calet/features/formulario/application/dto/dto.dart';
+import 'package:calet/features/formulario/presentation/widgets/country_picker_widget.dart';
+import 'package:calet/features/formulario/presentation/widgets/date_picker_widget.dart';
 import 'package:calet/features/formulario/presentation/widgets/image_picker_widget.dart';
 import 'package:calet/features/formulario/presentation/widgets/obj_foto_texto_widget.dart';
 import 'package:calet/features/formulario/presentation/widgets/obj_numero.dart';
+import 'package:calet/features/formulario/presentation/widgets/phone_number_input_widget.dart';
 import 'package:calet/features/formulario/presentation/widgets/pill_question_widget.dart';
 import 'package:flutter/material.dart';
 
@@ -15,6 +18,9 @@ class PreguntaWidgetFactory {
     required Function(String preguntaId, String grupoId, String tipo, String descripcion, String encabezado, String? emoji, String texto) onTextoChanged,
     required Function(String preguntaId, String grupoId, String tipo, String descripcion, String encabezado, String? emoji, String numero) onNumeroChanged,
     required Function(String preguntaId, String grupoId, String tipo, String descripcion, String encabezado, String? emoji, List<String> imagenes) onImagenChanged,
+    required Function(String preguntaId, String grupoId, String tipo, String descripcion, String encabezado, String? emoji, String telefono) onTelefonoChanged,
+    required Function(String preguntaId, String grupoId, String tipo, String descripcion, String encabezado, String? emoji, String codigoPais) onPaisChanged,
+    required Function(String preguntaId, String grupoId, String tipo, String descripcion, String encabezado, String? emoji, String fecha) onFechaChanged,
   }) {
     final preguntaId = pregunta.id;
     final grupoId = pregunta.grupoId;
@@ -185,6 +191,68 @@ class PreguntaWidgetFactory {
                   );
                 }
               : null,
+        );
+
+      case 'numerodetelefono':
+        return PhoneNumberInputWidget(
+          key: ValueKey(preguntaId),
+          titulo: pregunta.descripcion,
+          emoji: emoji,
+          textoPlaceholder: pregunta.encabezado,
+          numeroInicial: respuestaTextoActual,
+          onChanged: (numeroCompleto) {
+            onTelefonoChanged(
+              preguntaId,
+              grupoId,
+              pregunta.tipo,
+              pregunta.descripcion,
+              pregunta.encabezado,
+              emoji,
+              numeroCompleto,
+            );
+          },
+        );
+
+      case 'pais':
+        return CountryPickerWidget(
+          key: ValueKey(preguntaId),
+          titulo: pregunta.descripcion,
+          emoji: emoji,
+          textoPlaceholder: pregunta.encabezado,
+          codigoPaisInicial: respuestaTextoActual, // El código del país guardado
+          onChanged: (codigoPais) {
+            onPaisChanged(
+              preguntaId,
+              grupoId,
+              pregunta.tipo,
+              pregunta.descripcion,
+              pregunta.encabezado,
+              emoji,
+              codigoPais, // Guardar código ISO 3166-1 alpha-2 (ej: "US", "MX", "ES")
+            );
+          },
+        );
+
+      case 'fecha':
+        return DatePickerWidget(
+          key: ValueKey(preguntaId),
+          titulo: pregunta.descripcion,
+          emoji: emoji,
+          textoPlaceholder: pregunta.encabezado,
+          fechaInicial: respuestaTextoActual, // La fecha guardada en formato ISO 8601
+          fechaMinima: pregunta.fechaInicial, // Límite inferior
+          fechaMaxima: pregunta.fechaFinal, // Límite superior
+          onChanged: (fecha) {
+            onFechaChanged(
+              preguntaId,
+              grupoId,
+              pregunta.tipo,
+              pregunta.descripcion,
+              pregunta.encabezado,
+              emoji,
+              fecha, // Guardar fecha en formato ISO 8601 (YYYY-MM-DD)
+            );
+          },
         );
 
       default:
