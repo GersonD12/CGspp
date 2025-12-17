@@ -8,6 +8,8 @@ import 'package:calet/features/formulario/domain/repositories/preguntas_reposito
 import 'package:calet/features/formulario/infrastructure/preguntas_repository_impl.dart';
 import 'package:calet/features/cards/domain/repositories/cards_repository.dart';
 import 'package:calet/features/cards/infrastructure/repositories/cards_repository_impl.dart';
+import 'package:calet/features/cards/domain/repositories/questions_repository.dart';
+import 'package:calet/features/cards/infrastructure/repositories/questions_repository_impl.dart';
 
 final GetIt getIt = GetIt.instance;
 
@@ -29,6 +31,10 @@ Future<void> setupInjection() async {
 
   getIt.registerLazySingleton<PreguntasRepository>(
     () => PreguntasRepositoryImpl(),
+  );
+
+  getIt.registerLazySingleton<QuestionsRepository>(
+    () => QuestionsRepositoryImpl(),
   );
 
   getIt.registerLazySingleton<CardsRepository>(() => CardsRepositoryImpl());

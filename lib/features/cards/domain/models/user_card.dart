@@ -13,7 +13,11 @@ class UserCard {
     this.groupImages = const {},
   });
 
-  factory UserCard.fromMap(String id, Map<String, dynamic> data) {
+  factory UserCard.fromMap(
+    String id,
+    Map<String, dynamic> data, {
+    Map<String, Map<String, dynamic>>? questionsMap,
+  }) {
     final defaultDisplayName = data['displayName'] ?? 'No name';
 
     final formResponses = data['form_responses'] as Map<String, dynamic>?;
@@ -26,14 +30,59 @@ class UserCard {
         if (grupos != null) {
           grupos.forEach((groupName, groupData) {
             if (groupData is Map<String, dynamic>) {
-              answers.addAll(groupData);
-
               // Extract images for this group
               List<String> collectedImages = [];
+
               groupData.forEach((key, value) {
                 if (value is Map<String, dynamic>) {
-                  // Check for 'respuestaImagen' (comma separated string)
-                  if (value.containsKey('respuestaImagen')) {
+                  // Get the preguntaId from the response
+                  final preguntaId = value['preguntaId'] as String?;
+
+                  // Create enriched answer data
+                  Map<String, dynamic> enrichedAnswer = {};
+
+                  // If we have a questions map and preguntaId, get question metadata
+                  if (questionsMap != null &&
+                      preguntaId != null &&
+                      questionsMap.containsKey(preguntaId)) {
+                    final questionData = questionsMap[preguntaId]!;
+                    enrichedAnswer['encabezado'] =
+                        questionData['encabezado'] ?? '';
+                    enrichedAnswer['emoji'] = questionData['emoji'] ?? '';
+                    enrichedAnswer['descripcion'] =
+                        questionData['descripcion'] ?? '';
+
+                    // Also keep the old field names for backwards compatibility during transition
+                    enrichedAnswer['descripcionPregunta'] =
+                        questionData['descripcion'] ?? '';
+                    enrichedAnswer['emojiPregunta'] =
+                        questionData['emoji'] ?? '';
+                  }
+
+                  // Add user's response data
+                  enrichedAnswer['preguntaId'] = preguntaId;
+                  enrichedAnswer['respuestaTexto'] = value['respuestaTexto'];
+                  enrichedAnswer['respuestaOpciones'] =
+                      value['respuestaOpciones'];
+                  enrichedAnswer['respuestaImagenes'] =
+                      value['respuestaImagenes'];
+                  enrichedAnswer['respuestaImagen'] = value['respuestaImagen'];
+
+                  answers[key] = enrichedAnswer;
+
+                  // Check for 'respuestaImagenes' (list)
+                  if (value.containsKey('respuestaImagenes')) {
+                    final imgs = value['respuestaImagenes'];
+                    if (imgs is List) {
+                      collectedImages.addAll(
+                        imgs
+                            .map((e) => e.toString().trim())
+                            .where((url) => url.isNotEmpty),
+                      );
+                    }
+                  }
+                  // Check for 'respuestaImagen' (comma separated string) - fallback
+                  else if (value.containsKey('respuestaImagen')) {
                     final img = value['respuestaImagen'];
                     if (img is String && img.isNotEmpty) {
                       collectedImages.addAll(
@@ -42,17 +91,6 @@ class UserCard {
                             .map((url) => url.trim())
                             .where((url) => url.isNotEmpty)
                             .toList(),
-                      );
-                    }
-                  }
-                  // Check for 'respuestaImagenes' (list) - just in case
-                  if (value.containsKey('respuestaImagenes')) {
-                    final imgs = value['respuestaImagenes'];
-                    if (imgs is List) {
-                      collectedImages.addAll(
-                        imgs
-                            .map((e) => e.toString().trim())
-                            .where((url) => url.isNotEmpty),
                       );
                     }
                   }

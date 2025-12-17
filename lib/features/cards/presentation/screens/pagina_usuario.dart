@@ -7,9 +7,25 @@ import 'package:calet/shared/widgets/vertical_view_standard.dart';
 import 'package:calet/features/cards/domain/models/user_card.dart';
 import 'package:calet/core/theme/app_theme_extension.dart';
 import 'dart:developer' show log;
+import 'package:calet/features/cards/presentation/widgets/cuadro_texto.dart';
+import 'package:calet/features/cards/infrastructure/data/enviar_solicitud.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
-class UserDetailScreen extends StatelessWidget {
+class UserDetailScreen extends StatefulWidget {
   const UserDetailScreen({super.key});
+
+  @override
+  State<UserDetailScreen> createState() => _UserDetailScreenState();
+}
+
+class _UserDetailScreenState extends State<UserDetailScreen> {
+  final TextEditingController _mensajeController = TextEditingController();
+
+  @override
+  void dispose() {
+    _mensajeController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -52,40 +68,36 @@ class UserDetailScreen extends StatelessWidget {
         if (answers[key] is! Map<String, dynamic>) continue;
 
         final answerData = answers[key] as Map<String, dynamic>;
-        final question = answerData['descripcionPregunta'] as String?;
-        final emojiPregunta = answerData['emojiPregunta'] as String?;
+
+        // Try new field names first, fallback to old names for backwards compatibility
+        final question =
+            answerData['encabezado'] as String? ??
+            answerData['descripcionPregunta'] as String?;
+        final emojiPregunta =
+            answerData['emoji'] as String? ??
+            answerData['emojiPregunta'] as String?;
         final optionsAnswer = answerData['respuestaOpciones'] as List<dynamic>?;
         final textAnswer = answerData['respuestaTexto'] as String?;
         final respuestaImagen = answerData['respuestaImagen'] as String?;
+        final respuestaImagenes =
+            answerData['respuestaImagenes'] as List<dynamic>?;
 
         List<String> multipleAnswers = [];
         String singleAnswer = '';
         List<String> linkImage = [];
 
-        // Asignar la imagen si existe
-        if (respuestaImagen != null && respuestaImagen.isNotEmpty) {
+        // Asignar las imágenes si existen (priorizar nuevo formato array)
+        if (respuestaImagenes != null && respuestaImagenes.isNotEmpty) {
+          linkImage = respuestaImagenes
+              .map((url) => url.toString().trim())
+              .where((url) => url.isNotEmpty)
+              .toList();
+        } else if (respuestaImagen != null && respuestaImagen.isNotEmpty) {
           linkImage = respuestaImagen
               .split(',')
               .map((url) => url.trim())
               .where((url) => url.isNotEmpty)
               .toList();
-        }
-
-        if (linkImage.isNotEmpty) {
-          contentWidgets.add(
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8.0),
-              child: MostrarImagen(
-                squareHeight: 250,
-                squareWidth: double.infinity,
-                linkImage: linkImage,
-                squareColor: Colors.transparent,
-                shadowColor: Colors.transparent,
-                onTapAction: () {},
-                textColor: Theme.of(context).colorScheme.onSurface,
-              ),
-            ),
-          );
         }
 
         // Asignar la respuesta de texto o de opciones
@@ -199,7 +211,140 @@ class UserDetailScreen extends StatelessWidget {
             Boton(
               texto: 'Responder',
               icon: Icons.border_color_rounded,
-              onPressed: () {},
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return AlertDialog(
+                      title: const Text('Enviar Solicitud'),
+                      content: SingleChildScrollView(
+                        child: TextBox(
+                          controller: _mensajeController,
+                          hintText:
+                              'Escribe un mensaje inicial (solo sera visible si aceptan la solicitud)',
+                          maxLines: 3,
+                          textColor: Theme.of(context).colorScheme.onSurface,
+                        ),
+                      ),
+                      actions: <Widget>[
+                        TextButton(
+                          child: const Text('Cancelar'),
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                          },
+                        ),
+                        TextButton(
+                          child: const Text('Enviar'),
+                          onPressed: () async {
+                            final String mensaje = _mensajeController.text
+                                .trim();
+
+                            if (mensaje.isEmpty) {
+                              showDialog(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return AlertDialog(
+                                    title: const Text('Campo vacío'),
+                                    content: const Text(
+                                      'Por favor escribe un mensaje',
+                                    ),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () {
+                                          Navigator.of(context).pop();
+                                        },
+                                        child: const Text('OK'),
+                                      ),
+                                    ],
+                                  );
+                                },
+                              );
+                              return;
+                            }
+
+                            try {
+                              // Obtener el usuario actual
+                              final currentUser =
+                                  FirebaseAuth.instance.currentUser;
+                              if (currentUser == null) {
+                                throw Exception('Usuario no autenticado');
+                              }
+
+                              final now = DateTime.now().toIso8601String();
+
+                              // Enviar solicitud
+                              await enviarSolicitud(
+                                idUsuario: currentUser.uid,
+                                createdAt: now,
+                                mensaje: mensaje,
+                                estado: 'pendiente',
+                                formUsuario: currentUser.uid,
+                                toUsuario: user.id,
+                                idChat: '${currentUser.uid}_${user.id}',
+                                updateAt: now,
+                              );
+
+                              // Limpiar el campo de texto
+                              _mensajeController.clear();
+
+                              if (context.mounted) {
+                                // Cerrar el dialog de solicitud
+                                Navigator.of(context).pop();
+
+                                // Mostrar modal de éxito
+                                await showDialog(
+                                  context: context,
+                                  builder: (BuildContext context) {
+                                    return AlertDialog(
+                                      title: const Text('¡Éxito!'),
+                                      content: const Text(
+                                        'Solicitud enviada con éxito',
+                                      ),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () {
+                                            Navigator.of(context).pop();
+                                          },
+                                          child: const Text('OK'),
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                );
+
+                                // Cerrar el perfil
+                                if (context.mounted) {
+                                  Navigator.of(context).pop();
+                                }
+                              }
+                            } catch (e) {
+                              if (context.mounted) {
+                                showDialog(
+                                  context: context,
+                                  builder: (BuildContext context) {
+                                    return AlertDialog(
+                                      title: const Text('Error'),
+                                      content: Text('Error al enviar: $e'),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () {
+                                            Navigator.of(context).pop();
+                                          },
+                                          child: const Text('OK'),
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                );
+                              }
+                            }
+                          },
+                        ),
+                      ],
+                    );
+                  },
+                );
+              },
               color: Theme.of(
                 context,
               ).extension<AppThemeExtension>()!.buttonColor,

@@ -4,6 +4,7 @@ import 'package:calet/features/formulario/presentation/screens/formulario_screen
 import 'package:calet/features/cards/presentation/screens/screen_cards.dart';
 import 'package:calet/features/cards/presentation/screens/pagina_usuario.dart';
 import 'package:calet/features/profile/presentation/screens/profile_screen.dart';
+import 'package:calet/features/solicitudes/presentation/solicitudes_screen.dart';
 
 // Sistema de rutas híbrido:
 // - Navegación automática para autenticación (login/home)
@@ -15,6 +16,7 @@ final routes = <String, WidgetBuilder>{
   '/home': (context) => const HomeScreen(),
   '/cards': (context) => const ScreenCards(),
   '/user_detail': (context) => const UserDetailScreen(),
+  '/solicitudes': (context) => const SolicitudesScreen(),
   // '/settings': (context) => const SettingsScreen(),
   // '/dashboard': (context) => const DashboardScreen(),
   // '/details': (context) => const DetailsScreen(),
@@ -30,6 +32,7 @@ class AppRoutes {
   static const String formulario = '/formulario';
   static const String pantallaFormulario = '/pantallaFormulario';
   static const String cards = '/cards';
+  static const String solicitudes = '/solicitudes';
   // static const String settings = '/settings';
   // static const String dashboard = '/dashboard';
   // static const String details = '/details';

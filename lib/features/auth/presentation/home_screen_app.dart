@@ -75,9 +75,9 @@ class _HomeScreenAppState extends ConsumerState<HomeScreenApp> {
                     BottomNavigationBarItem(
                       icon: Padding(
                         padding: EdgeInsets.only(top: 10.0),
-                        child: Icon(Icons.all_inbox_rounded),
+                        child: Icon(Icons.article),
                       ),
-                      activeIcon: Icon(Icons.all_inbox_rounded),
+                      activeIcon: Icon(Icons.article),
                       label: 'Cartas',
                     ),
                     BottomNavigationBarItem(
