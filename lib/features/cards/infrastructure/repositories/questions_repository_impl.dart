@@ -19,6 +19,8 @@ class QuestionsRepositoryImpl implements QuestionsRepository {
       // Iterate through each group
       for (var groupDoc in groupsSnapshot.docs) {
         final groupId = groupDoc.id;
+        final groupData = groupDoc.data();
+        final groupTitle = groupData['titulo'] as String? ?? '';
 
         try {
           // Fetch all questions in this group's 'questions' subcollection
@@ -35,6 +37,8 @@ class QuestionsRepositoryImpl implements QuestionsRepository {
 
             // Add the groupId to the question data for reference
             questionData['grupoId'] = groupId;
+            // Add the group title to the question data
+            questionData['groupTitle'] = groupTitle;
 
             questionsMap[preguntaId] = questionData;
           }

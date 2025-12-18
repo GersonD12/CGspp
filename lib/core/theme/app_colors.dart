@@ -30,6 +30,14 @@ class AppColors {
     74,
   ); // Gris con transparencia
 
+  static const Color barIconprecionadoLight = Color.fromARGB(
+    255,
+    152,
+    163,
+    122,
+  );
+  static const Color barIconSueltoLight = Color.fromRGBO(58, 55, 49, 0.747);
+
   // Tema Oscuro - Dark Theme
   static const Color darkBackground = Color.fromRGBO(31, 30, 27, 1);
   static const Color darkAppBar = Color.fromRGBO(31, 30, 27, 1);
@@ -52,4 +60,7 @@ class AppColors {
   //aca se pueden añadir mas colores personalizados, aca el tema oscuro y luego en config_provaider
   static const Color shadowColorDark = Color.fromARGB(55, 194, 194, 194);
   static const Color barBorderDark = Color.fromRGBO(139, 111, 71, 1);
+
+  static const Color barIconprecionadoDark = Color.fromRGBO(214, 194, 165, 1);
+  static const Color barIconSueltoDark = Color.fromRGBO(139, 111, 71, 1);
 }

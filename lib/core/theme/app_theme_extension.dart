@@ -8,12 +8,16 @@ class AppThemeExtension extends ThemeExtension<AppThemeExtension> {
   final Color buttonColor;
   final Color shadowColor;
   final Color barBorder;
+  final Color barIconprecionado;
+  final Color barIconSuelto;
 
   const AppThemeExtension({
     required this.barColor,
     required this.buttonColor,
     required this.shadowColor,
     required this.barBorder,
+    required this.barIconprecionado,
+    required this.barIconSuelto,
   });
 
   @override
@@ -22,12 +26,16 @@ class AppThemeExtension extends ThemeExtension<AppThemeExtension> {
     Color? buttonColor,
     Color? shadowColor,
     Color? barBorder,
+    Color? barIconprecionado,
+    Color? barIconSuelto,
   }) {
     return AppThemeExtension(
       barColor: barColor ?? this.barColor,
       buttonColor: buttonColor ?? this.buttonColor,
       shadowColor: shadowColor ?? this.shadowColor,
       barBorder: barBorder ?? this.barBorder,
+      barIconprecionado: barIconprecionado ?? this.barIconprecionado,
+      barIconSuelto: barIconSuelto ?? this.barIconSuelto,
     );
   }
 
@@ -44,6 +52,12 @@ class AppThemeExtension extends ThemeExtension<AppThemeExtension> {
       buttonColor: Color.lerp(buttonColor, other.buttonColor, t)!,
       shadowColor: Color.lerp(shadowColor, other.shadowColor, t)!,
       barBorder: Color.lerp(barBorder, other.barBorder, t)!,
+      barIconprecionado: Color.lerp(
+        barIconprecionado,
+        other.barIconprecionado,
+        t,
+      )!,
+      barIconSuelto: Color.lerp(barIconSuelto, other.barIconSuelto, t)!,
     );
   }
 }

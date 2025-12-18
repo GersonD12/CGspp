@@ -60,6 +60,8 @@ class UserCard {
                   }
 
                   // Add user's response data
+                  enrichedAnswer['grupoId'] =
+                      groupName; // Add group ID for grouping
                   enrichedAnswer['preguntaId'] = preguntaId;
                   enrichedAnswer['respuestaTexto'] = value['respuestaTexto'];
                   enrichedAnswer['respuestaOpciones'] =

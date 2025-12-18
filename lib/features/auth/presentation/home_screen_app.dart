@@ -1,12 +1,12 @@
 import 'package:calet/features/auth/presentation/home_screen.dart';
-import 'package:calet/features/cards/presentation/widgets/barra_flotante.dart';
+import 'package:calet/shared/widgets/barra_flotante.dart';
 import 'package:flutter/material.dart';
 import 'package:calet/features/cards/presentation/screens/screen_cards.dart';
 import 'package:calet/features/profile/presentation/screens/profile_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:calet/shared/widgets/vertical_view_standard.dart';
 import 'package:calet/core/theme/app_theme_extension.dart';
-import 'package:calet/features/chats/chats_screen.dart';
+import 'package:calet/features/chats/presentation/screens/list_chats_screen.dart';
 
 class HomeScreenApp extends ConsumerStatefulWidget {
   const HomeScreenApp({super.key});
@@ -16,13 +16,25 @@ class HomeScreenApp extends ConsumerStatefulWidget {
 }
 
 class _HomeScreenAppState extends ConsumerState<HomeScreenApp> {
-  int _selectedIndex =
-      0; //variable que identifica el index seleccionado para saber cual mostrar en pantalla
+  int _selectedIndex = 0;
+  bool _initialized = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_initialized) {
+      final args = ModalRoute.of(context)?.settings.arguments;
+      if (args is int) {
+        _selectedIndex = args;
+      }
+      _initialized = true;
+    }
+  }
 
   static const List<Widget> _widgetOptions = <Widget>[
     HomeScreen(),
     ScreenCards(),
-    ChatsScreen(),
+    ListChatsScreen(),
     ProfileScreen(),
   ];
 
@@ -53,13 +65,7 @@ class _HomeScreenAppState extends ConsumerState<HomeScreenApp> {
               padding: const EdgeInsets.only(left: 20, right: 20, bottom: 20),
               child: BarraFlotante(
                 text: '', // No se usa texto aquí
-                trasparency: 1.0,
-                backgroundColor: Theme.of(
-                  context,
-                ).extension<AppThemeExtension>()!.barColor,
-                borderColor: Theme.of(
-                  context,
-                ).extension<AppThemeExtension>()!.barBorder.withOpacity(0.4),
+                trasparency: 1.5,
                 radius: 80,
                 isFullyRound: false, // Usamos radio específico
                 child: BottomNavigationBar(
@@ -106,10 +112,12 @@ class _HomeScreenAppState extends ConsumerState<HomeScreenApp> {
                   backgroundColor: Theme.of(
                     context,
                   ).extension<AppThemeExtension>()!.barColor.withOpacity(0.7),
-                  selectedItemColor: Theme.of(context).colorScheme.onSurface,
+                  selectedItemColor: Theme.of(
+                    context,
+                  ).extension<AppThemeExtension>()!.barIconprecionado,
                   unselectedItemColor: Theme.of(
                     context,
-                  ).extension<AppThemeExtension>()!.barBorder,
+                  ).extension<AppThemeExtension>()!.barIconSuelto,
                   onTap: _onItemTapped,
                 ),
               ),

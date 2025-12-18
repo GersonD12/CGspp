@@ -33,9 +33,7 @@ class _ScreenCardsState extends State<ScreenCards> {
         _users = randomUsers;
         _isLoading = false;
       });
-      log('Fetched ${_users.length} random users.');
     } catch (e) {
-      log('Error fetching users: $e');
       setState(() {
         _isLoading = false;
       });

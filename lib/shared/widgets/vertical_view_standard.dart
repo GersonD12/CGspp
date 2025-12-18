@@ -92,6 +92,7 @@ class VerticalViewStandardScrollable extends StatelessWidget {
   final ScrollPhysics? physics; // Restaurado
   final bool hasFloatingNavBar; // Nuevo parámetro
   final bool showAppBar;
+  final bool fillRemaining; // Nuevo: para que el child ocupe todo el espacio
 
   const VerticalViewStandardScrollable({
     super.key,
@@ -111,6 +112,7 @@ class VerticalViewStandardScrollable extends StatelessWidget {
     this.appBarFloats = false,
     this.hasFloatingNavBar = false, // Por defecto desactivado
     this.showAppBar = true,
+    this.fillRemaining = false,
   });
 
   @override
@@ -164,16 +166,24 @@ class VerticalViewStandardScrollable extends StatelessWidget {
               ),
 
             // 2. CONTENIDO DE LA LISTA (SLIVER)
-            SliverToBoxAdapter(
-              child: Container(
-                color: bodyBgColor,
-                child: Padding(padding: finalPadding, child: child),
-              ),
-            ),
+            fillRemaining
+                ? SliverFillRemaining(
+                    hasScrollBody:
+                        true, // Permite que el contenido interno maneje su propio scroll (ej: ListView)
+                    child: Container(
+                      color: bodyBgColor,
+                      child: Padding(padding: finalPadding, child: child),
+                    ),
+                  )
+                : SliverToBoxAdapter(
+                    child: Container(
+                      color: bodyBgColor,
+                      child: Padding(padding: finalPadding, child: child),
+                    ),
+                  ),
           ],
         ),
       ),
     );
   }
-  
 }

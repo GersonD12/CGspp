@@ -124,6 +124,8 @@ class ConfigNotifier extends StateNotifier<AppConfig> {
           //luego ir a la linea 170
           shadowColor: AppColors.shadowColorLight,
           barBorder: AppColors.barBorderLight,
+          barIconprecionado: AppColors.barIconprecionadoLight,
+          barIconSuelto: AppColors.barIconSueltoLight,
         ),
       ],
     );
@@ -216,6 +218,8 @@ class ConfigNotifier extends StateNotifier<AppConfig> {
           buttonColor: AppColors.buttonColorDark,
           shadowColor: AppColors.shadowColorDark,
           barBorder: AppColors.barBorderDark,
+          barIconprecionado: AppColors.barIconprecionadoDark,
+          barIconSuelto: AppColors.barIconSueltoDark,
         ),
       ],
     );

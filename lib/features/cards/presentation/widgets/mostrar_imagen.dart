@@ -32,11 +32,61 @@ class MostrarImagen extends StatefulWidget {
 
 class _MostrarImagenState extends State<MostrarImagen> {
   int _currentPageIndex = 0;
+  void _openImageFullScreen() {
+    if (widget.linkImage.isEmpty) return;
+
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        fullscreenDialog: true,
+        builder: (context) {
+          return Scaffold(
+            backgroundColor: Colors.black,
+            appBar: AppBar(
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              iconTheme: const IconThemeData(color: Colors.white),
+            ),
+            body: Center(
+              child: PageView.builder(
+                controller: PageController(initialPage: _currentPageIndex),
+                itemCount: widget.linkImage.length,
+                itemBuilder: (context, index) {
+                  final imageUrl = widget.linkImage[index].trim();
+                  return InteractiveViewer(
+                    panEnabled: true,
+                    minScale: 0.5,
+                    maxScale: 4.0,
+                    child: Image.network(
+                      imageUrl,
+                      fit: BoxFit.contain,
+                      errorBuilder: (context, error, stackTrace) {
+                        return const Center(
+                          child: Icon(
+                            Icons.broken_image,
+                            color: Colors.white,
+                            size: 50,
+                          ),
+                        );
+                      },
+                    ),
+                  );
+                },
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     // 2. Usamos InkWell se usa para detectar toques y mostrar efectos visuales
     return InkWell(
-      onTap: widget.onTapAction, // 3. Acción al tocar el cuadrado
+      onTap: () {
+        _openImageFullScreen();
+        widget.onTapAction();
+      }, // 3. Acción al tocar el cuadrado
       child: Container(
         margin: const EdgeInsets.all(8.0),
         height: widget.squareHeight, // 4. Altura
