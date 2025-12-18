@@ -44,10 +44,11 @@ class BurbujaMensaje extends StatelessWidget {
             ),
           ],
         ),
-        child: Column(
-          crossAxisAlignment:
-              CrossAxisAlignment.start, // El texto empieza a la izquierda
-          mainAxisSize: MainAxisSize.min,
+        child: Wrap(
+          crossAxisAlignment: WrapCrossAlignment.end,
+          alignment: WrapAlignment.start,
+          runSpacing: 4,
+          spacing: 8,
           children: [
             Text(
               mensaje,
@@ -57,24 +58,15 @@ class BurbujaMensaje extends StatelessWidget {
               ),
               softWrap: true,
             ),
-            if (hora.isNotEmpty) ...[
-              const SizedBox(height: 2),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    hora,
-                    style: TextStyle(
-                      color:
-                          (esMio ? Colors.white : theme.colorScheme.onSurface)
-                              .withOpacity(0.6),
-                      fontSize: 11,
-                    ),
-                  ),
-                ],
+            if (hora.isNotEmpty)
+              Text(
+                hora,
+                style: TextStyle(
+                  color: (esMio ? Colors.white : theme.colorScheme.onSurface)
+                      .withOpacity(0.6),
+                  fontSize: 11,
+                ),
               ),
-            ],
           ],
         ),
       ),

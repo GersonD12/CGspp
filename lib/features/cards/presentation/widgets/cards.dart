@@ -1,29 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:calet/core/theme/app_theme_extension.dart';
 
 class Cards extends StatelessWidget {
   // 1. Parámetros disponibles
-  final Color squareColor; // Color del cuadrado
   final double squareHeight; // Altura del cuadrado
   final double squareWidth; // Anchura del cuadrado
   final String text; // Texto dentro del cuadrado
-  final Color shadowColor; //color de sombra
   final double borderRadius;
   final Color textColor;
   final double textSize;
   final VoidCallback onTapAction;
-  final Color borderColor;
   const Cards({
     Key? key,
-    required this.squareColor,
     required this.squareHeight,
     required this.squareWidth,
     required this.text,
     this.borderRadius = 5.0,
-    this.shadowColor = Colors.black26,
     this.textColor = Colors.white,
     this.textSize = 16.0,
     required this.onTapAction,
-    required this.borderColor, // El callback de la acción
   }) : super(key: key);
 
   @override
@@ -36,12 +31,19 @@ class Cards extends StatelessWidget {
         height: squareHeight, // 4. Altura
         width: squareWidth, // 5. Anchura
         decoration: BoxDecoration(
-          color: squareColor, // 6. Color
+          color: Theme.of(
+            context,
+          ).colorScheme.surfaceContainerHighest, // 6. Color
           borderRadius: BorderRadius.circular(borderRadius),
-          border: Border.all(color: borderColor, width: 2.0),
+          border: Border.all(
+            color: Theme.of(context).colorScheme.surfaceContainerHighest,
+            width: 2.0,
+          ),
           boxShadow: [
             BoxShadow(
-              color: shadowColor,
+              color: Theme.of(
+                context,
+              ).extension<AppThemeExtension>()!.shadowColor,
               blurRadius: 0.0,
               offset: const Offset(5, 6),
             ),

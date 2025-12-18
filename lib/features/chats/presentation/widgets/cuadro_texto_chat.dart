@@ -32,10 +32,14 @@ class CuadroTextoChat extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 5),
-            const SizedBox(
-              width: 40,
-              height: 40,
-              child: BarraFlotante(trasparency: 0.0, child: Icon(Icons.send)),
+            SizedBox(
+              width: 45,
+              height: 45,
+              child: BarraFlotante(
+                trasparency: 0.0,
+                onTap: onSend,
+                child: const Icon(Icons.send),
+              ),
             ),
             const SizedBox(width: 20),
           ],

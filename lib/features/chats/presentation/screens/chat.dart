@@ -1,3 +1,4 @@
+import 'package:calet/features/cards/presentation/widgets/modal_perfiles.dart';
 import 'package:calet/features/chats/infrastructure/data/bajar_conversacion.dart';
 import 'package:calet/features/chats/infrastructure/repository/bajar_conversacion_repository.dart';
 import 'package:calet/features/chats/infrastructure/data/iniciar_chat.dart';
@@ -19,6 +20,28 @@ class _ChatScreenState extends State<ChatScreen> {
   final BajarConversacionRepository _repository = BajarConversacionRepository();
   final currentUser = FirebaseAuth.instance.currentUser;
 
+  Stream<List<BajarConversacion>>? _mensajesStream;
+  String? _idChat;
+  String _userName = 'Chat';
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_idChat == null) {
+      final args = ModalRoute.of(context)!.settings.arguments;
+      if (args is String) {
+        _idChat = args;
+      } else if (args is Map<String, dynamic>) {
+        _idChat = args['idChat'] ?? '';
+        _userName = args['userName'] ?? 'Chat';
+      }
+
+      if (_idChat != null && _idChat!.isNotEmpty) {
+        _mensajesStream = _repository.escucharMensajes(_idChat!);
+      }
+    }
+  }
+
   @override
   void dispose() {
     _mensajeController.dispose();
@@ -30,6 +53,7 @@ class _ChatScreenState extends State<ChatScreen> {
     if (texto.isEmpty || currentUser == null) return;
 
     final now = DateTime.now().toIso8601String();
+    _mensajeController.clear();
 
     // Obtenemos los UIDs del idChat (uid1_uid2)
     final parts = idChat.split('_');
@@ -47,9 +71,23 @@ class _ChatScreenState extends State<ChatScreen> {
         mensaje: texto,
         estado: 'pendiente',
       );
-      _mensajeController.clear();
     } catch (e) {
       print('Error al enviar: $e');
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (context) => const CustomModal(
+            text: 'Error de envío',
+            height: 200,
+            content: Center(
+              child: Text(
+                'No se pudo enviar el mensaje. Por favor, intenta de nuevo.',
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ),
+        );
+      }
     }
   }
 
@@ -65,21 +103,17 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final args = ModalRoute.of(context)!.settings.arguments;
-    String idChat = '';
-    String userName = 'Chat';
-
-    if (args is String) {
-      idChat = args;
-    } else if (args is Map<String, dynamic>) {
-      idChat = args['idChat'] ?? '';
-      userName = args['userName'] ?? 'Chat';
+    if (_idChat == null || _idChat!.isEmpty) {
+      return const Scaffold(
+        body: Center(child: Text('Error: Chat no encontrado')),
+      );
     }
 
     return VerticalViewStandardScrollable(
-      title: userName,
+      title: _userName,
       showBackButton: true,
       fillRemaining: true,
+      showAppBar: true,
       headerColor: Theme.of(context).appBarTheme.backgroundColor,
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       foregroundColor: Theme.of(context).appBarTheme.foregroundColor,
@@ -89,17 +123,18 @@ class _ChatScreenState extends State<ChatScreen> {
           // 1. Lista de mensajes (Fondo)
           Positioned.fill(
             child: StreamBuilder<List<BajarConversacion>>(
-              stream: _repository.escucharMensajes(idChat),
+              stream: _mensajesStream,
               builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
+                final mensajes = snapshot.data ?? [];
+
+                if (snapshot.connectionState == ConnectionState.waiting &&
+                    mensajes.isEmpty) {
                   return const Center(child: CircularProgressIndicator());
                 }
 
-                if (snapshot.hasError) {
+                if (snapshot.hasError && mensajes.isEmpty) {
                   return Center(child: Text('Error: ${snapshot.error}'));
                 }
-
-                final mensajes = snapshot.data ?? [];
 
                 if (mensajes.isEmpty) {
                   return const Center(child: Text('No hay mensajes aún.'));
@@ -110,9 +145,9 @@ class _ChatScreenState extends State<ChatScreen> {
                   padding: const EdgeInsets.only(
                     left: 10,
                     right: 10,
-                    top: 10,
+                    top: 40,
                     bottom:
-                        100, // Espacio para que el último mensaje no quede tapado
+                        90, // Espacio para que el mensaje no quede tapado pero se vea detrás del glass
                   ),
                   itemCount: mensajes.length,
                   itemBuilder: (context, index) {
@@ -133,10 +168,10 @@ class _ChatScreenState extends State<ChatScreen> {
           Positioned(
             left: 10,
             right: 10,
-            bottom: 20,
+            bottom: 15,
             child: CuadroTextoChat(
               controller: _mensajeController,
-              onSend: () => _enviarMensaje(idChat),
+              onSend: () => _enviarMensaje(_idChat!),
             ),
           ),
         ],
