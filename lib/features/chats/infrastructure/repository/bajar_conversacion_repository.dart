@@ -22,7 +22,7 @@ class BajarConversacionRepository {
       // Iterar por cada entrada del mapa (cada llave es un timestamp de mensaje)
       data.forEach((key, value) {
         if (value is Map<String, dynamic>) {
-          mensajes.add(BajarConversacion.fromFirestore(value));
+          mensajes.add(BajarConversacion.fromFirestore(key, value));
         }
       });
 
@@ -50,7 +50,7 @@ class BajarConversacionRepository {
 
           data.forEach((key, value) {
             if (value is Map<String, dynamic>) {
-              mensajes.add(BajarConversacion.fromFirestore(value));
+              mensajes.add(BajarConversacion.fromFirestore(key, value));
             }
           });
 

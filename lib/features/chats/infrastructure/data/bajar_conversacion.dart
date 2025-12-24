@@ -1,4 +1,5 @@
 class BajarConversacion {
+  final String id;
   final String createdAt;
   final String estado;
   final String fromUsuario;
@@ -6,6 +7,7 @@ class BajarConversacion {
   final String mensaje;
 
   BajarConversacion({
+    required this.id,
     required this.createdAt,
     required this.estado,
     required this.fromUsuario,
@@ -13,8 +15,12 @@ class BajarConversacion {
     required this.mensaje,
   });
 
-  factory BajarConversacion.fromFirestore(Map<String, dynamic> json) {
+  factory BajarConversacion.fromFirestore(
+    String id,
+    Map<String, dynamic> json,
+  ) {
     return BajarConversacion(
+      id: id,
       createdAt: json['createdAt'] ?? '',
       estado: json['estado'] ?? '',
       fromUsuario: json['fromUsuario'] ?? '',

@@ -10,6 +10,9 @@ Future<void> iniciarNuevoChat({
 }) async {
   FirebaseFirestore firestore = FirebaseFirestore.instance;
 
+  // Generamos un ID aleatorio para el mensaje
+  final String mensajeId = firestore.collection('chats').doc().id;
+
   Map<String, dynamic> datosMensaje = {
     'mensaje': mensaje,
     'createdAt': createdAt,
@@ -20,8 +23,9 @@ Future<void> iniciarNuevoChat({
 
   try {
     // 1. Guardar en la colección de CHATS (Historia completa)
+    // Usamos el mensajeId como llave en lugar del createdAt
     await firestore.collection('chats').doc(idChat).set({
-      createdAt: datosMensaje,
+      mensajeId: datosMensaje,
     }, SetOptions(merge: true));
 
     // 2. Sincronizar con la colección de lista_chats (Para la previsualización en la lista)
@@ -58,7 +62,7 @@ Future<void> iniciarNuevoChat({
 
 Future<void> actualizarMensajesChat({
   required String idChat,
-  required String createdAtKey, // El timestamp usado como llave
+  required String mensajeId, // Ahora usamos el ID aleatorio
   required String nuevoEstado,
 }) async {
   FirebaseFirestore firestore = FirebaseFirestore.instance;
@@ -66,8 +70,8 @@ Future<void> actualizarMensajesChat({
 
   try {
     await firestore.collection('chats').doc(idChat).update({
-      '$createdAtKey.estado': nuevoEstado,
-      '$createdAtKey.updateAt': now,
+      '$mensajeId.estado': nuevoEstado,
+      '$mensajeId.updateAt': now,
     });
   } on FirebaseException catch (e) {
     print('Error al actualizar el mensaje: $e');
