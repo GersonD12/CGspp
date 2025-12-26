@@ -215,9 +215,8 @@ class _EditRespuestaBottomSheetState extends State<EditRespuestaBottomSheet> {
               ),
             ),
             padding: EdgeInsets.only(
-              bottom: MediaQuery.of(context).viewInsets.bottom > 0 
-                  ? MediaQuery.of(context).viewInsets.bottom + 30.0
-                  : 30.0,
+              bottom: MediaQuery.of(context).viewInsets.bottom + 16.0,
+              top: 0,
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -287,11 +286,6 @@ class _EditRespuestaBottomSheetState extends State<EditRespuestaBottomSheet> {
                     padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 0),
                     child: _buildContent(),
                   ),
-                ),
-                SizedBox(
-                  height: MediaQuery.of(context).viewInsets.bottom > 0 
-                      ? MediaQuery.of(context).viewInsets.bottom 
-                      : 0,
                 ),
               ],
             ),

@@ -180,22 +180,26 @@ class _ObjFotoTextoState extends State<ObjFotoTexto> {
               controller: _textoController,
               onChanged: widget.onTextoChanged,
               maxLines: widget.lineasTexto ?? 4, // Usa el parámetro o 4 por defecto
-              style: TextStyle(color: FormularioThemeHelper.getTextColor(context)),
+              style: TextStyle(color: theme.colorScheme.onSurface),
               decoration: InputDecoration(
                 hintText: widget.textoPlaceholder ?? 'Escribe aquí...',
                 hintStyle: TextStyle(
-                  color: FormularioThemeHelper.getTextColor(context).withOpacity(0.6),
+                  color: theme.colorScheme.onSurface.withOpacity(0.6),
                 ),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide(
-                    color: theme.colorScheme.outline.withOpacity(0.3),
+                    color: theme.brightness == Brightness.dark
+                        ? Colors.white.withOpacity(0.3)
+                        : theme.colorScheme.outline.withOpacity(0.3),
                   ),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide(
-                    color: theme.colorScheme.outline.withOpacity(0.3),
+                    color: theme.brightness == Brightness.dark
+                        ? Colors.white.withOpacity(0.3)
+                        : theme.colorScheme.outline.withOpacity(0.3),
                   ),
                 ),
                 focusedBorder: OutlineInputBorder(
@@ -203,7 +207,9 @@ class _ObjFotoTextoState extends State<ObjFotoTexto> {
                   borderSide: BorderSide(color: formTheme.formPrimary, width: 2),
                 ),
                 filled: true,
-                fillColor: theme.colorScheme.surfaceContainerHighest,
+                fillColor: theme.brightness == Brightness.dark
+                    ? theme.colorScheme.surface
+                    : theme.colorScheme.surfaceContainerHighest,
                 contentPadding: const EdgeInsets.all(16),
               ),
             ),

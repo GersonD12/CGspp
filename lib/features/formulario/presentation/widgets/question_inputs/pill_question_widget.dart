@@ -275,22 +275,55 @@ class _PillQuestionWidgetState extends State<PillQuestionWidget> {
 
         // Campo de texto para opción personalizada (si corresponde)
         if (_showCustomTextField)
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-            child: TextField(
-              controller: TextEditingController(text: _customText ?? ''),
-              decoration: const InputDecoration(
-                hintText: 'Escribe tu respuesta...',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(20)),
+          Builder(
+            builder: (context) {
+              final theme = Theme.of(context);
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                child: TextField(
+                  controller: TextEditingController(text: _customText ?? ''),
+                  style: TextStyle(color: theme.colorScheme.onSurface),
+                  decoration: InputDecoration(
+                    hintText: 'Escribe tu respuesta...',
+                    hintStyle: TextStyle(
+                      color: theme.colorScheme.onSurface.withOpacity(0.6),
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: const BorderRadius.all(Radius.circular(20)),
+                      borderSide: BorderSide(
+                        color: theme.brightness == Brightness.dark
+                            ? Colors.white.withOpacity(0.3)
+                            : theme.colorScheme.outline.withOpacity(0.3),
+                      ),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: const BorderRadius.all(Radius.circular(20)),
+                      borderSide: BorderSide(
+                        color: theme.brightness == Brightness.dark
+                            ? Colors.white.withOpacity(0.3)
+                            : theme.colorScheme.outline.withOpacity(0.3),
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: const BorderRadius.all(Radius.circular(20)),
+                      borderSide: BorderSide(
+                        color: theme.colorScheme.primary,
+                        width: 2,
+                      ),
+                    ),
+                    filled: true,
+                    fillColor: theme.brightness == Brightness.dark
+                        ? theme.colorScheme.surface
+                        : theme.colorScheme.surfaceContainerHighest,
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
+                  ),
+                  onChanged: _actualizarCustomText,
                 ),
-                contentPadding: EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 8,
-                ),
-              ),
-              onChanged: _actualizarCustomText,
-            ),
+              );
+            },
           ),
       ],
     );
