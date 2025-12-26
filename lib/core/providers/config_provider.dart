@@ -92,6 +92,8 @@ class ConfigNotifier extends StateNotifier<AppConfig> {
         surfaceContainerHighest: AppColors.cardColorLight, // Para cards
         outline: Colors.transparent, // Sin bordes por defecto
         outlineVariant: Colors.transparent, // Sin bordes variantes
+        error: AppColors.errorLight, // Color de error para modo claro
+        onError: AppColors.onErrorLight, // Color del texto sobre error
       ),
 
       // IconTheme
@@ -124,6 +126,10 @@ class ConfigNotifier extends StateNotifier<AppConfig> {
           //luego ir a la linea 170
           shadowColor: AppColors.shadowColorLight,
           barBorder: AppColors.barBorderLight,
+          formPrimary: AppColors.formPrimaryLight,
+          formProgressBackground: AppColors.formProgressBackgroundLight,
+          formButtonDisabled: AppColors.formButtonDisabledLight,
+          formChipBackground: AppColors.formChipBackgroundLight,
         ),
       ],
     );
@@ -186,6 +192,8 @@ class ConfigNotifier extends StateNotifier<AppConfig> {
         surfaceContainerHighest: AppColors.cardColorDark, // 👈 Versión DARK
         outline: Colors.transparent, // Sin bordes por defecto
         outlineVariant: Colors.transparent, // Sin bordes variantes
+        error: AppColors.errorDark, // Color de error para modo oscuro
+        onError: AppColors.onErrorDark, // Color del texto sobre error
       ),
 
       // IconTheme
@@ -216,6 +224,10 @@ class ConfigNotifier extends StateNotifier<AppConfig> {
           buttonColor: AppColors.buttonColorDark,
           shadowColor: AppColors.shadowColorDark,
           barBorder: AppColors.barBorderDark,
+          formPrimary: AppColors.formPrimaryDark,
+          formProgressBackground: AppColors.formProgressBackgroundDark,
+          formButtonDisabled: AppColors.formButtonDisabledDark,
+          formChipBackground: AppColors.formChipBackgroundDark,
         ),
       ],
     );

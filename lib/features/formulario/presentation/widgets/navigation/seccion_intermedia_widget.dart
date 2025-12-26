@@ -1,4 +1,5 @@
 import 'package:calet/features/formulario/application/dto/dto.dart';
+import 'package:calet/features/formulario/presentation/helpers/formulario_theme_helper.dart';
 import 'package:calet/features/formulario/presentation/widgets/widgets.dart';
 import 'package:calet/shared/widgets/vertical_view_standard.dart';
 import 'package:flutter/material.dart';
@@ -24,12 +25,15 @@ class SeccionIntermediaWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     // Determinar si mostrar botón de retroceso en el header
     final mostrarBackButtonHeader = mostrarPantallaInicial || esRetroceso;
+    final formTheme = FormularioThemeHelper.getThemeExtension(context);
+    final scaffoldBg = FormularioThemeHelper.getScaffoldBackground(context);
+    final textColor = FormularioThemeHelper.getTextColor(context);
 
     return VerticalViewStandardScrollable(
       title: seccion.titulo,
-      headerColor: const Color.fromARGB(255, 248, 226, 185),
-      foregroundColor: Colors.black,
-      backgroundColor: const Color.fromARGB(255, 248, 226, 185),
+      headerColor: scaffoldBg,
+      foregroundColor: textColor,
+      backgroundColor: scaffoldBg,
       centerTitle: true,
       showBackButton: mostrarBackButtonHeader,
       child: Center(
@@ -43,10 +47,10 @@ class SeccionIntermediaWidget extends StatelessWidget {
                 // Título de la sección
                 Text(
                   seccion.titulo,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
-                    color: Color.fromARGB(255, 76, 94, 175),
+                    color: formTheme.formPrimary,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -54,9 +58,9 @@ class SeccionIntermediaWidget extends StatelessWidget {
                 // Descripción de la sección
                 Text(
                   seccion.descripcion,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 16,
-                    color: Colors.black87,
+                    color: textColor,
                     height: 1.5,
                   ),
                   textAlign: TextAlign.center,
@@ -73,10 +77,10 @@ class SeccionIntermediaWidget extends StatelessWidget {
                         child: Boton(
                           texto: 'Atrás',
                           onPressed: onRetroceder!,
-                          color: const Color.fromARGB(255, 248, 226, 185),
+                          color: scaffoldBg,
                           icon: Icons.arrow_back_ios_outlined,
                           elevation: 5.0,
-                          textColor: Colors.black,
+                          textColor: textColor,
                           fontSize: 18,
                           width: 150,
                           height: 60,
@@ -86,10 +90,10 @@ class SeccionIntermediaWidget extends StatelessWidget {
                     Boton(
                       texto: 'Continuar',
                       onPressed: onContinuar,
-                      color: const Color.fromARGB(255, 248, 226, 185),
+                      color: scaffoldBg,
                       icon: Icons.arrow_forward_ios_outlined,
                       elevation: 5.0,
-                      textColor: Colors.black,
+                      textColor: textColor,
                       fontSize: 18,
                       width: onRetroceder != null ? 150 : 200,
                       height: 60,

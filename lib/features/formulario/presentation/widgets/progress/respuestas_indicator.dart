@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../providers/respuestas_provider.dart';
+import '../../providers/respuestas_provider.dart';
 
 /// Widget que muestra el indicador de respuestas guardadas
 class RespuestasIndicator extends ConsumerWidget {

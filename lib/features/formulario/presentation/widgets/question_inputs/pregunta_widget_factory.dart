@@ -1,11 +1,11 @@
 import 'package:calet/features/formulario/application/dto/dto.dart';
-import 'package:calet/features/formulario/presentation/widgets/country_picker_widget.dart';
-import 'package:calet/features/formulario/presentation/widgets/date_picker_widget.dart';
-import 'package:calet/features/formulario/presentation/widgets/image_picker_widget.dart';
-import 'package:calet/features/formulario/presentation/widgets/obj_foto_texto_widget.dart';
-import 'package:calet/features/formulario/presentation/widgets/obj_numero.dart';
-import 'package:calet/features/formulario/presentation/widgets/phone_number_input_widget.dart';
-import 'package:calet/features/formulario/presentation/widgets/pill_question_widget.dart';
+import 'package:calet/features/formulario/presentation/widgets/question_inputs/country_picker_widget.dart';
+import 'package:calet/features/formulario/presentation/widgets/question_inputs/date_picker_widget.dart';
+import 'package:calet/features/formulario/presentation/widgets/question_inputs/image_picker_widget.dart';
+import 'package:calet/features/formulario/presentation/widgets/question_inputs/obj_foto_texto_widget.dart';
+import 'package:calet/features/formulario/presentation/widgets/question_inputs/obj_numero.dart';
+import 'package:calet/features/formulario/presentation/widgets/question_inputs/phone_number_input_widget.dart';
+import 'package:calet/features/formulario/presentation/widgets/question_inputs/pill_question_widget.dart';
 import 'package:flutter/material.dart';
 
 /// Factory para crear widgets de preguntas según su tipo

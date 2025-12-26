@@ -1,5 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:calet/features/formulario/application/dto/dto.dart';
+import 'package:calet/features/formulario/presentation/helpers/formulario_theme_helper.dart';
+import 'package:flutter/material.dart';
 
 class PillQuestionWidget extends StatefulWidget {
   final String pregunta;
@@ -197,7 +198,7 @@ class _PillQuestionWidgetState extends State<PillQuestionWidget> {
               'Puedes seleccionar hasta $_maxSelecciones opción(es) (${_seleccionadas.length}/$_maxSelecciones)',
               style: TextStyle(
                 fontSize: 12,
-                color: Colors.grey[600],
+                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
                 fontStyle: FontStyle.italic,
               ),
             ),
@@ -212,6 +213,9 @@ class _PillQuestionWidgetState extends State<PillQuestionWidget> {
             children: [
               ...widget.opciones.map((opcion) {
                 final bool selected = _isSelected(opcion.value);
+                final formTheme = FormularioThemeHelper.getThemeExtension(context);
+                final textColor = FormularioThemeHelper.getTextColor(context);
+                
                 return ChoiceChip(
                   padding: const EdgeInsets.all(8),
                   avatar: null,
@@ -233,29 +237,37 @@ class _PillQuestionWidgetState extends State<PillQuestionWidget> {
                   onSelected: (_) => _toggleOpcion(opcion.value),
                   shape: const StadiumBorder(),
                   showCheckmark: false, // Desactivar el checkmark explícitamente
-                  selectedColor: const Color.fromARGB(255, 76, 94, 175), // Color cuando está seleccionada
-                  backgroundColor: Colors.grey[200], // Color cuando no está seleccionada
+                  selectedColor: formTheme.formPrimary, // Color cuando está seleccionada
+                  backgroundColor: formTheme.formChipBackground, // Color cuando no está seleccionada
                   labelStyle: TextStyle(
-                    color: selected ? Colors.white : Colors.black87,
+                    color: selected ? Colors.white : textColor,
                     fontWeight: selected ? FontWeight.bold : FontWeight.normal,
                   ),
                 );
               }),
               if (widget.allowCustomOption)
-                ChoiceChip(
-                  padding: const EdgeInsets.all(8),
-                  avatar: null,
-                  label: Text(widget.customOptionLabel),
-                  selected: _isSelected(widget.customOptionLabel),
-                  onSelected: (_) => _toggleCustomOption(),
-                  shape: const StadiumBorder(),
-                  showCheckmark: false, // Desactivar el checkmark explícitamente
-                  selectedColor: const Color.fromARGB(255, 76, 94, 175), // Color cuando está seleccionada
-                  backgroundColor: Colors.grey[200], // Color cuando no está seleccionada
-                  labelStyle: TextStyle(
-                    color: _isSelected(widget.customOptionLabel) ? Colors.white : Colors.black87,
-                    fontWeight: _isSelected(widget.customOptionLabel) ? FontWeight.bold : FontWeight.normal,
-                  ),
+                Builder(
+                  builder: (context) {
+                    final formTheme = FormularioThemeHelper.getThemeExtension(context);
+                    final textColor = FormularioThemeHelper.getTextColor(context);
+                    final isSelected = _isSelected(widget.customOptionLabel);
+                    
+                    return ChoiceChip(
+                      padding: const EdgeInsets.all(8),
+                      avatar: null,
+                      label: Text(widget.customOptionLabel),
+                      selected: isSelected,
+                      onSelected: (_) => _toggleCustomOption(),
+                      shape: const StadiumBorder(),
+                      showCheckmark: false, // Desactivar el checkmark explícitamente
+                      selectedColor: formTheme.formPrimary, // Color cuando está seleccionada
+                      backgroundColor: formTheme.formChipBackground, // Color cuando no está seleccionada
+                      labelStyle: TextStyle(
+                        color: isSelected ? Colors.white : textColor,
+                        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                      ),
+                    );
+                  },
                 ),
             ],
           ),

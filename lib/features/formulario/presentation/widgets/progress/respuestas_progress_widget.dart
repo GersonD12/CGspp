@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../providers/respuestas_provider.dart';
+import '../../providers/respuestas_provider.dart';
 
 /// Widget para mostrar el progreso de respuestas
 class RespuestasProgressWidget extends ConsumerWidget {

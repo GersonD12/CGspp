@@ -5,5 +5,6 @@
 // import 'package:calet/features/profile/presentation/screens/screens.dart';
 // ```
 
+export 'edit_profile_screen.dart';
 export 'profile_screen.dart';
 

@@ -17,6 +17,7 @@ class RespuestasRepositoryImpl implements RespuestasRepository {
   @override
   /// Sube las respuestas a Firestore agrupadas por grupoId
   /// NUEVO FORMATO: Usa idpregunta como clave para matching eficiente
+  /// Además, guarda campos directos en el documento para tipos específicos (text, numero, multiple, fecha, pais)
   Future<void> uploadRespuestas(
     String userId,
     RespuestasState respuestasState,
@@ -25,6 +26,12 @@ class RespuestasRepositoryImpl implements RespuestasRepository {
 
     // Agrupar respuestas por grupoId
     final Map<String, Map<String, dynamic>> gruposMap = {};
+    
+    // Mapa para campos directos en el documento del usuario
+    final Map<String, dynamic> camposDirectos = {};
+    
+    // Tipos de preguntas que se guardan como campos directos
+    const tiposParaCamposDirectos = {'texto', 'numero', 'multiple', 'fecha', 'pais'};
     
     for (final respuesta in respuestasState.todasLasRespuestas) {
       final grupoId = respuesta.grupoId;
@@ -37,6 +44,21 @@ class RespuestasRepositoryImpl implements RespuestasRepository {
       // Agregar la respuesta al grupo correspondiente usando idpregunta como clave
       // Estructura: {grupoId: {idpregunta: respuesta}}
       gruposMap[grupoId]![respuesta.idpregunta] = respuesta.toMap();
+      
+      // Determinar si se debe guardar como campo directo
+      // Si tiene tipoPregunta explícito, usarlo; si no, inferirlo desde los datos
+      final tipoPregunta = respuesta.tipoPregunta?.toLowerCase().trim();
+      final tipoInferido = _inferirTipoPregunta(respuesta);
+      final tipoFinal = tipoPregunta ?? tipoInferido;
+      
+      // Guardar como campo directo si el tipo está en la lista permitida
+      if (tipoFinal != null && tiposParaCamposDirectos.contains(tipoFinal)) {
+        final valorCampo = _extraerValorParaCampoDirecto(respuesta, tipoFinal);
+        if (valorCampo != null) {
+          // Usar idpregunta como nombre del campo
+          camposDirectos[respuesta.idpregunta] = valorCampo;
+        }
+      }
     }
 
     // Crear el mapa final que se subirá a Firestore
@@ -46,9 +68,62 @@ class RespuestasRepositoryImpl implements RespuestasRepository {
         'grupos': gruposMap,
       },
     };
+    
+    // Combinar respuestas estructuradas con campos directos
+    final datosCompletos = {
+      ...respuestasMap,
+      ...camposDirectos,
+    };
 
     // Subir las respuestas al documento del usuario
-    await userDocRef.set(respuestasMap, SetOptions(merge: true));
+    await userDocRef.set(datosCompletos, SetOptions(merge: true));
+  }
+  
+  /// Infiere el tipo de pregunta basándose en los datos disponibles en la respuesta
+  String? _inferirTipoPregunta(RespuestaDTO respuesta) {
+    // Si tiene respuestaOpciones, es multiple o radio
+    if (respuesta.respuestaOpciones != null && respuesta.respuestaOpciones!.isNotEmpty) {
+      return 'multiple';
+    }
+    
+    // Si tiene respuestaImagenes, es imagen (no se guarda como campo directo)
+    if (respuesta.respuestaImagenes != null && respuesta.respuestaImagenes!.isNotEmpty) {
+      return 'imagen';
+    }
+    
+    // Si tiene respuestaTexto y no tiene opciones ni imágenes, puede ser texto, numero, fecha, pais, telefono
+    if (respuesta.respuestaTexto != null && respuesta.respuestaTexto!.isNotEmpty) {
+      // Por defecto, asumimos que es texto (se puede refinar más adelante si es necesario)
+      return 'texto';
+    }
+    
+    return null;
+  }
+  
+  /// Extrae el valor de la respuesta para guardarlo como campo directo según el tipo
+  dynamic _extraerValorParaCampoDirecto(RespuestaDTO respuesta, String tipoPregunta) {
+    switch (tipoPregunta) {
+      case 'texto':
+      case 'numero':
+      case 'fecha':
+      case 'pais':
+        // Para estos tipos, el valor está en respuestaTexto
+        return respuesta.respuestaTexto;
+      
+      case 'multiple':
+        // Para múltiple, guardar el primer valor o todos como string separado por comas
+        if (respuesta.respuestaOpciones != null && respuesta.respuestaOpciones!.isNotEmpty) {
+          // Si hay múltiples valores, guardar como string separado por comas
+          // Si solo hay uno, guardar solo ese valor
+          return respuesta.respuestaOpciones!.length == 1
+              ? respuesta.respuestaOpciones!.first
+              : respuesta.respuestaOpciones!.join(',');
+        }
+        return null;
+      
+      default:
+        return null;
+    }
   }
 
   @override

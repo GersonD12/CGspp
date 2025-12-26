@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../providers/respuestas_provider.dart';
-import '../providers/respuestas_state.dart';
+import '../../providers/respuestas_provider.dart';
+import '../../providers/respuestas_state.dart';
 
 /// Widget para mostrar estadísticas detalladas de respuestas
 class RespuestasStatsWidget extends ConsumerWidget {

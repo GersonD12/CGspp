@@ -29,6 +29,16 @@ class AppColors {
     94,
     74,
   ); // Gris con transparencia
+  
+  // Colores específicos del formulario - Light Theme
+  static const Color formPrimaryLight = Color.fromARGB(255, 76, 94, 175); // Azul principal
+  static const Color formProgressBackgroundLight = Color.fromARGB(255, 226, 219, 204); // Fondo barra progreso
+  static const Color formButtonDisabledLight = Color.fromARGB(255, 235, 213, 172); // Botón deshabilitado
+  static const Color formChipBackgroundLight = Color.fromARGB(255, 238, 238, 238); // Fondo chip no seleccionado
+  
+  // Color de error - Light Theme
+  static const Color errorLight = Color(0xFFD32F2F); // Rojo oscuro para modo claro
+  static const Color onErrorLight = Color(0xFFFFFFFF); // Blanco para texto sobre error
 
   // Tema Oscuro - Dark Theme
   static const Color darkBackground = Color.fromRGBO(31, 30, 27, 1);
@@ -52,4 +62,14 @@ class AppColors {
   //aca se pueden añadir mas colores personalizados, aca el tema oscuro y luego en config_provaider
   static const Color shadowColorDark = Color.fromARGB(55, 194, 194, 194);
   static const Color barBorderDark = Color.fromRGBO(139, 111, 71, 1);
+  
+  // Colores específicos del formulario - Dark Theme
+  static const Color formPrimaryDark = Color.fromARGB(255, 139, 157, 195); // Azul principal más claro para dark
+  static const Color formProgressBackgroundDark = Color.fromARGB(255, 50, 50, 50); // Fondo barra progreso oscuro
+  static const Color formButtonDisabledDark = Color.fromARGB(255, 80, 70, 60); // Botón deshabilitado oscuro
+  static const Color formChipBackgroundDark = Color.fromARGB(255, 60, 60, 60); // Fondo chip no seleccionado oscuro
+  
+  // Color de error - Dark Theme
+  static const Color errorDark = Color.fromARGB(255, 255, 37, 34); // Rojo claro/brillante para modo oscuro
+  static const Color onErrorDark = Color(0xFFFFFFFF); // Blanco para texto sobre error
 }

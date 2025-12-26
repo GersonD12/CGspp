@@ -1,3 +1,4 @@
+import 'package:calet/features/formulario/presentation/helpers/formulario_theme_helper.dart';
 import 'package:calet/features/formulario/presentation/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 
@@ -24,6 +25,10 @@ class PreguntasNavigationButtons extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final formTheme = FormularioThemeHelper.getThemeExtension(context);
+    final scaffoldBg = FormularioThemeHelper.getScaffoldBackground(context);
+    final textColor = FormularioThemeHelper.getTextColor(context);
+    
     return Padding(
       padding: EdgeInsets.only(
         left: 16.0,
@@ -40,8 +45,8 @@ class PreguntasNavigationButtons extends StatelessWidget {
                   onPressed: onAtras,
                   icon: Icons.arrow_back_ios_outlined,
                   texto: 'Atrás',
-                  color: const Color.fromARGB(255, 248, 226, 185),
-                  textColor: const Color.fromARGB(255, 0, 0, 0),
+                  color: scaffoldBg,
+                  textColor: textColor,
                   elevation: 4.0,
                   height: 60,
                   width: 120,
@@ -54,13 +59,13 @@ class PreguntasNavigationButtons extends StatelessWidget {
                 ? onFinalizar
                 : (preguntaRespondida ? onSiguiente : null),
             color: (!esUltimaPregunta && !preguntaRespondida)
-                ? const Color.fromARGB(255, 235, 213, 172)
-                : const Color.fromARGB(255, 248, 226, 185),
+                ? formTheme.formButtonDisabled
+                : scaffoldBg,
             icon: esUltimaPregunta
                 ? Icons.check_rounded
                 : Icons.arrow_forward_ios_outlined,
             elevation: (!esUltimaPregunta && !preguntaRespondida) ? 0.0 : 5.0,
-            textColor: const Color.fromARGB(255, 0, 0, 0),
+            textColor: textColor,
             fontSize: 16,
             width: 150,
             height: 60,

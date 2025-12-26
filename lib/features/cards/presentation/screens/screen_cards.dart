@@ -29,6 +29,8 @@ class _ScreenCardsState extends State<ScreenCards> {
       final repository = getIt<CardsRepository>();
       final randomUsers = await repository.fetchRandomUsers(15);
 
+      if (!mounted) return;
+      
       setState(() {
         _users = randomUsers;
         _isLoading = false;
@@ -36,6 +38,8 @@ class _ScreenCardsState extends State<ScreenCards> {
       log('Fetched ${_users.length} random users.');
     } catch (e) {
       log('Error fetching users: $e');
+      if (!mounted) return;
+      
       setState(() {
         _isLoading = false;
       });

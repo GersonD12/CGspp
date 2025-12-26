@@ -1,5 +1,5 @@
 import 'package:calet/features/formulario/application/dto/dto.dart';
-import 'package:calet/features/formulario/presentation/widgets/pregunta_widget_factory.dart';
+import 'package:calet/features/formulario/presentation/widgets/question_inputs/pregunta_widget_factory.dart';
 import 'package:flutter/material.dart';
 
 /// Widget para mostrar un grupo de preguntas múltiples agrupadas

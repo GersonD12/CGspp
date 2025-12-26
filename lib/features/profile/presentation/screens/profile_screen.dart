@@ -4,6 +4,7 @@ import 'package:calet/shared/widgets/widgets.dart';
 import 'package:calet/features/auth/infrastructure/google_auth_service.dart';
 import 'package:calet/core/domain/entities/entities.dart';
 import 'package:calet/features/profile/presentation/widgets/profile_header.dart';
+import 'package:calet/features/profile/presentation/screens/edit_profile_screen.dart';
 import 'package:flutter/material.dart';
 
 class ProfileScreen extends ProtectedScreenStatefulWidget {
@@ -29,8 +30,11 @@ class _ProfileScreenState extends ProtectedScreenState<ProfileScreen> {
         IconButton(
           icon: const Icon(Icons.edit),
           onPressed: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Editar perfil - Próximamente')),
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const EditProfileScreen(),
+              ),
             );
           },
         ),
@@ -182,8 +186,11 @@ class _ProfileScreenState extends ProtectedScreenState<ProfileScreen> {
               icon: Icons.edit,
               label: 'Editar Perfil',
               onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Editar perfil - Próximamente')),
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const EditProfileScreen(),
+                  ),
                 );
               },
             ),

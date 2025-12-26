@@ -1,6 +1,7 @@
 import 'dart:io';
+import 'package:calet/features/formulario/presentation/helpers/formulario_theme_helper.dart';
 import 'package:calet/shared/widgets/boton_widget.dart';
-import 'package:calet/features/formulario/presentation/widgets/modal_helper.dart';
+import 'package:calet/features/formulario/presentation/widgets/shared/modal_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -53,7 +54,7 @@ class ImagePickerWidget extends StatefulWidget {
 
 class _ImagePickerWidgetState extends State<ImagePickerWidget> {
   XFile? _imagenSeleccionada;
-  List<XFile> _imagenesSeleccionadas = [];
+  final List<XFile> _imagenesSeleccionadas = [];
   List<String> _imagenesCargadas = []; // Para imágenes desde URL o ya guardadas
 
   @override
@@ -81,6 +82,8 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
     final imagenDisplayPath =
         widget.imagenInicialPath ?? _imagenSeleccionada?.path;
     final isNetworkImage = _isUrl(imagenDisplayPath);
+    final formTheme = FormularioThemeHelper.getThemeExtension(context);
+    final textColor = FormularioThemeHelper.getTextColor(context);
 
     return Column(
       children: [
@@ -98,10 +101,10 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
             Expanded(
               child: Text(
                 widget.titulo,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: Colors.black,
+                  color: textColor,
                 ),
               ),
             ),
@@ -113,7 +116,10 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
             padding: const EdgeInsets.only(top: 5),
             child: Text(
               widget.textoPlaceholder!,
-              style: const TextStyle(fontSize: 14, color: Colors.grey),
+              style: TextStyle(
+                fontSize: 14,
+                color: textColor.withOpacity(0.6),
+              ),
             ),
           ),
         const SizedBox(height: 5),
@@ -141,8 +147,8 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
               : 'Seleccionar Imagen',
           icon: widget.iconData,
           color: todasLasImagenes.length >= widget.cantidadImagenes
-              ? Colors.grey
-              : Colors.blue,
+              ? formTheme.formButtonDisabled
+              : formTheme.formPrimary,
           textColor: Colors.white,
         ),
         const SizedBox(height: 10),
@@ -151,126 +157,152 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
   }
 
   Widget _buildSingleImage(String? imagenDisplayPath, bool isNetworkImage) {
-    return Container(
-      width: 300,
-      height: 200,
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey),
-        borderRadius: BorderRadius.circular(8),
-        boxShadow: const [
-          BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(2, 2)),
-        ],
-      ),
-      child: imagenDisplayPath == null
-          ? Center(
-              child: Icon(
-                Icons.image_outlined,
-                color: Colors.grey,
-                size: widget.imgSize * 0.3,
-              ),
-            )
-          : ClipRRect(
-              borderRadius: BorderRadius.circular(8.0),
-              child: isNetworkImage
-                  ? Image.network(
-                      imagenDisplayPath,
-                      fit: BoxFit.cover,
-                      width: double.infinity,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Center(
-                          child: Icon(
-                            Icons.broken_image,
-                            color: Colors.grey,
-                            size: widget.imgSize * 0.3,
-                          ),
-                        );
-                      },
-                    )
-                  : Image.file(
-                      File(imagenDisplayPath),
-                      fit: BoxFit.cover,
-                      width: double.infinity,
-                    ),
+    return Builder(
+      builder: (context) {
+        final theme = Theme.of(context);
+        return Container(
+          width: 300,
+          height: 200,
+          decoration: BoxDecoration(
+            border: Border.all(
+              color: theme.colorScheme.outline.withOpacity(0.3),
             ),
+            borderRadius: BorderRadius.circular(8),
+            boxShadow: [
+              BoxShadow(
+                color: theme.brightness == Brightness.dark
+                    ? Colors.black54
+                    : Colors.black12,
+                blurRadius: 4,
+                offset: const Offset(2, 2),
+              ),
+            ],
+          ),
+          child: imagenDisplayPath == null
+              ? Center(
+                  child: Icon(
+                    Icons.image_outlined,
+                    color: theme.colorScheme.onSurface.withOpacity(0.5),
+                    size: widget.imgSize * 0.3,
+                  ),
+                )
+              : ClipRRect(
+                  borderRadius: BorderRadius.circular(8.0),
+                  child: isNetworkImage
+                      ? Image.network(
+                          imagenDisplayPath,
+                          fit: BoxFit.cover,
+                          width: double.infinity,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Center(
+                              child: Icon(
+                                Icons.broken_image,
+                                color: theme.colorScheme.onSurface.withOpacity(0.5),
+                                size: widget.imgSize * 0.3,
+                              ),
+                            );
+                          },
+                        )
+                      : Image.file(
+                          File(imagenDisplayPath),
+                          fit: BoxFit.cover,
+                          width: double.infinity,
+                        ),
+                ),
+        );
+      },
     );
   }
 
   Widget _buildGridImagenes(List<String> imagenes) {
-    return Container(
-      width: double.infinity,
-      constraints: const BoxConstraints(maxHeight: 400),
-      child: imagenes.isEmpty
-          ? Container(
-              width: 300,
-              height: 200,
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.grey),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Center(
-                child: Icon(
-                  Icons.image_outlined,
-                  color: Colors.grey,
-                  size: widget.imgSize * 0.3,
-                ),
-              ),
-            )
-          : GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 3,
-                crossAxisSpacing: 8,
-                mainAxisSpacing: 8,
-                childAspectRatio: 1,
-              ),
-              itemCount: imagenes.length,
-              itemBuilder: (context, index) {
-                final imagenPath = imagenes[index];
-                final isNetworkImage = _isUrl(imagenPath);
-                return Stack(
-                  children: [
-                    Container(
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.grey),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
-                        child: isNetworkImage
-                            ? Image.network(
-                                imagenPath,
-                                fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) {
-                                  return const Icon(Icons.broken_image);
-                                },
-                              )
-                            : Image.file(File(imagenPath), fit: BoxFit.cover),
-                      ),
+    return Builder(
+      builder: (context) {
+        final theme = Theme.of(context);
+        
+        return Container(
+          width: double.infinity,
+          constraints: const BoxConstraints(maxHeight: 400),
+          child: imagenes.isEmpty
+              ? Container(
+                  width: 300,
+                  height: 200,
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: theme.colorScheme.outline.withOpacity(0.3),
                     ),
-                    Positioned(
-                      top: 4,
-                      right: 4,
-                      child: GestureDetector(
-                        onTap: () => _eliminarImagen(index),
-                        child: Container(
-                          padding: const EdgeInsets.all(4),
-                          decoration: const BoxDecoration(
-                            color: Colors.red,
-                            shape: BoxShape.circle,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Center(
+                    child: Icon(
+                      Icons.image_outlined,
+                      color: theme.colorScheme.onSurface.withOpacity(0.5),
+                      size: widget.imgSize * 0.3,
+                    ),
+                  ),
+                )
+              : GridView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 3,
+                    crossAxisSpacing: 8,
+                    mainAxisSpacing: 8,
+                    childAspectRatio: 1,
+                  ),
+                  itemCount: imagenes.length,
+                  itemBuilder: (context, index) {
+                    final imagenPath = imagenes[index];
+                    final isNetworkImage = _isUrl(imagenPath);
+                    return Stack(
+                      children: [
+                        Container(
+                          decoration: BoxDecoration(
+                            border: Border.all(
+                              color: theme.colorScheme.outline.withOpacity(0.3),
+                            ),
+                            borderRadius: BorderRadius.circular(8),
                           ),
-                          child: const Icon(
-                            Icons.close,
-                            color: Colors.white,
-                            size: 16,
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: isNetworkImage
+                                ? Image.network(
+                                    imagenPath,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) {
+                                      return Icon(
+                                        Icons.broken_image,
+                                        color: theme.colorScheme.onSurface.withOpacity(0.5),
+                                      );
+                                    },
+                                  )
+                                : Image.file(File(imagenPath), fit: BoxFit.cover),
                           ),
                         ),
-                      ),
-                    ),
-                  ],
-                );
-              },
-            ),
+                        Positioned(
+                          top: 4,
+                          right: 4,
+                          child: GestureDetector(
+                            onTap: () => _eliminarImagen(index),
+                            child: Container(
+                              padding: const EdgeInsets.all(4),
+                              decoration: const BoxDecoration(
+                                color: Colors.red,
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.close,
+                                color: Colors.white,
+                                size: 16,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                ),
+        );
+      },
     );
   }
 
@@ -322,29 +354,37 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
                 ),
               ),
             if (!_permiteMultiplesImagenes)
-              Container(
-                width: 270,
-                height: 160,
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: _imagenSeleccionada == null
-                    ? Center(
-                        child: Icon(
-                          widget.iconData,
-                          color: Colors.grey,
-                          size: widget.imgSize * 0.3,
-                        ),
-                      )
-                    : ClipRRect(
-                        borderRadius: BorderRadius.circular(8.0),
-                        child: Image.file(
-                          File(_imagenSeleccionada!.path),
-                          fit: BoxFit.cover,
-                          width: double.infinity,
-                        ),
+              Builder(
+                builder: (context) {
+                  final theme = Theme.of(context);
+                  
+                  return Container(
+                    width: 270,
+                    height: 160,
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: theme.colorScheme.outline.withOpacity(0.3),
                       ),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: _imagenSeleccionada == null
+                        ? Center(
+                            child: Icon(
+                              widget.iconData,
+                              color: theme.colorScheme.onSurface.withOpacity(0.5),
+                              size: widget.imgSize * 0.3,
+                            ),
+                          )
+                        : ClipRRect(
+                            borderRadius: BorderRadius.circular(8.0),
+                            child: Image.file(
+                              File(_imagenSeleccionada!.path),
+                              fit: BoxFit.cover,
+                              width: double.infinity,
+                            ),
+                          ),
+                  );
+                },
               ),
             if (puedeAgregarMas)
               ListTile(
